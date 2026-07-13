@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CMS - Dinspire</title>
+    <link rel="stylesheet" href="css/admin.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+      <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#121212">
+</head>
+  <body>
+    <div id="login-overlay">
+      <div class="login-box">
+        <h2>Akses Pentadbir</h2>
+        <p>Sila masukkan butiran untuk mengurus data</p>
+
+        <input
+          type="text"
+          id="sys-username"
+          placeholder="Nama Pengguna (Username)"
+        />
+        <input type="password" id="sys-password" placeholder="Kata Laluan" />
+
+        <button onclick="loginAdmin(['admin', 'owner'])">Log Masuk CMS</button>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-header">CMS Panel</div>
+      <div class="nav-list">
+        <div class="nav-item active" onclick="switchTab('Haircuts', this)">
+          Guntingan
+        </div>
+        <div class="nav-item" onclick="switchTab('Treatments', this)">
+          Rawatan
+        </div>
+        <div class="nav-item" onclick="switchTab('Branches', this)">
+          Cawangan
+        </div>
+        <div class="nav-item" onclick="switchTab('Barbers', this)">
+          Barbers (Staff)
+        </div>
+        <div class="nav-item" onclick="switchTab('OnCall', this)">
+          Servis OnCall
+        </div>
+        <div class="nav-item" onclick="switchTab('OnCallBarbers', this)">
+          Barbers OnCall
+        </div>
+        <div class="nav-item" onclick="switchTab('WalkInServices', this)">
+          Harga Walk-In
+        </div>
+        <div class="nav-item" onclick="switchTab('Products', this)">Produk</div>
+        <div class="nav-item" onclick="switchTab('Posters', this)">
+          Promosi (Poster)
+        </div>
+        <div
+          class="nav-item"
+          onclick="switchTab('Settings', this)"
+          style="
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 10px;
+            padding-top: 15px;
+            color: #1877f2;
+            font-weight: bold;
+          "
+        >
+          <i class="fas fa-cog" style="margin-right: 8px"></i> Tetapan Sistem &
+          Caj
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="topbar">
+        <h2 id="current-section-title">Pengurusan Guntingan</h2>
+        <button class="save-btn" id="main-save-btn" onclick="saveAllData()">
+          <i class="fas fa-cloud-upload-alt" style="margin-right: 8px"></i>
+          Simpan ke Cloud
+        </button>
+      </div>
+      <div class="content-area" id="dynamic-content">
+        <div style="text-align: center; margin-top: 50px; color: #888">
+          Memuat turun data...
+        </div>
+      </div>
+    </div>
+
+    <!-- [DIBAIKI] Masukkan Library SweetAlert2 dari CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/admin.js"></script>
+      <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("/sw.js");
+            });
+        }
+    </script>
+</body>
+</html>
