@@ -164,8 +164,8 @@ router.post("/login", verifyLimiter, async (req, res) => {
 
   res.cookie("din_token_client", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax",
+    secure: true,
+    sameSite: "None",
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
@@ -316,8 +316,8 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
 
     res.cookie("din_token_sys", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
+      secure: true,
+      sameSite: "None",
       maxAge: 12 * 60 * 60 * 1000,
     });
 
@@ -340,8 +340,8 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
 router.post("/logout-client", (req, res) => {
   res.clearCookie("din_token_client", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax",
+    secure: true,
+    sameSite: "None",
   });
   res.json({ status: "success", message: "Pelanggan telah log keluar." });
 });
@@ -349,8 +349,8 @@ router.post("/logout-client", (req, res) => {
 router.post("/logout-sys", (req, res) => {
   res.clearCookie("din_token_sys", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax",
+    secure: true,
+    sameSite: "None",
   });
   res.json({ status: "success", message: "Staf/Owner telah log keluar." });
 });
