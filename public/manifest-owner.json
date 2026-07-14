@@ -2,7 +2,7 @@
   "name": "Dinspire Owner",
   "short_name": "Owner",
   "description": "Dinspire Executive Panel",
-  "start_url": "/owner.html",
+  "start_url": "/owner",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#111827",
