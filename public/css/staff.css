@@ -46,7 +46,10 @@ body {
 
 /* HEADER */
 .header {
-  padding: 25px 20px 15px;
+  padding-top: calc(15px + env(safe-area-inset-top)) !important;
+  padding-bottom: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
   display: flex;
@@ -324,7 +327,7 @@ select.input-field {
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(115px + env(safe-area-inset-bottom)) !important;
+  height: calc(70px + env(safe-area-inset-bottom)) !important;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border-color);
@@ -332,7 +335,7 @@ select.input-field {
   justify-content: space-around;
   align-items: center;
   z-index: 100;
-  padding-bottom: calc(40px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
 }
 .nav-item {
   flex: 1;
