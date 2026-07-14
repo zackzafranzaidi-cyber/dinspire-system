@@ -323,7 +323,7 @@ select.input-field {
 
 /* BOTTOM NAV */
 .bottom-nav {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
@@ -346,6 +346,8 @@ select.input-field {
   align-items: center;
   cursor: pointer;
   color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
   transition: all 0.3s ease;
   position: relative;
 }
