@@ -232,20 +232,29 @@ router.post(
           .select("bintang, review_text, created_at")
           .order("created_at", { ascending: false })
           .limit(20),
-        // Untuk Laporan Jualan Bulanan (Historical Data)
-        supabase.from("booking_records").select("tarikh, harga_rm").eq("status", "Selesai").order("created_at", { ascending: false }).limit(2000),
-        supabase.from("walkin_records").select("tarikh, harga_rm").order("created_at", { ascending: false }).limit(2000),
-        supabase.from("treatment_records").select("tarikh, harga_rm").eq("status", "Selesai").order("created_at", { ascending: false }).limit(2000),
+        // Untuk Laporan Jualan Bulanan dan Prestasi Staf (Historical Data)
+        supabase.from("booking_records").select("tarikh, harga_rm, staff(username)").eq("status", "Selesai").order("created_at", { ascending: false }).limit(2000),
+        supabase.from("walkin_records").select("tarikh, harga_rm, staff(username)").order("created_at", { ascending: false }).limit(2000),
+        supabase.from("treatment_records").select("tarikh, harga_rm, staff(username)").eq("status", "Selesai").order("created_at", { ascending: false }).limit(2000),
       ]);
 
-      // 1.5 Kira Jualan Bulanan Secara Agregat (Tahun/Bulan)
+      // 1.5 Kira Jualan Bulanan Secara Agregat (Tahun/Bulan) dan Prestasi Staf
       let LaporanJualanBulanan = {};
+      let PrestasiStaf = {};
+
       const kumpulJualan = (rekod) => {
         (rekod || []).forEach(r => {
           if (r.tarikh) {
             const bulan = r.tarikh.substring(0, 7); // Cth: "2023-06"
             if (!LaporanJualanBulanan[bulan]) LaporanJualanBulanan[bulan] = 0;
             LaporanJualanBulanan[bulan] += parseFloat(r.harga_rm) || 0;
+          }
+          
+          if (r.staff && r.staff.username) {
+            const nama = r.staff.username;
+            if (!PrestasiStaf[nama]) PrestasiStaf[nama] = { jualan_rm: 0, jumlah_pelanggan: 0 };
+            PrestasiStaf[nama].jualan_rm += parseFloat(r.harga_rm) || 0;
+            PrestasiStaf[nama].jumlah_pelanggan += 1;
           }
         });
       };
@@ -256,6 +265,7 @@ router.post(
       // 2. Formatkan data supaya mudah dibaca oleh AI (Kurangkan token)
       const businessContext = {
         LaporanJualanBulanan: LaporanJualanBulanan, // AI kini tahu jualan bulan-bulan lepas!
+        PrestasiStafKeseluruhan: PrestasiStaf, // AI kini tahu siapa barber paling banyak jualan/pelanggan!
         RingkasanTempahanTerkini: bookings,
         RingkasanJualanProduk: productOrders,
         RekodKehadiranStaf: punchCards,
