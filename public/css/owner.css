@@ -60,7 +60,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(70px + env(safe-area-inset-bottom)) !important;
+  height: calc(65px + env(safe-area-inset-bottom)) !important;
   background-color: #0f1115;
   display: flex;
   justify-content: space-around;
