@@ -1,5 +1,5 @@
 const IS_LOCALHOST = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const API_BASE_URL = IS_LOCALHOST ? "http://localhost:3000/api" : "https://dinspire-system.onrender.com/api";
+const API_BASE_URL = IS_LOCALHOST ? "http://localhost:3000/api" : "https://api.dinspirebarbershop.com/api";
 const VAPID_PUBLIC_KEY = "BDwYmNxy-sQG489E0z2c0-gM9i22V-7X0q4Vq-j4_9Nq8Q0O2-l5P9T4n9X0-4_4Q";
 
 let currentLang = localStorage.getItem("user_lang") || "en";

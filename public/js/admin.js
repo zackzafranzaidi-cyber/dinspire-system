@@ -3,7 +3,7 @@ const IS_LOCALHOST =
   window.location.hostname === "127.0.0.1";
 const API_BASE_URL = IS_LOCALHOST
   ? "http://localhost:3000/api"
-  : "https://dinspire-system.onrender.com/api";
+  : "https://api.dinspirebarbershop.com/api";
 
 let appData = {};
 
