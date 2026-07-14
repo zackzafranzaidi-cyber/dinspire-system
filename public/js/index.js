@@ -748,6 +748,21 @@ async function fetchShopData() {
         (p) =>
           `<div class="slide"><div class="poster-card"><img src="${p.imageUrl}" alt="Promosi"></div></div>`,
       ).join("");
+      
+      const viewport = document.querySelector(".slider-viewport");
+      if (window.sliderInterval) clearInterval(window.sliderInterval);
+      if (shopData.Posters.length > 1) {
+        window.sliderInterval = setInterval(() => {
+          if (!viewport) return;
+          const maxScroll = viewport.scrollWidth - viewport.clientWidth;
+          
+          if (viewport.scrollLeft >= maxScroll - 10) {
+            viewport.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            viewport.scrollBy({ left: viewport.clientWidth, behavior: 'smooth' });
+          }
+        }, 4000);
+      }
     } else {
       posterTrack.innerHTML = `<div class="slide"><div class="poster-card"><div style="color:gray; font-size:12px; font-weight:bold;">Tiada Promosi Dijalankan</div></div></div>`;
     }

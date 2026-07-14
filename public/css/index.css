@@ -165,16 +165,24 @@ body {
 
 .slider-viewport {
   width: 100%;
-  overflow: hidden;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   margin-top: 10px;
+}
+.slider-viewport::-webkit-scrollbar {
+  display: none;
 }
 .slider-track {
   display: flex;
-  width: 300%;
-  animation: autoSlide 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  width: max-content;
 }
 .slide {
-  width: 33.3333%;
+  width: 100vw;
+  scroll-snap-align: center;
+  flex-shrink: 0;
   padding: 0 20px;
 }
 .poster-card {
@@ -197,23 +205,7 @@ body {
   left: 0;
   z-index: 1;
 }
-@keyframes autoSlide {
-  0%,
-  25% {
-    transform: translateX(0);
-  }
-  33%,
-  58% {
-    transform: translateX(-33.3333%);
-  }
-  66%,
-  91% {
-    transform: translateX(-66.6666%);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
+
 
 .pagination {
   display: flex;
