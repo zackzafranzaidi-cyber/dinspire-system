@@ -60,13 +60,13 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: max(95px, calc(70px + env(safe-area-inset-bottom)));
+  height: max(100px, calc(70px + env(safe-area-inset-bottom)));
   background-color: #0f1115;
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 50;
-  padding-bottom: max(30px, env(safe-area-inset-bottom));
+  padding-bottom: max(35px, env(safe-area-inset-bottom));
   border-top: 1px solid #272a30;
 }
 .nav-item {
