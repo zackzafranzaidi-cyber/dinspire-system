@@ -324,7 +324,7 @@ select.input-field {
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(100px + env(safe-area-inset-bottom));
+  height: calc(115px + env(safe-area-inset-bottom)) !important;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border-color);
@@ -332,7 +332,7 @@ select.input-field {
   justify-content: space-around;
   align-items: center;
   z-index: 100;
-  padding-bottom: calc(25px + env(safe-area-inset-bottom));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom)) !important;
 }
 .nav-item {
   flex: 1;
