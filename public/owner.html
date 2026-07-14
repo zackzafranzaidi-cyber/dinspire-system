@@ -243,6 +243,7 @@
     <!-- MAIN CONTENT -->
     <main
       class="flex-1 w-full overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-[#f3f4f6] relative main-content-wrapper pb-24 h-full"
+      style="padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important; padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));"
     >
       <!-- HEADER -->
       <header
@@ -984,7 +985,8 @@
 
     <!-- NAVIGATION BAWAH (MOBILE) -->
     <nav
-      class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-950 text-gray-500 flex justify-around items-center h-16 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] z-50 border-t border-gray-800 pb-safe rounded-t-2xl"
+      class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-950 text-gray-500 flex justify-around items-center shadow-[0_-4px_20px_rgba(0,0,0,0.5)] z-50 border-t border-gray-800 rounded-t-2xl"
+      style="height: calc(75px + env(safe-area-inset-bottom, 0px)) !important; padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px)) !important;"
     >
       <a
         href="#"
