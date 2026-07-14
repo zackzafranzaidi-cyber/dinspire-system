@@ -114,10 +114,28 @@ router.get(
         });
       });
 
+      // KIRA CASH ON HAND BULANAN SECARA TEPAT (AUTO-RESET)
+      const now = new Date();
+      const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000); // Waktu Malaysia
+      const firstDayOfMonth = new Date(myTime.getFullYear(), myTime.getMonth(), 1).toISOString().split("T")[0];
+      
+      const { data: monthlyCashData } = await supabase
+        .from("walkin_records")
+        .select("harga_rm")
+        .eq("staff_id", staff_id)
+        .gte("tarikh", firstDayOfMonth)
+        .in("jenis_bayaran", ["Cash", "Tunai"]);
+
+      let monthlyCashOnHand = 0;
+      (monthlyCashData || []).forEach((w) => {
+        monthlyCashOnHand += parseFloat(w.harga_rm) || 0;
+      });
+
       res.json({
         status: "success",
         bookings: allBookings,
         commissionPercent: commissionPercent,
+        monthlyCashOnHand: monthlyCashOnHand,
         reviews: [],
       });
     } catch (error) {

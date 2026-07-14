@@ -222,6 +222,7 @@ async function loadDashboardData() {
       staffData.bookings = Array.isArray(data) ? data : data.bookings || [];
       staffData.reviews = data.reviews || [];
       staffData.commissionPercent = data.commissionPercent || 50;
+      staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
       calculateDashboardStats();
       renderBookingList();
       renderHistoryList();
@@ -235,7 +236,7 @@ function calculateDashboardStats() {
   const currentYear = now.getFullYear();
   let monthlyCustomers = 0;
   let monthlySales = 0;
-  let cashOnHand = 0;
+  let cashOnHand = staffData.monthlyCashOnHand || 0;
 
   staffData.bookings.forEach((b) => {
     if (b.status === "Selesai") {
@@ -246,9 +247,6 @@ function calculateDashboardStats() {
       ) {
         monthlyCustomers++;
         monthlySales += parseFloat(b.price) || 0;
-      }
-      if (b.payment_method === "Cash" || b.payment_method === "Tunai") {
-        cashOnHand += parseFloat(b.price) || 0;
       }
     }
   });

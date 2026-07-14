@@ -208,6 +208,9 @@ router.post(
         { data: productOrders },
         { data: punchCards },
         { data: reviews },
+        { data: histBookings },
+        { data: histWalkins },
+        { data: histTreatments }
       ] = await Promise.all([
         supabase
           .from("booking_records")
@@ -229,10 +232,30 @@ router.post(
           .select("bintang, review_text, created_at")
           .order("created_at", { ascending: false })
           .limit(20),
+        // Untuk Laporan Jualan Bulanan (Historical Data)
+        supabase.from("booking_records").select("tarikh, harga_rm").eq("status", "Selesai").order("created_at", { ascending: false }).limit(500),
+        supabase.from("walkin_records").select("tarikh, harga_rm").order("created_at", { ascending: false }).limit(500),
+        supabase.from("treatment_records").select("tarikh, harga_rm").eq("status", "Selesai").order("created_at", { ascending: false }).limit(500),
       ]);
+
+      // 1.5 Kira Jualan Bulanan Secara Agregat (Tahun/Bulan)
+      let LaporanJualanBulanan = {};
+      const kumpulJualan = (rekod) => {
+        (rekod || []).forEach(r => {
+          if (r.tarikh) {
+            const bulan = r.tarikh.substring(0, 7); // Cth: "2023-06"
+            if (!LaporanJualanBulanan[bulan]) LaporanJualanBulanan[bulan] = 0;
+            LaporanJualanBulanan[bulan] += parseFloat(r.harga_rm) || 0;
+          }
+        });
+      };
+      kumpulJualan(histBookings);
+      kumpulJualan(histWalkins);
+      kumpulJualan(histTreatments);
 
       // 2. Formatkan data supaya mudah dibaca oleh AI (Kurangkan token)
       const businessContext = {
+        LaporanJualanBulanan: LaporanJualanBulanan, // AI kini tahu jualan bulan-bulan lepas!
         RingkasanTempahanTerkini: bookings,
         RingkasanJualanProduk: productOrders,
         RekodKehadiranStaf: punchCards,
