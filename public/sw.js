@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dinspire-pwa-v2';
+const CACHE_NAME = 'dinspire-pwa-v3';
 const urlsToCache = [
   './',
   './index.html',
@@ -9,10 +9,9 @@ const urlsToCache = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
+      .then(cache => cache.addAll(urlsToCache))
   );
+  self.skipWaiting(); // Force activate immediately
 });
 
 self.addEventListener('activate', event => {
@@ -23,6 +22,7 @@ self.addEventListener('activate', event => {
       );
     })
   );
+  self.clients.claim(); // Take control of all clients immediately
 });
 
 self.addEventListener('fetch', event => {
@@ -31,13 +31,17 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Network First Strategy (Utamakan Rangkaian, Jatuh balik ke Cache jika offline)
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
+    fetch(event.request)
+      .then(networkResponse => {
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+      })
+      .catch(() => {
+        return caches.match(event.request);
       })
   );
 });
