@@ -28,7 +28,7 @@ app.use("/api/", globalLimiter);
 // Nota Keselamatan: !origin membenarkan akses dari sumber bukan pelayar (seperti Postman/Mobile App).
 // Jika backend ini hanya untuk laman web, !origin harus dibuang untuk mengelakkan eksploitasi API secara terus.
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
+  ? process.env.ALLOWED_ORIGINS.split(",").map((url) => url.trim())
   : [];
 
 const corsOptions = {
