@@ -771,45 +771,16 @@ async function fetchShopData() {
         }, { passive: true });
       }
 
-      // Smooth custom scroll function (800ms duration for elegant feel)
-      function customSmoothScroll(element, target, duration) {
-        const start = element.scrollLeft;
-        const change = target - start;
-        const startTime = performance.now();
-        
-        element.style.scrollSnapType = 'none';
-
-        function easeInOutQuad(t, b, c, d) {
-          t /= d / 2;
-          if (t < 1) return (c / 2) * t * t + b;
-          t--;
-          return (-c / 2) * (t * (t - 2) - 1) + b;
-        }
-
-        function animateScroll(currentTime) {
-          const elapsed = currentTime - startTime;
-          element.scrollLeft = easeInOutQuad(elapsed, start, change, duration);
-          if (elapsed < duration) {
-            requestAnimationFrame(animateScroll);
-          } else {
-            element.scrollLeft = target;
-            element.style.scrollSnapType = '';
-          }
-        }
-        requestAnimationFrame(animateScroll);
-      }
-
       if (window.sliderInterval) clearInterval(window.sliderInterval);
       if (shopData.Posters.length > 1) {
         window.sliderInterval = setInterval(() => {
           if (!viewport) return;
           const maxScroll = viewport.scrollWidth - viewport.clientWidth;
-          const currentScroll = viewport.scrollLeft;
           
-          if (currentScroll >= maxScroll - 10) {
-            customSmoothScroll(viewport, 0, 800);
+          if (viewport.scrollLeft >= maxScroll - 10) {
+            viewport.scrollTo({ left: 0, behavior: 'smooth' });
           } else {
-            customSmoothScroll(viewport, currentScroll + viewport.clientWidth, 800);
+            viewport.scrollBy({ left: viewport.clientWidth, behavior: 'smooth' });
           }
         }, 4000);
       }
