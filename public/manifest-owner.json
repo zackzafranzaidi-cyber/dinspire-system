@@ -4,8 +4,8 @@
   "description": "Dinspire Executive Panel",
   "start_url": "/owner",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#111827",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "./icon_owner.png",
