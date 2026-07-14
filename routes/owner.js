@@ -233,9 +233,9 @@ router.post(
           .order("created_at", { ascending: false })
           .limit(20),
         // Untuk Laporan Jualan Bulanan (Historical Data)
-        supabase.from("booking_records").select("tarikh, harga_rm").eq("status", "Selesai").order("created_at", { ascending: false }).limit(500),
-        supabase.from("walkin_records").select("tarikh, harga_rm").order("created_at", { ascending: false }).limit(500),
-        supabase.from("treatment_records").select("tarikh, harga_rm").eq("status", "Selesai").order("created_at", { ascending: false }).limit(500),
+        supabase.from("booking_records").select("tarikh, harga_rm").eq("status", "Selesai").order("created_at", { ascending: false }).limit(2000),
+        supabase.from("walkin_records").select("tarikh, harga_rm").order("created_at", { ascending: false }).limit(2000),
+        supabase.from("treatment_records").select("tarikh, harga_rm").eq("status", "Selesai").order("created_at", { ascending: false }).limit(2000),
       ]);
 
       // 1.5 Kira Jualan Bulanan Secara Agregat (Tahun/Bulan)
