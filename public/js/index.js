@@ -743,28 +743,79 @@ async function fetchShopData() {
           .map((b) => `<option value="${b.id}">${b.name}</option>`).join("");
 
     const posterTrack = document.getElementById("dynamic-slider-track");
+    const paginationContainer = document.querySelector(".pagination");
     if (shopData.Posters && shopData.Posters.length > 0) {
       posterTrack.innerHTML = shopData.Posters.map(
         (p) =>
           `<div class="slide"><div class="poster-card"><img src="${p.imageUrl}" alt="Promosi"></div></div>`,
       ).join("");
       
+      // Update pagination dots
+      if (paginationContainer) {
+        paginationContainer.innerHTML = shopData.Posters.map((_, i) => 
+          `<div class="dot ${i === 0 ? 'active' : ''}"></div>`
+        ).join("");
+      }
+      
       const viewport = document.querySelector(".slider-viewport");
+      
+      // Sync dots on manual scroll
+      if (viewport && paginationContainer) {
+        viewport.addEventListener('scroll', () => {
+          const index = Math.round(viewport.scrollLeft / viewport.clientWidth);
+          const dots = paginationContainer.querySelectorAll('.dot');
+          dots.forEach((dot, i) => {
+            if (i === index) dot.classList.add('active');
+            else dot.classList.remove('active');
+          });
+        }, { passive: true });
+      }
+
+      // Smooth custom scroll function (800ms duration for elegant feel)
+      function customSmoothScroll(element, target, duration) {
+        const start = element.scrollLeft;
+        const change = target - start;
+        const startTime = performance.now();
+        
+        element.style.scrollSnapType = 'none';
+
+        function easeInOutQuad(t, b, c, d) {
+          t /= d / 2;
+          if (t < 1) return (c / 2) * t * t + b;
+          t--;
+          return (-c / 2) * (t * (t - 2) - 1) + b;
+        }
+
+        function animateScroll(currentTime) {
+          const elapsed = currentTime - startTime;
+          element.scrollLeft = easeInOutQuad(elapsed, start, change, duration);
+          if (elapsed < duration) {
+            requestAnimationFrame(animateScroll);
+          } else {
+            element.scrollLeft = target;
+            element.style.scrollSnapType = '';
+          }
+        }
+        requestAnimationFrame(animateScroll);
+      }
+
       if (window.sliderInterval) clearInterval(window.sliderInterval);
       if (shopData.Posters.length > 1) {
         window.sliderInterval = setInterval(() => {
           if (!viewport) return;
           const maxScroll = viewport.scrollWidth - viewport.clientWidth;
+          const currentScroll = viewport.scrollLeft;
           
-          if (viewport.scrollLeft >= maxScroll - 10) {
-            viewport.scrollTo({ left: 0, behavior: 'smooth' });
+          if (currentScroll >= maxScroll - 10) {
+            customSmoothScroll(viewport, 0, 800);
           } else {
-            viewport.scrollBy({ left: viewport.clientWidth, behavior: 'smooth' });
+            customSmoothScroll(viewport, currentScroll + viewport.clientWidth, 800);
           }
         }, 4000);
       }
     } else {
       posterTrack.innerHTML = `<div class="slide"><div class="poster-card"><div style="color:gray; font-size:12px; font-weight:bold;">Tiada Promosi Dijalankan</div></div></div>`;
+      if (paginationContainer) paginationContainer.innerHTML = '';
     }
 
     renderProducts();

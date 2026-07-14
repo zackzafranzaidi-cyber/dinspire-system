@@ -220,61 +220,12 @@ body {
   background-color: #d1d1d1;
   transition: all 0.3s ease;
 }
-.dot:nth-child(1) {
-  animation: dot1 12s infinite;
+.dot.active {
+  background-color: var(--primary-blue);
+  width: 16px;
+  border-radius: 4px;
 }
-.dot:nth-child(2) {
-  animation: dot2 12s infinite;
-}
-.dot:nth-child(3) {
-  animation: dot3 12s infinite;
-}
-@keyframes dot1 {
-  0%,
-  25%,
-  100% {
-    background-color: var(--primary-blue);
-    width: 16px;
-    border-radius: 4px;
-  }
-  33%,
-  91% {
-    background-color: #d1d1d1;
-    width: 8px;
-    border-radius: 50%;
-  }
-}
-@keyframes dot2 {
-  0%,
-  25%,
-  66%,
-  100% {
-    background-color: #d1d1d1;
-    width: 8px;
-    border-radius: 50%;
-  }
-  33%,
-  58% {
-    background-color: var(--primary-blue);
-    width: 16px;
-    border-radius: 4px;
-  }
-}
-@keyframes dot3 {
-  0%,
-  58%,
-  100% {
-    background-color: #d1d1d1;
-    width: 8px;
-    border-radius: 50%;
-  }
-  66%,
-  91% {
-    background-color: var(--primary-blue);
-    width: 16px;
-    border-radius: 4px;
-  }
-}
+
 
 .reviews-container {
   overflow: hidden;
