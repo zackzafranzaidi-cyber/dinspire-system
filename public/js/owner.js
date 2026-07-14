@@ -5,23 +5,7 @@ const API_BASE_URL = IS_LOCALHOST
   ? "http://localhost:3000/api"
   : "https://dinspire-system.onrender.com/api";
 
-const manifest = {
-  name: "Executive Panel",
-  short_name: "Executive",
-  display: "standalone",
-  theme_color: "#111827",
-  background_color: "#111827",
-  icons: [
-    {
-      src: window.location.origin + "/icon.png",
-      sizes: "192x192",
-      type: "image/png",
-    },
-  ],
-};
-document.getElementById("manifest-link").href = URL.createObjectURL(
-  new Blob([JSON.stringify(manifest)], { type: "application/json" }),
-);
+
 if (
   !window.matchMedia("(display-mode: standalone)").matches &&
   !navigator.standalone
