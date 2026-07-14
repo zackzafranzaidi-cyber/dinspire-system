@@ -704,13 +704,13 @@ async function fetchShopData() {
               <div class="form-group"><label>Cawangan</label><select class="input-field" name="branch" onchange="updBarber(this,'${prefix}${i}')" required>${bOpts}</select></div>
               <div class="form-group"><label>Barber</label><select class="input-field" name="barber" id="barber-${prefix}${i}" required><option value="" disabled selected>Sila Pilih</option></select></div>
               
-              <div class="form-group" style="margin-top:10px;">
+              <div class="form-group" style="margin-top:6px;">
                 <button type="button" class="btn-pilih-jadual" id="btn-jadual-${prefix}${i}" onclick="openScheduleModal('${prefix}${i}')">${i18n_index[currentLang]["services-btn-schedule"]}</button>
                 <input type="hidden" id="input-date-${prefix}${i}" name="date" required>
                 <input type="hidden" id="input-time-${prefix}${i}" name="time" required>
               </div>
               
-              <button type="submit" class="submit-btn" style="margin-top:15px;">Teruskan Pembayaran</button>
+              <button type="submit" class="submit-btn" style="margin-top:4px;">${i18n_index[currentLang]["services-btn-pay"]}</button>
             </form>
           </div>
         </div>
