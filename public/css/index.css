@@ -805,15 +805,14 @@ select.input-field {
 .nav-item {
   background: none;
   border: none;
-  height: 100%;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  position: relative;
-  width: 20%;
-  color: var(--text-price);
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex: 1;
+  padding: 8px 0;
 }
 .icon-wrapper {
   position: relative;
