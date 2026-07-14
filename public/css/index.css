@@ -793,14 +793,14 @@ select.input-field {
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(65px + env(safe-area-inset-bottom)) !important;
+  height: calc(110px + env(safe-area-inset-bottom)) !important;
   background-color: var(--bg-surface);
   border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 200;
-  padding-bottom: env(safe-area-inset-bottom) !important;
+  padding-bottom: calc(35px + env(safe-area-inset-bottom)) !important;
 }
 .nav-item {
   background: none;
