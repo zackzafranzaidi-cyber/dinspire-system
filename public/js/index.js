@@ -341,6 +341,7 @@ function handleLogin(e) {
   e.preventDefault();
   const phone = document.getElementById("log-phone").value.trim();
   const password = document.getElementById("log-password").value.trim();
+  const remember = document.getElementById("login-remember").checked;
   
   if (!password) return alert("Sila masukkan kata laluan!");
   
@@ -351,12 +352,16 @@ function handleLogin(e) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ phone, password }),
+    body: JSON.stringify({ phone, password, remember }),
   })
     .then((res) => res.json())
     .then((data) => {
       if (data.status === "success") {
-        localStorage.setItem("din_logged_user", JSON.stringify(data.user));
+        if (remember) {
+          localStorage.setItem("din_logged_user", JSON.stringify(data.user));
+        } else {
+          sessionStorage.setItem("din_logged_user", JSON.stringify(data.user));
+        }
         showToast(i18n_index[currentLang]["alert-login-success"]);
         checkLoginState();
         switchView("home");
@@ -463,6 +468,7 @@ function handleLogout(askConfirm = true) {
       credentials: "include",
     }).then(() => {
       localStorage.removeItem("din_logged_user");
+      sessionStorage.removeItem("din_logged_user");
       checkLoginState();
       if (askConfirm) showToast("Telah log keluar.");
     });
@@ -470,7 +476,7 @@ function handleLogout(askConfirm = true) {
 }
 
 function checkLoginState() {
-  let session = localStorage.getItem("din_logged_user");
+  let session = localStorage.getItem("din_logged_user") || sessionStorage.getItem("din_logged_user");
   if (session) {
     currentUser = JSON.parse(session);
     document.getElementById("account-logged-out").style.display = "none";

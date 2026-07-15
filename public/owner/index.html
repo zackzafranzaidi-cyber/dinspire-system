@@ -78,7 +78,10 @@
           placeholder="Nama Pengguna (Username)"
         />
         <input type="password" id="sys-password" placeholder="Kata Laluan" />
-
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #a1a1aa; margin-bottom: 15px; cursor: pointer; justify-content: center;">
+          <input type="checkbox" id="login-remember" checked style="accent-color: #a855f7;" />
+          Remember me
+        </label>
         <button onclick="loginSystem(['owner'])">Log Masuk</button>
       </div>
     </div>
@@ -1040,6 +1043,16 @@
           class="text-[9px] font-bold tracking-wider"
           data-i18n="mob-nav-ai"
           >AI</span
+        ></a
+      >
+      <a
+        href="#"
+        onclick="logoutOwner()"
+        class="nav-item flex flex-col items-center justify-center w-full h-full text-rose-500 hover:text-rose-400 transition"
+        ><i class="fas fa-sign-out-alt text-lg mb-1"></i
+        ><span
+          class="text-[9px] font-bold tracking-wider"
+          >Keluar</span
         ></a
       >
     </nav>

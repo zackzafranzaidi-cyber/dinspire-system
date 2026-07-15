@@ -132,7 +132,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
 });
 
 router.post("/login", verifyLimiter, async (req, res) => {
-  const { phone, password } = req.body;
+  const { phone, password, remember } = req.body;
   if (!password) {
     return res.status(400).json({ status: "error", message: "Sila masukkan kata laluan." });
   }
@@ -162,12 +162,17 @@ router.post("/login", verifyLimiter, async (req, res) => {
     { expiresIn: "30d" },
   );
 
-  res.cookie("din_token_client", token, {
+  const cookieOptions = {
     httpOnly: true,
     secure: true,
     sameSite: "None",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-  });
+  };
+  
+  if (remember) {
+    cookieOptions.maxAge = 30 * 24 * 60 * 60 * 1000;
+  }
+
+  res.cookie("din_token_client", token, cookieOptions);
 
   res.json({ status: "success", user });
 });
@@ -218,7 +223,7 @@ router.post("/forgot-password/reset", verifyLimiter, async (req, res) => {
 
 router.post("/system-login", verifyLimiter, async (req, res) => {
   // KITA ABAIKAN JAWATAN YANG DIHANTAR DARI KLIEN (Elak Role Spoofing)
-  const { username, password, allowed_roles } = req.body;
+  const { username, password, allowed_roles, remember } = req.body;
 
   if (!username || !password) {
     return res
@@ -310,16 +315,21 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     }
 
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET_SYS, {
-      expiresIn: "12h",
+      expiresIn: remember ? "30d" : "12h",
     });
     delete user.password_hash;
 
-    res.cookie("din_token_sys", token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: true,
       sameSite: "None",
-      maxAge: 12 * 60 * 60 * 1000,
-    });
+    };
+    
+    if (remember) {
+      cookieOptions.maxAge = 30 * 24 * 60 * 60 * 1000;
+    }
+
+    res.cookie("din_token_sys", token, cookieOptions);
 
     res.json({ status: "success", user: { ...user, role: roleFound } });
   } catch (error) {

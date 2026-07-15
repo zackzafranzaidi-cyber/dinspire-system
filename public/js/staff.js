@@ -25,7 +25,7 @@ function escapeHTML(str) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  let savedUser = localStorage.getItem("din_staff_info");
+  let savedUser = localStorage.getItem("din_staff_info") || sessionStorage.getItem("din_staff_info");
   if (savedUser) {
     loggedInStaff = JSON.parse(savedUser);
     fetchServicesForWalkin();
@@ -70,6 +70,7 @@ function initStaffEventListeners() {
 async function loginStaffSystem() {
   const username = document.getElementById("sys-username").value.trim();
   const password = document.getElementById("sys-password").value.trim();
+  const remember = document.getElementById("login-remember").checked;
   const btn = document.getElementById("login-btn");
 
   if (!username || !password) {
@@ -83,16 +84,16 @@ async function loginStaffSystem() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({
-        username,
-        password,
-        allowed_roles: ["staff", "owner"],
-      }),
+      body: JSON.stringify({ username, password, allowed_roles: ["staff"], remember }),
     });
     const data = await res.json();
 
     if (data.status === "success") {
-      localStorage.setItem("din_staff_info", JSON.stringify(data.user));
+      if (remember) {
+        localStorage.setItem("din_staff_info", JSON.stringify(data.user));
+      } else {
+        sessionStorage.setItem("din_staff_info", JSON.stringify(data.user));
+      }
       loggedInStaff = data.user;
       showToast(`Selamat bertugas!`);
       fetchServicesForWalkin();
@@ -113,6 +114,7 @@ function logoutStaff() {
       .catch((e) => console.error(e))
       .finally(() => {
         localStorage.removeItem("din_staff_info");
+        sessionStorage.removeItem("din_staff_info");
         loggedInStaff = null;
         location.reload();
       });

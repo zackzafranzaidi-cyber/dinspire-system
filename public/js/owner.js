@@ -177,7 +177,7 @@ function escapeHTML(str) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  let isLogged = localStorage.getItem("din_owner_logged");
+  let isLogged = localStorage.getItem("din_owner_logged") || sessionStorage.getItem("din_owner_logged");
   if (isLogged) {
     document.getElementById("login-overlay").style.display = "none";
     try {
@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loginSystem(allowedRoles) {
   const username = document.getElementById("sys-username").value.trim();
   const password = document.getElementById("sys-password").value.trim();
+  const remember = document.getElementById("login-remember").checked;
   const btn = document.querySelector(".login-box button");
 
   if (!username || !password) {
@@ -203,12 +204,16 @@ async function loginSystem(allowedRoles) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ username, password, allowed_roles: allowedRoles }),
+      body: JSON.stringify({ username, password, allowed_roles: allowedRoles, remember }),
     });
     const data = await res.json();
 
     if (data.status === "success") {
-      localStorage.setItem("din_owner_logged", "true");
+      if (remember) {
+        localStorage.setItem("din_owner_logged", "true");
+      } else {
+        sessionStorage.setItem("din_owner_logged", "true");
+      }
       document.getElementById("login-overlay").style.display = "none";
       try {
         initChart();
@@ -229,6 +234,7 @@ function logoutOwner() {
     .catch((e) => console.error(e))
     .finally(() => {
       localStorage.removeItem("din_owner_logged");
+      sessionStorage.removeItem("din_owner_logged");
       location.reload();
     });
 }
