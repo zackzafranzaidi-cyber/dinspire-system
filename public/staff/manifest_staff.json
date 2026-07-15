@@ -11,12 +11,12 @@
   "icons": [
     {
       "src": "../icon_staf.png",
-      "sizes": "192x192",
+      "sizes": "any",
       "type": "image/png"
     },
     {
       "src": "../icon_staf.png",
-      "sizes": "512x512",
+      "sizes": "1080x1080",
       "type": "image/png"
     }
   ]
