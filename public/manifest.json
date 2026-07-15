@@ -2,6 +2,7 @@
   "name": "Dinspire Barbershop",
   "short_name": "Dinspire",
   "description": "Aplikasi Sistem Pengurusan Kedai Gunting Rambut",
+  "id": "/customer",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

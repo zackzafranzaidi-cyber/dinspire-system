@@ -2,6 +2,7 @@
   "name": "Dinspire Staff",
   "short_name": "DinStaff",
   "description": "Sistem Staf Kedai Gunting Rambut",
+  "id": "/staff",
   "start_url": "/staff.html",
   "display": "standalone",
   "background_color": "#ffffff",

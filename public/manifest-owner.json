@@ -2,6 +2,7 @@
   "name": "Dinspire Owner",
   "short_name": "DinOwner",
   "description": "Sistem Pemilik Kedai Gunting Rambut",
+  "id": "/owner",
   "start_url": "/owner.html",
   "display": "standalone",
   "background_color": "#ffffff",
