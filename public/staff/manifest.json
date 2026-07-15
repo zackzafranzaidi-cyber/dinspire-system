@@ -2,7 +2,7 @@
   "name": "Dinspire Staff",
   "short_name": "DinStaff",
   "description": "Sistem Staf Kedai Gunting Rambut",
-  "id": "/staff-app",
+  "id": "/staff-app-v2",
   "scope": "/staff/",
   "start_url": "/staff/?mode=pwa",
   "display": "standalone",
