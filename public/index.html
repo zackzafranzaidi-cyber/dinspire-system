@@ -1,6 +1,28 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      // ==========================================
+      // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
+      // ==========================================
+      const CURRENT_APP_VERSION = "1.0.1";
+      const storedVersion = localStorage.getItem("din_app_version");
+      
+      if (storedVersion !== CURRENT_APP_VERSION) {
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            for (let name of names) caches.delete(name);
+          });
+        }
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let registration of registrations) registration.unregister();
+          });
+        }
+        localStorage.setItem("din_app_version", CURRENT_APP_VERSION);
+        window.location.reload(true);
+      }
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>DINSPIRE</title>
