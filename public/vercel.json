@@ -1,0 +1,26 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "staff.dinspirebarbershop.com"
+        }
+      ],
+      "destination": "/staff/$1"
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "owner.dinspirebarbershop.com"
+        }
+      ],
+      "destination": "/owner/$1"
+    }
+  ]
+}
