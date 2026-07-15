@@ -6,6 +6,18 @@
     <title>DINSPIRE</title>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <script>
+      if (window.location.hostname === 'owner.dinspirebarbershop.com' && window.location.pathname === '/') {
+        window.location.replace('/owner/');
+      }
+      if (window.location.hostname === 'staff.dinspirebarbershop.com' && window.location.pathname === '/') {
+        window.location.replace('/staff/');
+      }
+    </script>
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="DIN Barber" />
     <link rel="apple-touch-icon" href="./icon.png" />
