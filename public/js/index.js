@@ -621,15 +621,9 @@ function renderScheduleDate() {
     let isPastOrToday = cellDate <= today;
     let isSelected = cellDate.getTime() === scheduleSelectedDate.getTime();
 
-    const fullDateSim = new Date();
-    fullDateSim.setDate(fullDateSim.getDate() + 2);
-    let fullStr = `${fullDateSim.getFullYear()}-${String(fullDateSim.getMonth() + 1).padStart(2, "0")}-${String(fullDateSim.getDate()).padStart(2, "0")}`;
-    let isFull = dateString === fullStr && !isPastOrToday;
-
     let classes = ["cal-date-dark"];
     if (isPastOrToday) classes.push("disabled");
-    else if (isFull) classes.push("full");
-    if (isSelected && !isPastOrToday && !isFull) classes.push("selected");
+    if (isSelected && !isPastOrToday) classes.push("selected");
 
     html += `<div class="${classes.join(" ")}" onclick="selectScheduleDate('${dateString}'); event.stopPropagation();">${d}</div>`;
   }
@@ -649,14 +643,7 @@ function renderScheduleTime() {
     "23:00",
   ];
 
-  const partialDateSim = new Date();
-  partialDateSim.setDate(partialDateSim.getDate() + 3);
-  let partialStr = `${partialDateSim.getFullYear()}-${String(partialDateSim.getMonth() + 1).padStart(2, "0")}-${String(partialDateSim.getDate()).padStart(2, "0")}`;
-  let dateStrSel = `${scheduleSelectedDate.getFullYear()}-${String(scheduleSelectedDate.getMonth() + 1).padStart(2, "0")}-${String(scheduleSelectedDate.getDate()).padStart(2, "0")}`;
-
   let bookedTimes = [];
-  if (dateStrSel === partialStr) bookedTimes = ["11:00", "15:00", "19:00"];
-
   let html = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 style="font-size:16px; font-weight:700; color:#111827;">Pilih Masa</h3>
