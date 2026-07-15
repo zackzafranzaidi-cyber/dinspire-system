@@ -3,7 +3,7 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/(?!staff/)(.*)",
       "has": [
         {
           "type": "host",
@@ -13,7 +13,7 @@
       "destination": "/staff/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/(?!owner/)(.*)",
       "has": [
         {
           "type": "host",
