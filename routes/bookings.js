@@ -318,6 +318,7 @@ router.post(
   async (req, res) => {
     const {
       customer_name,
+      no_phone,
       service_id,
       booking_date,
       booking_time,
@@ -337,7 +338,7 @@ router.post(
       const { error } = await supabase.from("walkin_records").insert([
         {
           nama_pelanggan: customer_name,
-          no_phone: "-",
+          no_phone: no_phone || "-",
           tarikh: booking_date,
           masa: booking_time,
           jenis_potongan: service_id,

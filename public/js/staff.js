@@ -179,6 +179,7 @@ async function loadBranchOptions() {
     const res = await fetch(`${API_BASE_URL}/shop-data`);
     const data = await res.json();
     const select = document.getElementById("punch-branch");
+    if (!select) return; // Fix for page without punch-branch dropdown
     if (data.Branches) {
       select.innerHTML =
         '<option value="" disabled selected>Pilih Cawangan</option>' +
@@ -371,6 +372,7 @@ function cancelBooking(orderNo) {
 
 function submitWalkIn() {
   const name = document.getElementById("wi-name").value.trim();
+  const phone = document.getElementById("wi-phone") ? document.getElementById("wi-phone").value.trim() : "";
   const service_id = document.getElementById("wi-service").value;
   const payment = document.getElementById("wi-payment").value;
   const price = document.getElementById("wi-price").value;
@@ -395,6 +397,7 @@ function submitWalkIn() {
     const now = new Date();
     const payload = {
       customer_name: name,
+      no_phone: phone,
       service_id: service_id,
       booking_date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
       booking_time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
@@ -414,6 +417,7 @@ function submitWalkIn() {
         if (data.status === "success") {
           showToast("Rekod Walk-In Berjaya Disimpan!");
           document.getElementById("wi-name").value = "";
+          if(document.getElementById("wi-phone")) document.getElementById("wi-phone").value = "";
           document.getElementById("wi-service").value = "";
           document.getElementById("wi-price").value = "";
           document.getElementById("wi-receipt").value = "";
