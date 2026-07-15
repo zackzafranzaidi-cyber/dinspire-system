@@ -1579,13 +1579,27 @@ function readFileAsBase64(file) {
   });
 }
 
+// Helper to copy account number
+window.copyAccNum = function(acc) {
+  navigator.clipboard.writeText(acc).then(() => {
+    showToast("Nombor akaun disalin!"); // Using existing showToast instead of alert
+  }).catch(err => {
+    alert("Gagal menyalin nombor akaun.");
+  });
+};
+
 // Fetch bank info
 fetch('bank-info.json')
   .then(res => res.json())
   .then(data => {
     const container = document.getElementById('bank-info-container');
     if (container && data) {
-      container.innerHTML = `<div>${data.ownerName}</div><div style="font-size: 16px; margin-top: 4px; letter-spacing: 1px;">${data.accountNumber}</div>`;
+      container.innerHTML = `
+        <div>${data.ownerName}</div>
+        <div onclick="copyAccNum('${data.accountNumber}')" style="font-size: 16px; margin-top: 4px; letter-spacing: 1px; cursor: pointer; color: var(--primary-blue); display: inline-flex; align-items: center; gap: 8px;" title="Klik untuk Salin">
+          ${data.accountNumber} <i class="far fa-copy" style="font-size: 14px;"></i>
+        </div>
+      `;
     }
   })
   .catch(e => console.error('Error fetching bank info:', e));
