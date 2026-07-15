@@ -2,6 +2,15 @@ const IS_LOCALHOST = window.location.hostname === "localhost" || window.location
 const API_BASE_URL = IS_LOCALHOST ? "http://localhost:3000/api" : "https://api.dinspirebarbershop.com/api";
 const VAPID_PUBLIC_KEY = "BDwYmNxy-sQG489E0z2c0-gM9i22V-7X0q4Vq-j4_9Nq8Q0O2-l5P9T4n9X0-4_4Q";
 
+if (
+  !window.matchMedia("(display-mode: standalone)").matches &&
+  !navigator.standalone
+)
+  setTimeout(() => {
+    const prompt = document.getElementById("pwa-prompt");
+    if (prompt) prompt.style.display = "block";
+  }, 4000);
+
 let currentLang = localStorage.getItem("user_lang") || "en";
 
 function updateLanguage(lang) {
