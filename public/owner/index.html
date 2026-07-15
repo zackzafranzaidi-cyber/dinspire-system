@@ -12,6 +12,16 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="DIN Owner" />
+    <script>
+      const host = window.location.hostname;
+      if (host !== 'owner.dinspirebarbershop.com' && host !== 'localhost' && !host.includes('127.0.0.1') && !host.includes('vercel.app')) {
+        window.location.replace('https://owner.dinspirebarbershop.com');
+      } else {
+        if (window.location.pathname.includes('/owner')) {
+          window.history.replaceState(null, '', '/');
+        }
+      }
+    </script>
     <link rel="apple-touch-icon" href="/owner/icon_owner.png" />
     <link rel="icon" type="image/png" href="/owner/icon_owner.png" />
 

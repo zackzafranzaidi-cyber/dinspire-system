@@ -7,9 +7,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script>
+      const host = window.location.hostname;
+      if (host !== 'staff.dinspirebarbershop.com' && host !== 'localhost' && !host.includes('127.0.0.1') && !host.includes('vercel.app')) {
+        window.location.replace('https://staff.dinspirebarbershop.com');
+      } else {
+        if (window.location.pathname.includes('/staff')) {
+          window.history.replaceState(null, '', '/');
+        }
+      }
+    </script>
     <link rel="apple-touch-icon" href="/staff/icon_staf.png" />
     <link rel="icon" type="image/png" href="/staff/icon_staf.png" />
 
