@@ -13,22 +13,33 @@
     <script>
       if (window.location.hostname === 'owner.dinspirebarbershop.com' && window.location.pathname === '/') {
         window.location.replace('/owner/');
-      }
-      if (window.location.hostname === 'staff.dinspirebarbershop.com' && window.location.pathname === '/') {
+      } else if (window.location.hostname === 'staff.dinspirebarbershop.com' && window.location.pathname === '/') {
         window.location.replace('/staff/');
+      } else {
+        const icon1 = document.createElement('link');
+        icon1.rel = 'apple-touch-icon';
+        icon1.href = './icon.png';
+        document.head.appendChild(icon1);
+        
+        const icon2 = document.createElement('link');
+        icon2.rel = 'icon';
+        icon2.type = 'image/png';
+        icon2.href = './icon.png';
+        document.head.appendChild(icon2);
+        
+        const manifest = document.createElement('link');
+        manifest.rel = 'manifest';
+        manifest.href = './manifest.json?v=6';
+        document.head.appendChild(manifest);
       }
     </script>
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="DIN Barber" />
-    <link rel="apple-touch-icon" href="./icon.png" />
-    <link rel="icon" type="image/png" href="./icon.png" />
     <link
       href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/index.css?v=23" />
-    
-      <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#ffffff">
 </head>
 
