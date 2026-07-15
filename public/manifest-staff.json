@@ -1,19 +1,19 @@
 {
   "name": "Dinspire Staff",
-  "short_name": "Staff",
-  "description": "Dinspire Staff Portal",
-  "start_url": "/staff",
+  "short_name": "DinStaff",
+  "description": "Sistem Staf Kedai Gunting Rambut",
+  "start_url": "/staff.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "./icon_staf.png",
+      "src": "./icon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./icon_staf.png",
+      "src": "./icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
