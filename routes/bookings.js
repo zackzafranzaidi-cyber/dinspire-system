@@ -149,15 +149,26 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
         });
     }
 
-    // FPX Payment Generation
-    const total_amount = harga_rm + serviceFee;
-    const protocol = req.protocol === 'http' ? 'https' : req.protocol; // enforce https for production callback
-    const host = req.get('host');
-    const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
-    const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
-    
+    const payment_method = req.body.payment_method || "fpx";
+    const receipt_url = req.body.receipt_url || null;
+
     let fpxResult;
-    try {
+    let finalReceiptUrl = "";
+    
+    if (payment_method === "qr") {
+      if (!receipt_url) {
+        return res.status(400).json({ status: "error", message: "Resit pembayaran QR diperlukan." });
+      }
+      finalReceiptUrl = await uploadReceiptToStorage(receipt_url, order_no);
+    } else {
+      // FPX Payment Generation
+      const total_amount = harga_rm + serviceFee;
+      const protocol = req.protocol === 'http' ? 'https' : req.protocol; // enforce https for production callback
+      const host = req.get('host');
+      const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
+      const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
+      
+      try {
       fpxResult = await fpx.createPayment(
         total_amount,
         order_no,
@@ -173,6 +184,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
          message: err.message || "Gagal berhubung dengan gateway FPX"
       });
     }
+    }
 
     const basePayload = {
       no_booking: order_no,
@@ -183,7 +195,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       staff_id: staff_id,
       harga_rm: harga_rm,
       service_fee: serviceFee,
-      resit: `FPX_PENDING:${fpxResult.transaction_id}`,
+      resit: payment_method === "qr" ? finalReceiptUrl : `FPX_PENDING:${fpxResult.transaction_id}`,
       status: "Belum",
     };
 
@@ -223,12 +235,20 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       console.error("Gagal menetapkan jadual peringatan SMS:", e);
     }
 
-    res.json({ 
-      status: "success", 
-      message: "Pembayaran sedang diproses", 
-      order_no,
-      payment_url: fpxResult.payment_url 
-    });
+    if (payment_method === "qr") {
+      res.json({ 
+        status: "success", 
+        message: "Tempahan berjaya", 
+        order_no,
+      });
+    } else {
+      res.json({ 
+        status: "success", 
+        message: "Pembayaran sedang diproses", 
+        order_no,
+        payment_url: fpxResult.payment_url 
+      });
+    }
   } catch (error) {
     if (error.code === '23505') {
       return res.status(409).json({ status: "error", message: "Maaf, slot ini baru sahaja ditempah oleh pelanggan lain pada saat yang sama (Tindanan berlaku)." });
@@ -375,15 +395,26 @@ router.post(
 
       const order_no = "DBC" + Math.floor(1000 + Math.random() * 9000);
       
-      // FPX Payment Generation
-      const total_amount = harga_rm + serviceFee;
-      const protocol = req.protocol === 'http' ? 'https' : req.protocol;
-      const host = req.get('host');
-      const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
-      const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
-      
+      const payment_method = req.body.payment_method || "fpx";
+      const receipt_url = req.body.receipt_url || null;
+
       let fpxResult;
-      try {
+      let finalReceiptUrl = "";
+      
+      if (payment_method === "qr") {
+        if (!receipt_url) {
+          return res.status(400).json({ status: "error", message: "Resit pembayaran QR diperlukan." });
+        }
+        finalReceiptUrl = await uploadReceiptToStorage(receipt_url, order_no);
+      } else {
+        // FPX Payment Generation
+        const total_amount = harga_rm + serviceFee;
+        const protocol = req.protocol === 'http' ? 'https' : req.protocol;
+        const host = req.get('host');
+        const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
+        const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
+        
+        try {
         fpxResult = await fpx.createPayment(
           total_amount,
           order_no,
@@ -399,6 +430,7 @@ router.post(
            message: err.message || "Gagal berhubung dengan gateway FPX"
         });
       }
+      }
 
       const { error } = await supabase.from("oncall_records").insert([
         {
@@ -411,7 +443,7 @@ router.post(
           staff_id: barber,
           harga_rm: harga_rm,
           service_fee: serviceFee,
-          resit: `FPX_PENDING:${fpxResult.transaction_id}`,
+          resit: payment_method === "qr" ? finalReceiptUrl : `FPX_PENDING:${fpxResult.transaction_id}`,
           status: "Belum",
         },
       ]);
@@ -437,12 +469,20 @@ router.post(
       } catch (e) {
         console.error("Gagal menetapkan jadual peringatan SMS On-Call:", e);
       }
-      res.json({
-        status: "success",
-        message: "Pembayaran On-Call sedang diproses",
-        order_no,
-        payment_url: fpxResult.payment_url
-      });
+      if (payment_method === "qr") {
+        res.json({
+          status: "success",
+          message: "Tempahan On-Call berjaya",
+          order_no,
+        });
+      } else {
+        res.json({
+          status: "success",
+          message: "Pembayaran On-Call sedang diproses",
+          order_no,
+          payment_url: fpxResult.payment_url
+        });
+      }
     } catch (error) {
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
     }
@@ -517,15 +557,26 @@ router.post(
       const order_uuid = crypto.randomUUID();
       const receipt_name = "PRD" + Math.floor(100000 + Math.random() * 900000);
       
-      // FPX Payment Generation
-      const total_amount = totalProductsPrice + shippingFee;
-      const protocol = req.protocol === 'http' ? 'https' : req.protocol;
-      const host = req.get('host');
-      const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
-      const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
-      
+      const payment_method = req.body.payment_method || "fpx";
+      const receipt_url = req.body.receipt_url || null;
+
       let fpxResult;
-      try {
+      let finalReceiptUrl = "";
+      
+      if (payment_method === "qr") {
+        if (!receipt_url) {
+          return res.status(400).json({ status: "error", message: "Resit pembayaran QR diperlukan." });
+        }
+        finalReceiptUrl = await uploadReceiptToStorage(receipt_url, receipt_name);
+      } else {
+        // FPX Payment Generation
+        const total_amount = totalProductsPrice + shippingFee;
+        const protocol = req.protocol === 'http' ? 'https' : req.protocol;
+        const host = req.get('host');
+        const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
+        const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
+        
+        try {
         fpxResult = await fpx.createPayment(
           total_amount,
           receipt_name,
@@ -541,6 +592,7 @@ router.post(
            message: err.message || "Gagal berhubung dengan gateway FPX"
         });
       }
+      }
 
       const { error } = await supabase.from("product_orders").insert([
         {
@@ -548,7 +600,7 @@ router.post(
           nama_pembeli: cust.name,
           senarai_produk: JSON.stringify(trustedCartItems), // Simpan data yang telah disucikan
           lokasi_penghantaran: address,
-          resit: `FPX_PENDING:${fpxResult.transaction_id}`,
+          resit: payment_method === "qr" ? finalReceiptUrl : `FPX_PENDING:${fpxResult.transaction_id}`,
           shipping_fee: shippingFee,
           status: "Preparing",
         },
@@ -560,11 +612,18 @@ router.post(
       console.log(`[SIMULASI SMS - ORDER PRODUK BERJAYA] Hantar ke: ${cust.name}`);
       console.log(`Mesej: Terima kasih! Pesanan produk anda sedang disediakan. Kami akan maklumkan nombor tracking kelak.`);
       console.log(`========================================\n`);
-      res.json({
-        status: "success",
-        message: "Pembayaran produk sedang diproses",
-        payment_url: fpxResult.payment_url
-      });
+      if (payment_method === "qr") {
+        res.json({
+          status: "success",
+          message: "Pesanan produk berjaya dihantar!",
+        });
+      } else {
+        res.json({
+          status: "success",
+          message: "Pembayaran produk sedang diproses",
+          payment_url: fpxResult.payment_url
+        });
+      }
     } catch (error) {
       console.error(error);
       res

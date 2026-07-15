@@ -1149,7 +1149,7 @@ function closeSuccessScreen() {
   }, 500);
 }
 
-function confirmUnifiedPayment() {
+async function confirmUnifiedPayment() {
   const addrText = document.getElementById("checkout-address-text").innerText;
 
   if (
@@ -1159,85 +1159,83 @@ function confirmUnifiedPayment() {
   )
     return alert("Sila kemas kini alamat penghantaran anda.");
 
+  const paymentMethod = document.getElementById("radio-fpx").checked ? "fpx" : "qr";
+  let receiptBase64 = null;
+
+  if (paymentMethod === "qr") {
+    const fileInput = document.getElementById("checkout-receipt-upload");
+    if (!fileInput.files || fileInput.files.length === 0) {
+      return alert("Sila muat naik resit transaksi anda untuk bayaran QR.");
+    }
+    try {
+      receiptBase64 = await readFileAsBase64(fileInput.files[0]);
+    } catch (e) {
+      return alert("Gagal membaca fail resit. Sila cuba lagi.");
+    }
+  }
+
   const btn = document.getElementById("btn-confirm-unified");
   btn.classList.add("btn-loading");
 
+  let payload = {};
+  let endpoint = "";
+
   if (currentCheckoutData.type === "product") {
-    const payload = {
+    payload = {
       cart_items: cartState,
       address: addrText,
       total_price: currentCheckoutData.total,
+      payment_method: paymentMethod,
+      receipt_url: receiptBase64,
     };
-    fetchWithAuth(`${API_BASE_URL}/bookings/products`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    })
-      .then((res) => (res ? res.json() : null))
-      .then((data) => {
-        if (data && data.status === "success" && data.payment_url) {
-          window.location.href = data.payment_url;
-        } else {
-          alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
-          btn.classList.remove("btn-loading");
-        }
-      })
-      .catch((e) => {
-        alert("Ralat Server.");
-        btn.classList.remove("btn-loading");
-      });
+    endpoint = "/bookings/products";
   } else if (currentCheckoutData.type === "oncall") {
-    const payload = {
+    payload = {
       address: addrText,
       date: pendingBooking.date,
       time: pendingBooking.time,
       service_id: pendingBooking.service_id,
       barber: pendingBooking.barber,
+      payment_method: paymentMethod,
+      receipt_url: receiptBase64,
     };
-    fetchWithAuth(`${API_BASE_URL}/bookings/oncall`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    })
-      .then((res) => (res ? res.json() : null))
-      .then((data) => {
-        if (data && data.status === "success" && data.payment_url) {
-          window.location.href = data.payment_url;
-        } else {
-          alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
-          btn.classList.remove("btn-loading");
-        }
-      })
-      .catch((e) => {
-        alert("Ralat Server.");
-        btn.classList.remove("btn-loading");
-      });
+    endpoint = "/bookings/oncall";
   } else {
     // Normal Booking
-    const newBook = {
+    payload = {
       booking_type: pendingBooking.type,
       service_id: pendingBooking.service_id,
       staff_id: pendingBooking.barber,
       branch_id: pendingBooking.branch_id,
       booking_date: pendingBooking.date,
       booking_time: pendingBooking.time,
+      payment_method: paymentMethod,
+      receipt_url: receiptBase64,
     };
-    fetchWithAuth(`${API_BASE_URL}/bookings`, {
-      method: "POST",
-      body: JSON.stringify(newBook),
-    })
-      .then((res) => (res ? res.json() : null))
-      .then((data) => {
-        if (data && data.status === "success" && data.payment_url) {
+    endpoint = "/bookings";
+  }
+
+  fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+    .then((res) => (res ? res.json() : null))
+    .then((data) => {
+      if (data && data.status === "success") {
+        if (paymentMethod === "fpx" && data.payment_url) {
           window.location.href = data.payment_url;
         } else {
-          alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
-          btn.classList.remove("btn-loading");
+          showSuccessScreen();
         }
-      })
-      .catch((e) => {
-        alert("Ralat Server.");
+      } else {
+        alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
         btn.classList.remove("btn-loading");
-      });
-  }
+      }
+    })
+    .catch((e) => {
+      alert("Ralat Server.");
+      btn.classList.remove("btn-loading");
+    });
 }
 
 function changeTempQty(id, delta) {
@@ -1547,4 +1545,36 @@ if (dragHandleArea && editCartSheet) {
   };
   dragHandleArea.addEventListener('pointerup', handlePointerEnd);
   dragHandleArea.addEventListener('pointercancel', handlePointerEnd);
+}
+
+function selectPaymentMethod(method) {
+  const fpxRow = document.getElementById('pm-fpx-row');
+  const qrRow = document.getElementById('pm-qr-row');
+  const radioFpx = document.getElementById('radio-fpx');
+  const radioQr = document.getElementById('radio-qr');
+  const fpxInfo = document.getElementById('fpx-info-area');
+  const qrInfo = document.getElementById('qr-info-area');
+
+  if (method === 'fpx') {
+    radioFpx.checked = true;
+    fpxRow.style.borderColor = 'var(--primary-blue)';
+    qrRow.style.borderColor = 'var(--border-color)';
+    fpxInfo.style.display = 'block';
+    qrInfo.style.display = 'none';
+  } else {
+    radioQr.checked = true;
+    qrRow.style.borderColor = 'var(--primary-blue)';
+    fpxRow.style.borderColor = 'var(--border-color)';
+    qrInfo.style.display = 'block';
+    fpxInfo.style.display = 'none';
+  }
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
 }
