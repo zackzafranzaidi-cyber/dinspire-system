@@ -5,7 +5,7 @@
     {
       "source": "/",
       "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
-      "destination": "/staff"
+      "destination": "/staff/index.html"
     },
     {
       "source": "/manifest.json",
@@ -20,7 +20,7 @@
     {
       "source": "/",
       "has": [{ "type": "host", "value": "owner.dinspirebarbershop.com" }],
-      "destination": "/owner"
+      "destination": "/owner/index.html"
     },
     {
       "source": "/manifest.json",
