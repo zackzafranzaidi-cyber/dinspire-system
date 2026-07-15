@@ -3,7 +3,7 @@
   "short_name": "DinStaff",
   "description": "Sistem Staf Kedai Gunting Rambut",
   "id": "/staff",
-  "start_url": "/staff.html",
+  "start_url": "/staff.html?mode=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",

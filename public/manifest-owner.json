@@ -3,7 +3,7 @@
   "short_name": "DinOwner",
   "description": "Sistem Pemilik Kedai Gunting Rambut",
   "id": "/owner",
-  "start_url": "/owner.html",
+  "start_url": "/owner.html?mode=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
