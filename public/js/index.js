@@ -1578,3 +1578,14 @@ function readFileAsBase64(file) {
     reader.readAsDataURL(file);
   });
 }
+
+// Fetch bank info
+fetch('bank-info.json')
+  .then(res => res.json())
+  .then(data => {
+    const container = document.getElementById('bank-info-container');
+    if (container && data) {
+      container.innerHTML = `<div>${data.ownerName}</div><div style="font-size: 16px; margin-top: 4px; letter-spacing: 1px;">${data.accountNumber}</div>`;
+    }
+  })
+  .catch(e => console.error('Error fetching bank info:', e));
