@@ -1593,6 +1593,12 @@ fetch('bank-info.json')
   .then(res => res.json())
   .then(data => {
     const container = document.getElementById('bank-info-container');
+    const nameDisplay = document.getElementById('bank-name-display');
+    
+    if (nameDisplay && data.bankName) {
+      nameDisplay.innerText = data.bankName;
+    }
+
     if (container && data) {
       container.innerHTML = `
         <div>${data.ownerName}</div>
