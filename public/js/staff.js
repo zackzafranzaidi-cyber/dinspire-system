@@ -5,14 +5,7 @@ const API_BASE_URL = IS_LOCALHOST
   ? "http://localhost:3000/api"
   : "https://api.dinspirebarbershop.com/api";
 
-if (
-  !window.matchMedia("(display-mode: standalone)").matches &&
-  !navigator.standalone
-)
-  setTimeout(() => {
-    const prompt = document.getElementById("pwa-prompt");
-    if (prompt) prompt.style.display = "block";
-  }, 4000);
+
 
 let loggedInStaff = null;
 let shopSettings = { walkin: [] };
@@ -537,4 +530,5 @@ function showToast(msg) {
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 3000);
 }
+
 

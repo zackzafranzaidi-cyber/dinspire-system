@@ -6,12 +6,6 @@ const API_BASE_URL = IS_LOCALHOST
   : "https://api.dinspirebarbershop.com/api";
 
 
-if (
-  !window.matchMedia("(display-mode: standalone)").matches &&
-  !navigator.standalone
-)
-  
-
 let masterData = {
   bookings: [],
   reviews: [],
@@ -1498,4 +1492,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
 
