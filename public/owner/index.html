@@ -294,6 +294,13 @@
             <option value="yearly" data-i18n="filter-yearly">TAHUN INI</option>
             <option value="all" data-i18n="filter-all">SEMUA REKOD</option>
           </select>
+          <button
+            onclick="logoutOwner()"
+            class="md:hidden bg-rose-50 border border-rose-200 text-rose-600 px-3 py-2 rounded-xl shadow-sm hover:bg-rose-100 flex items-center justify-center transition"
+            title="Log Keluar"
+          >
+            <i class="fas fa-sign-out-alt text-[16px]"></i>
+          </button>
         </div>
       </header>
 
@@ -1043,16 +1050,6 @@
           class="text-[9px] font-bold tracking-wider"
           data-i18n="mob-nav-ai"
           >AI</span
-        ></a
-      >
-      <a
-        href="#"
-        onclick="logoutOwner()"
-        class="nav-item flex flex-col items-center justify-center w-full h-full text-rose-500 hover:text-rose-400 transition"
-        ><i class="fas fa-sign-out-alt text-lg mb-1"></i
-        ><span
-          class="text-[9px] font-bold tracking-wider"
-          >Keluar</span
         ></a
       >
     </nav>

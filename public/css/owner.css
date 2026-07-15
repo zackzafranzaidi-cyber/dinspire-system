@@ -142,7 +142,8 @@ body {
   margin-bottom: 25px;
 }
 
-.login-box input {
+.login-box input[type="text"],
+.login-box input[type="password"] {
   width: 100%;
   padding: 14px;
   border: 1px solid #e5e7eb;
@@ -155,7 +156,8 @@ body {
   background: #f9fafb;
   color: #111827;
 }
-.login-box input:focus {
+.login-box input[type="text"]:focus,
+.login-box input[type="password"]:focus {
   border-color: #111827;
   background: #ffffff;
 }
@@ -332,7 +334,8 @@ body {
     font-size: 11px !important;
     margin-bottom: 15px !important;
   }
-  .login-box input {
+  .login-box input[type="text"],
+  .login-box input[type="password"] {
     font-size: 14px !important;
     padding: 12px !important;
     margin-bottom: 12px !important;
