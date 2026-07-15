@@ -10,9 +10,7 @@ if (
   !window.matchMedia("(display-mode: standalone)").matches &&
   !navigator.standalone
 )
-  setTimeout(() => {
-    document.getElementById("pwa-prompt").style.display = "block";
-  }, 4000);
+  
 
 let masterData = {
   bookings: [],
@@ -1500,3 +1498,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
