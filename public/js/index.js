@@ -1151,11 +1151,8 @@ function closeSuccessScreen() {
 }
 
 function confirmUnifiedPayment() {
-  const fileInput = document.getElementById("checkout-receipt-upload").files[0];
   const addrText = document.getElementById("checkout-address-text").innerText;
 
-  if (!fileInput)
-    return alert(i18n_index[currentLang]["alert-no-receipt"]);
   if (
     (currentCheckoutData.type === "product" ||
       currentCheckoutData.type === "oncall") &&
@@ -1166,89 +1163,82 @@ function confirmUnifiedPayment() {
   const btn = document.getElementById("btn-confirm-unified");
   btn.classList.add("btn-loading");
 
-  compressImage(fileInput, (base64) => {
-    if (currentCheckoutData.type === "product") {
-      const payload = {
-        cart_items: cartState,
-        address: addrText,
-        total_price: currentCheckoutData.total,
-        receipt_url: base64,
-      };
-      fetchWithAuth(`${API_BASE_URL}/bookings/products`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      })
-        .then((res) => (res ? res.json() : null))
-        .then((data) => {
-          if (data && data.status === "success") {
-            cartState = {};
-            updateCartUI();
-            showSuccessScreen();
-          } else {
-            alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
-            btn.classList.remove("btn-loading");
-          }
-        })
-        .catch((e) => {
-          alert("Ralat Server.");
+  if (currentCheckoutData.type === "product") {
+    const payload = {
+      cart_items: cartState,
+      address: addrText,
+      total_price: currentCheckoutData.total,
+    };
+    fetchWithAuth(`${API_BASE_URL}/bookings/products`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+      .then((res) => (res ? res.json() : null))
+      .then((data) => {
+        if (data && data.status === "success" && data.payment_url) {
+          window.location.href = data.payment_url;
+        } else {
+          alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
           btn.classList.remove("btn-loading");
-        });
-    } else if (currentCheckoutData.type === "oncall") {
-      const payload = {
-        address: addrText,
-        date: pendingBooking.date,
-        time: pendingBooking.time,
-        service_id: pendingBooking.service_id,
-        barber: pendingBooking.barber,
-        receipt_url: base64,
-      };
-      fetchWithAuth(`${API_BASE_URL}/bookings/oncall`, {
-        method: "POST",
-        body: JSON.stringify(payload),
+        }
       })
-        .then((res) => (res ? res.json() : null))
-        .then((data) => {
-          if (data && data.status === "success") {
-            showSuccessScreen();
-          } else {
-            alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
-            btn.classList.remove("btn-loading");
-          }
-        })
-        .catch((e) => {
-          alert("Ralat Server.");
+      .catch((e) => {
+        alert("Ralat Server.");
+        btn.classList.remove("btn-loading");
+      });
+  } else if (currentCheckoutData.type === "oncall") {
+    const payload = {
+      address: addrText,
+      date: pendingBooking.date,
+      time: pendingBooking.time,
+      service_id: pendingBooking.service_id,
+      barber: pendingBooking.barber,
+    };
+    fetchWithAuth(`${API_BASE_URL}/bookings/oncall`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+      .then((res) => (res ? res.json() : null))
+      .then((data) => {
+        if (data && data.status === "success" && data.payment_url) {
+          window.location.href = data.payment_url;
+        } else {
+          alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
           btn.classList.remove("btn-loading");
-        });
-    } else {
-      // Normal Booking
-      const newBook = {
-        booking_type: pendingBooking.type,
-        service_id: pendingBooking.service_id,
-        staff_id: pendingBooking.barber,
-        branch_id: pendingBooking.branch_id,
-        booking_date: pendingBooking.date,
-        booking_time: pendingBooking.time,
-        receipt_url: base64,
-      };
-      fetchWithAuth(`${API_BASE_URL}/bookings`, {
-        method: "POST",
-        body: JSON.stringify(newBook),
+        }
       })
-        .then((res) => (res ? res.json() : null))
-        .then((data) => {
-          if (data && data.status === "success") {
-            showSuccessScreen();
-          } else {
-            alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
-            btn.classList.remove("btn-loading");
-          }
-        })
-        .catch((e) => {
-          alert("Ralat Server.");
+      .catch((e) => {
+        alert("Ralat Server.");
+        btn.classList.remove("btn-loading");
+      });
+  } else {
+    // Normal Booking
+    const newBook = {
+      booking_type: pendingBooking.type,
+      service_id: pendingBooking.service_id,
+      staff_id: pendingBooking.barber,
+      branch_id: pendingBooking.branch_id,
+      booking_date: pendingBooking.date,
+      booking_time: pendingBooking.time,
+    };
+    fetchWithAuth(`${API_BASE_URL}/bookings`, {
+      method: "POST",
+      body: JSON.stringify(newBook),
+    })
+      .then((res) => (res ? res.json() : null))
+      .then((data) => {
+        if (data && data.status === "success" && data.payment_url) {
+          window.location.href = data.payment_url;
+        } else {
+          alert("Ralat: " + (data ? data.message : "Sila cuba lagi."));
           btn.classList.remove("btn-loading");
-        });
-    }
-  });
+        }
+      })
+      .catch((e) => {
+        alert("Ralat Server.");
+        btn.classList.remove("btn-loading");
+      });
+  }
 }
 
 function changeTempQty(id, delta) {

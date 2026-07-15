@@ -65,6 +65,8 @@ async function uploadReceiptToStorage(base64Image, orderNo) {
   }
 }
 
+const fpx = require("../utils/fpx");
+
 // ==========================================
 // 1. Pelanggan Buat Tempahan (Booking)
 // ==========================================
@@ -147,14 +149,29 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
         });
     }
 
-    let finalReceiptUrl = await uploadReceiptToStorage(receipt_url, order_no);
-    if (!finalReceiptUrl && receipt_url) {
-      return res
-        .status(400)
-        .json({
-          status: "error",
-          message: "Gambar resit tidak sah atau korup.",
-        });
+    // FPX Payment Generation
+    const total_amount = harga_rm + serviceFee;
+    const protocol = req.protocol === 'http' ? 'https' : req.protocol; // enforce https for production callback
+    const host = req.get('host');
+    const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
+    const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
+    
+    let fpxResult;
+    try {
+      fpxResult = await fpx.createPayment(
+        total_amount,
+        order_no,
+        `Bayaran Servis Dinspire: ${order_no}`,
+        cust.email || "tiada@email.com",
+        cust.name,
+        returnUrl,
+        callbackUrl
+      );
+    } catch (err) {
+      return res.status(502).json({
+         status: "error",
+         message: err.message || "Gagal berhubung dengan gateway FPX"
+      });
     }
 
     const basePayload = {
@@ -166,7 +183,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       staff_id: staff_id,
       harga_rm: harga_rm,
       service_fee: serviceFee,
-      resit: finalReceiptUrl,
+      resit: `FPX_PENDING:${fpxResult.transaction_id}`,
       status: "Belum",
     };
 
@@ -206,7 +223,12 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       console.error("Gagal menetapkan jadual peringatan SMS:", e);
     }
 
-    res.json({ status: "success", message: "Tempahan berjaya", order_no });
+    res.json({ 
+      status: "success", 
+      message: "Pembayaran sedang diproses", 
+      order_no,
+      payment_url: fpxResult.payment_url 
+    });
   } catch (error) {
     if (error.code === '23505') {
       return res.status(409).json({ status: "error", message: "Maaf, slot ini baru sahaja ditempah oleh pelanggan lain pada saat yang sama (Tindanan berlaku)." });
@@ -352,7 +374,31 @@ router.post(
       if (svcHaircut) harga_rm = parseFloat(svcHaircut.harga);
 
       const order_no = "DBC" + Math.floor(1000 + Math.random() * 9000);
-      let finalReceiptUrl = await uploadReceiptToStorage(receipt_url, order_no);
+      
+      // FPX Payment Generation
+      const total_amount = harga_rm + serviceFee;
+      const protocol = req.protocol === 'http' ? 'https' : req.protocol;
+      const host = req.get('host');
+      const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
+      const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
+      
+      let fpxResult;
+      try {
+        fpxResult = await fpx.createPayment(
+          total_amount,
+          order_no,
+          `Bayaran On-Call: ${order_no}`,
+          cust.email || "tiada@email.com",
+          cust.name,
+          returnUrl,
+          callbackUrl
+        );
+      } catch (err) {
+        return res.status(502).json({
+           status: "error",
+           message: err.message || "Gagal berhubung dengan gateway FPX"
+        });
+      }
 
       const { error } = await supabase.from("oncall_records").insert([
         {
@@ -365,7 +411,7 @@ router.post(
           staff_id: barber,
           harga_rm: harga_rm,
           service_fee: serviceFee,
-          resit: finalReceiptUrl,
+          resit: `FPX_PENDING:${fpxResult.transaction_id}`,
           status: "Belum",
         },
       ]);
@@ -393,8 +439,9 @@ router.post(
       }
       res.json({
         status: "success",
-        message: "Tempahan On-Call berjaya",
+        message: "Pembayaran On-Call sedang diproses",
         order_no,
+        payment_url: fpxResult.payment_url
       });
     } catch (error) {
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
@@ -449,27 +496,51 @@ router.post(
           .json({ status: "error", message: "Produk tidak sah." });
 
       let trustedCartItems = {};
+      let totalProductsPrice = 0;
 
       // Membina semula troli menggunakan data yang DITENTUSAHKAN oleh pangkalan data
       for (let id of itemIds) {
         let dbProduct = productsDB.find((p) => p.id == id);
         if (dbProduct) {
+          let qty = parseInt(cart_items[id].qty) || 1;
           trustedCartItems[id] = {
             id: dbProduct.id,
             name: dbProduct.nama, // Guna nama dari DB (Bukan dari pelayar)
             price: parseFloat(dbProduct.harga), // GUNA HARGA SEBENAR DARI DB!
-            qty: parseInt(cart_items[id].qty) || 1,
+            qty: qty,
             imgUrl: cart_items[id].imgUrl,
           };
+          totalProductsPrice += parseFloat(dbProduct.harga) * qty;
         }
       }
 
       const order_uuid = crypto.randomUUID();
       const receipt_name = "PRD" + Math.floor(100000 + Math.random() * 900000);
-      let finalReceiptUrl = await uploadReceiptToStorage(
-        receipt_url,
-        receipt_name,
-      );
+      
+      // FPX Payment Generation
+      const total_amount = totalProductsPrice + shippingFee;
+      const protocol = req.protocol === 'http' ? 'https' : req.protocol;
+      const host = req.get('host');
+      const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
+      const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
+      
+      let fpxResult;
+      try {
+        fpxResult = await fpx.createPayment(
+          total_amount,
+          receipt_name,
+          `Pembelian Produk: ${receipt_name}`,
+          cust.email || "tiada@email.com",
+          cust.name,
+          returnUrl,
+          callbackUrl
+        );
+      } catch (err) {
+        return res.status(502).json({
+           status: "error",
+           message: err.message || "Gagal berhubung dengan gateway FPX"
+        });
+      }
 
       const { error } = await supabase.from("product_orders").insert([
         {
@@ -477,7 +548,7 @@ router.post(
           nama_pembeli: cust.name,
           senarai_produk: JSON.stringify(trustedCartItems), // Simpan data yang telah disucikan
           lokasi_penghantaran: address,
-          resit: finalReceiptUrl,
+          resit: `FPX_PENDING:${fpxResult.transaction_id}`,
           shipping_fee: shippingFee,
           status: "Preparing",
         },
@@ -491,7 +562,8 @@ router.post(
       console.log(`========================================\n`);
       res.json({
         status: "success",
-        message: "Pesanan produk berjaya dihantar!",
+        message: "Pembayaran produk sedang diproses",
+        payment_url: fpxResult.payment_url
       });
     } catch (error) {
       console.error(error);
@@ -699,5 +771,47 @@ router.post(
     }
   },
 );
+// ==========================================
+// 6. [BARU] Webhook Gateway FPX (Server-to-Server Callback)
+// ==========================================
+router.post("/webhook/fpx", async (req, res) => {
+  const signature = req.headers["x-fpx-signature"] || req.headers["signature"] || req.query.signature;
+  
+  try {
+    // 1. KESELAMATAN: Parse dan sahkan tandatangan menggunakan modul utilities fpx yang selamat
+    const paymentData = fpx.parseWebhook(req.body, signature);
+    const { reference, status, transaction_id } = paymentData;
+    
+    // FPX_PAID atau FPX_FAILED
+    const receiptValue = status === "paid" ? `FPX_PAID:${transaction_id}` : `FPX_FAILED:${transaction_id}`;
+    
+    // Tentukan table mana nak di-update (Guntingan, Rawatan, Oncall, Produk)
+    let tableName = "booking_records";
+    if (reference.startsWith("TR")) tableName = "treatment_records";
+    else if (reference.startsWith("DBC")) tableName = "oncall_records";
+    else if (reference.startsWith("PRD")) tableName = "product_orders";
+
+    // 2. KEMASKINI DATABASE
+    // Kita tak tukar column 'status' dari 'Belum' supaya slot tak terlepas.
+    // Tapi kita kemas kini resit dengan tanda FPX_PAID. 
+    // Untuk produk, status 'Preparing' kekal.
+    const { error } = await supabase
+      .from(tableName)
+      .update({ resit: receiptValue })
+      .eq(tableName === "product_orders" ? "id" : "no_booking", reference);
+      
+    if (error) {
+      console.error("Gagal mengemaskini status webhook:", error);
+      return res.status(500).json({ status: "error", message: "Database update failed" });
+    }
+
+    // Beritahu gateway FPX yang kita terima webhook ini dengan berjaya
+    res.status(200).json({ status: "success", message: "Webhook processed securely" });
+
+  } catch (error) {
+    console.error("Ralat Keselamatan Webhook FPX:", error.message);
+    res.status(403).json({ status: "error", message: error.message });
+  }
+});
 
 module.exports = router;

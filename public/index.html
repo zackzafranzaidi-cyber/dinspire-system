@@ -194,43 +194,17 @@
             <div class="checkout-card">
               <h3 data-i18n="checkout-pm-title">Payment Method</h3>
               <div class="payment-method-row">
-                <div class="pm-icon"><i class="fas fa-qrcode"></i></div>
+                <div class="pm-icon" style="background-color: #0c1a40; color: white;"><i class="fas fa-university"></i></div>
                 <div class="pm-details">
-                  <h4 data-i18n="checkout-pm-qr">DuitNow / QR Scan</h4>
-                  <p data-i18n="checkout-pm-desc">Please make full payment and upload receipt</p>
+                  <h4 data-i18n="checkout-pm-fpx">FPX Online Banking</h4>
+                  <p data-i18n="checkout-pm-desc">Secure payment via online banking</p>
                 </div>
               </div>
-              <div class="qr-upload-area" style="text-align: center; margin-top: 15px;">
-                <img
-                  src="./bank.png?v=3"
-                  alt="Bank Logo"
-                  style="height: 30px; object-fit: contain; margin-bottom: 5px; display: none;"
-                  id="checkout-bank-logo"
-                  onload="this.style.display='inline-block'"
-                  onerror="this.style.display='none'"
-                />
-                <br/>
-                <a href="./QR_download.PNG" download="QR_download.PNG" style="text-decoration: none; display: inline-block; cursor: pointer;" title="Klik untuk muat turun kod QR">
-                  <img
-                    src="./qr.png"
-                    alt="QR Code"
-                    style="max-width: 150px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);"
-                    onerror="
-                      this.src =
-                        'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg'
-                    "
-                  />
-                </a>
-                <div id="checkout-bank-info" style="margin-top: 10px; margin-bottom: 15px; font-size: 13px; color: var(--text-main); font-weight: 600; line-height: 1.4;">
-                  <!-- Bank info injected by JS -->
+              <div class="qr-upload-area" style="text-align: center; margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                <i class="fas fa-shield-alt" style="font-size: 24px; color: #10b981; margin-bottom: 10px;"></i>
+                <div style="font-size: 13px; color: var(--text-main); font-weight: 500; line-height: 1.5;">
+                  Anda akan dipautkan (redirect) secara selamat ke halaman pembayaran bank (FPX) selepas butang di bawah ditekan.
                 </div>
-                <input
-                  type="file"
-                  id="checkout-receipt-upload"
-                  accept="image/*"
-                  class="mt-2"
-                  style="font-size: 12px; width: 100%"
-                />
               </div>
             </div>
             <div
