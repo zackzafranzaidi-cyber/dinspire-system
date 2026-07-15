@@ -1682,3 +1682,8 @@ select.input-field {
 }
 
 .drag-indicator { width: 40px; height: 5px; background-color: #d1d5db; border-radius: 3px; margin: 0 auto 15px auto; cursor: pointer; }
+
+/* Ensure checkout bar is pushed up above the taller bottom-nav */
+.checkout-bar {
+    bottom: calc(110px + env(safe-area-inset-bottom)) !important;
+}
