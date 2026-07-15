@@ -3,24 +3,34 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(?!staff/)(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "staff.dinspirebarbershop.com"
-        }
-      ],
-      "destination": "/staff/$1"
+      "source": "/",
+      "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
+      "destination": "/staff"
     },
     {
-      "source": "/(?!owner/)(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "owner.dinspirebarbershop.com"
-        }
-      ],
-      "destination": "/owner/$1"
+      "source": "/manifest.json",
+      "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
+      "destination": "/staff/manifest.json"
+    },
+    {
+      "source": "/sw.js",
+      "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
+      "destination": "/staff/sw.js"
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "owner.dinspirebarbershop.com" }],
+      "destination": "/owner"
+    },
+    {
+      "source": "/manifest.json",
+      "has": [{ "type": "host", "value": "owner.dinspirebarbershop.com" }],
+      "destination": "/owner/manifest.json"
+    },
+    {
+      "source": "/sw.js",
+      "has": [{ "type": "host", "value": "owner.dinspirebarbershop.com" }],
+      "destination": "/owner/sw.js"
     }
   ]
 }
