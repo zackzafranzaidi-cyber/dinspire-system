@@ -60,8 +60,6 @@ class FPXSecureSystem {
     };
 
     try {
-      const response = await this.client.post("/payments", payload);
-      
       // Jika sandbox-fpx.com palsu digunakan untuk ujian tempatan, kita akan 'mock' balasan
       if (this.baseUrl.includes("sandbox-fpx.com")) {
          return {
@@ -70,6 +68,8 @@ class FPXSecureSystem {
             reference: reference
          };
       }
+
+      const response = await this.client.post("/payments", payload);
 
       return {
         payment_url: response.data.url,
