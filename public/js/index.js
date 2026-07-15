@@ -1126,7 +1126,6 @@ function openCheckout(type) {
     type === "oncall" ? pendingBooking.address : currentUser?.address;
   document.getElementById("checkout-address-text").innerText =
     userAddr || "Sila klik pensel untuk tetapkan alamat.";
-  document.getElementById("checkout-receipt-upload").value = "";
 
   modal.classList.add("active");
 }

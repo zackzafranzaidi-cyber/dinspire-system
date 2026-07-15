@@ -637,7 +637,7 @@ select.input-field {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.6);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
