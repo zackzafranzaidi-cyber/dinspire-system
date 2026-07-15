@@ -33,7 +33,13 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    if (
+      !origin ||
+      allowedOrigins.indexOf(origin) !== -1 ||
+      origin === "https://dinspirebarbershop.com" ||
+      origin.endsWith(".dinspirebarbershop.com") ||
+      origin.endsWith(".vercel.app")
+    ) {
       callback(null, true);
     } else {
       callback(new Error("Akses CORS ditolak oleh pelayan keselamatan."));
