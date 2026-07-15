@@ -1620,16 +1620,16 @@ function calculateCRC16(payload) {
 function generateDynamicDuitNow(amount) {
   let staticPayload = "00020201021126690014A000000615000101065887340220MAEPP111187656109828031317576685858065204000053034585802MY5924MUHAMMAD ZAFRAN BIN MOHD6002MY6304083C";
   // Tukar tag Point of Initiation dari Static (11) kepada Dynamic (12)
-  staticPayload = staticPayload.replace("010211", "010212");
-  
-  // Asas kod DuitNow tanpa Tag 63 (Checksum) di hujung. "6304" + "083C"
-  let baseStr = staticPayload.slice(0, -8);
+  let dynamicPayload = staticPayload.replace("010211", "010212");
   
   let amtStr = parseFloat(amount).toFixed(2);
   let amtLen = amtStr.length.toString().padStart(2, '0');
   let tag54 = "54" + amtLen + amtStr;
   
-  baseStr += tag54 + "6304";
+  // Masukkan Tag 54 SEBELUM Tag 58 (Country Code) untuk patuhi turutan EMVCo
+  let insertIndex = dynamicPayload.indexOf("5802MY");
+  let baseStr = dynamicPayload.substring(0, insertIndex) + tag54 + dynamicPayload.substring(insertIndex, dynamicPayload.length - 4);
+  
   let newCrc = calculateCRC16(baseStr);
   return baseStr + newCrc;
 }
