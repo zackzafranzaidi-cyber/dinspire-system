@@ -1618,7 +1618,10 @@ function calculateCRC16(payload) {
 }
 
 function generateDynamicDuitNow(amount) {
-  const staticPayload = "00020201021126690014A000000615000101065887340220MAEPP111187656109828031317576685858065204000053034585802MY5924MUHAMMAD ZAFRAN BIN MOHD6002MY6304083C";
+  let staticPayload = "00020201021126690014A000000615000101065887340220MAEPP111187656109828031317576685858065204000053034585802MY5924MUHAMMAD ZAFRAN BIN MOHD6002MY6304083C";
+  // Tukar tag Point of Initiation dari Static (11) kepada Dynamic (12)
+  staticPayload = staticPayload.replace("010211", "010212");
+  
   // Asas kod DuitNow tanpa Tag 63 (Checksum) di hujung. "6304" + "083C"
   let baseStr = staticPayload.slice(0, -8);
   
