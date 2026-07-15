@@ -1619,8 +1619,9 @@ function calculateCRC16(payload) {
 
 function generateDynamicDuitNow(amount) {
   let staticPayload = "00020201021126690014A000000615000101065887340220MAEPP111187656109828031317576685858065204000053034585802MY5924MUHAMMAD ZAFRAN BIN MOHD6002MY6304083C";
-  // Tukar tag Point of Initiation dari Static (11) kepada Dynamic (12)
-  let dynamicPayload = staticPayload.replace("010211", "010212");
+  // Kita kekalkan Tag 01 sebagai Static (11) supaya padan dengan profil merchant Tuan,
+  // tetapi kita masukkan Tag 54 (Harga) mengikut susunan EMVCo.
+  let dynamicPayload = staticPayload;
   
   let amtStr = parseFloat(amount).toFixed(2);
   let amtLen = amtStr.length.toString().padStart(2, '0');
