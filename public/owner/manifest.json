@@ -3,18 +3,18 @@
   "short_name": "DinOwner",
   "description": "Sistem Pemilik Kedai Gunting Rambut",
   "id": "/owner",
-  "start_url": "/owner.html?mode=pwa",
+  "start_url": "/owner/?mode=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "./icon.png",
+      "src": "../icon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./icon.png",
+      "src": "../icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
