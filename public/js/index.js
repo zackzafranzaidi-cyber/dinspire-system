@@ -1114,10 +1114,6 @@ function openCheckout(type) {
   document.getElementById("checkout-address-text").innerText =
     userAddr || "Sila klik pensel untuk tetapkan alamat.";
 
-  if (window.renderDynamicQR) {
-    window.renderDynamicQR(total);
-  }
-
   modal.classList.add("active");
 }
 
@@ -1600,55 +1596,3 @@ fetch('bank-info.json')
     }
   })
   .catch(e => console.error('Error fetching bank info:', e));
-
-// EMVCo CRC16 for DuitNow
-function calculateCRC16(payload) {
-  let crc = 0xFFFF;
-  for (let i = 0; i < payload.length; i++) {
-    crc ^= payload.charCodeAt(i) << 8;
-    for (let j = 0; j < 8; j++) {
-      if ((crc & 0x8000) > 0) {
-        crc = (crc << 1) ^ 0x1021;
-      } else {
-        crc = crc << 1;
-      }
-    }
-  }
-  return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-}
-
-function generateDynamicDuitNow(amount) {
-  let staticPayload = "00020201021126690014A000000615000101065887340220MAEPP111187656109828031317576685858065204000053034585802MY5924MUHAMMAD ZAFRAN BIN MOHD6002MY6304083C";
-  // Tukar Tag 01 kepada Dynamic (12) DAN kekalkan susunan Tag 54 (Harga) sebelum Tag 58
-  let dynamicPayload = staticPayload.replace("010211", "010212");
-  
-  let amtStr = parseFloat(amount).toFixed(2);
-  let amtLen = amtStr.length.toString().padStart(2, '0');
-  let tag54 = "54" + amtLen + amtStr;
-  
-  // Masukkan Tag 54 SEBELUM Tag 58 (Country Code) untuk patuhi turutan EMVCo
-  let insertIndex = dynamicPayload.indexOf("5802MY");
-  let baseStr = dynamicPayload.substring(0, insertIndex) + tag54 + dynamicPayload.substring(insertIndex, dynamicPayload.length - 4);
-  
-  let newCrc = calculateCRC16(baseStr);
-  return baseStr + newCrc;
-}
-
-window.renderDynamicQR = function(amount) {
-  const payload = generateDynamicDuitNow(amount);
-  const qrImage = document.getElementById('dynamic-qr-image');
-  const qrDownload = document.getElementById('dynamic-qr-download');
-  
-  if (typeof QRCode !== 'undefined' && qrImage) {
-    QRCode.toDataURL(payload, { 
-      width: 250, 
-      margin: 1, 
-      color: { dark: '#0f172a', light: '#ffffff' } 
-    }, function (err, url) {
-      if (!err) {
-         qrImage.src = url;
-         qrDownload.href = url;
-      }
-    });
-  }
-};
