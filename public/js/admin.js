@@ -146,6 +146,7 @@ function switchTab(tabName, el) {
     Products: "Produk",
     Posters: "Promosi (Poster)",
     Settings: "Tetapan Sistem & Caj",
+    ResetRequests: "Permohonan Reset Kata Laluan",
   };
   document.getElementById("current-section-title").innerText =
     "Pengurusan " + (titles[tabName] || tabName);
@@ -160,6 +161,11 @@ function updateSetting(key, val) {
 
 function renderTable(tabName) {
   const container = document.getElementById("dynamic-content");
+
+  if (tabName === "ResetRequests") {
+    loadResetRequests();
+    return;
+  }
 
   if (tabName === "Settings") {
     let s = appData.Settings || {};
@@ -374,4 +380,100 @@ async function saveAllData() {
 
   btn.innerHTML = "<i class='fas fa-cloud-upload-alt'></i> Simpan ke Cloud";
   btn.disabled = false;
+}
+async function loadResetRequests() {
+  const container = document.getElementById("dynamic-content");
+  container.innerHTML = `<div style="text-align:center;padding:40px;color:#8e8e93;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i><p style="margin-top:10px;">Memuatkan senarai...</p></div>`;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/staff/reset-requests`, { credentials: "include" });
+    const result = await res.json();
+
+    if (result.data && result.data.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:60px 20px; background:#F9FAFB; border-radius:16px; border:2px dashed #E5E5EA;">
+          <div style="font-size:48px; margin-bottom:15px;">✅</div>
+          <h3 style="font-size:18px; font-weight:700; color:#1c1c1e;">Tiada Permohonan Reset</h3>
+          <p style="font-size:13px; color:#8e8e93; margin-top:8px;">Semua kata laluan staf dalam keadaan baik. Tiada permintaan reset yang menunggu kelulusan.</p>
+        </div>`;
+      return;
+    }
+
+    let html = `
+      <div style="margin-bottom:20px; padding:15px; background:#FFF8E1; border-radius:12px; border-left:4px solid #FFC107; display:flex; align-items:center; gap:12px;">
+        <i class="fas fa-exclamation-triangle" style="color:#F57F17; font-size:20px;"></i>
+        <div>
+          <strong style="color:#1c1c1e; font-size:14px;">Permohonan Reset Menunggu Kelulusan</strong>
+          <p style="font-size:12px; color:#8e8e93; margin:4px 0 0;">Staf berikut telah memohon reset kata laluan. Klik "Luluskan" untuk set semula kata laluan mereka kepada <strong>123123</strong>.</p>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">`;
+
+    result.data.forEach(staff => {
+      html += `
+        <div style="background:white; border-radius:14px; padding:20px 25px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 10px rgba(0,0,0,0.06); border:1px solid #F0F0F5;">
+          <div style="display:flex; align-items:center; gap:15px;">
+            <div style="width:48px; height:48px; border-radius:50%; background:#FFF3E0; color:#E65100; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800;">
+              ${escapeHTML(staff.username.charAt(0).toUpperCase())}
+            </div>
+            <div>
+              <div style="font-size:16px; font-weight:700; color:#1c1c1e;">${escapeHTML(staff.username)}</div>
+              <div style="font-size:12px; color:#8e8e93; margin-top:3px;">
+                <i class="fas fa-briefcase" style="margin-right:4px;"></i>${escapeHTML(staff.jenis_staf || 'Staff')}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span style="background:#FFF3E0; color:#E65100; font-size:11px; font-weight:700; padding:5px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">
+              <i class="fas fa-clock" style="margin-right:4px;"></i>Menunggu Kelulusan
+            </span>
+            <button onclick="approveReset('${staff.id}', '${escapeHTML(staff.username)}')" 
+              style="background:#2196F3; color:white; border:none; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:7px; transition:0.2s;"
+              onmouseover="this.style.background='#1976D2'" onmouseout="this.style.background='#2196F3'">
+              <i class="fas fa-check-circle"></i> Luluskan
+            </button>
+          </div>
+        </div>`;
+    });
+
+    html += `</div>`;
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:#FF3B30;"><i class="fas fa-exclamation-circle" style="font-size:24px;"></i><p style="margin-top:10px;">Gagal memuatkan senarai. Sila refresh halaman.</p></div>`;
+  }
+}
+
+async function approveReset(staffId, staffName) {
+  const confirm = await Swal.fire({
+    title: `Luluskan Reset untuk ${staffName}?`,
+    html: `Kata laluan <strong>${staffName}</strong> akan ditetapkan semula kepada <code style="background:#F0F0F0; padding:2px 6px; border-radius:4px;">123123</code>.<br><br>Staf tersebut perlu log masuk dan menukar kata laluan baru selepas ini.`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#2196F3",
+    cancelButtonColor: "#8E8E93",
+    confirmButtonText: "<i class='fas fa-check'></i> Ya, Luluskan!",
+    cancelButtonText: "Batal",
+  });
+
+  if (!confirm.isConfirmed) return;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/staff/${staffId}/approve-reset`, {
+      method: "PUT",
+      credentials: "include",
+    });
+    const result = await res.json();
+    if (result.status === "success") {
+      Swal.fire({
+        icon: "success",
+        title: "Berjaya!",
+        html: `Reset kata laluan untuk <strong>${staffName}</strong> telah diluluskan.<br>Kata laluan sementara: <code style="background:#F0F0F0; padding:2px 6px; border-radius:4px;">123123</code>`,
+        confirmButtonText: "OK",
+      }).then(() => loadResetRequests());
+    } else {
+      Swal.fire({ icon: "error", title: "Ralat", text: result.message });
+    }
+  } catch (err) {
+    Swal.fire({ icon: "error", title: "Ralat Sistem", text: "Gagal menghubungi pelayan." });
+  }
 }

@@ -464,7 +464,22 @@ router.post(
   },
 );
 
+// GET - Senarai staf yang meminta reset kata laluan
+router.get("/staff/reset-requests", authenticate, requireRole(["admin", "owner"]), async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("staff")
+      .select("id, username, jenis_staf, branch_id")
+      .eq("reset_requested", true);
+    if (error) throw error;
+    res.json({ status: "success", data: data || [] });
+  } catch (err) {
+    res.status(500).json({ status: "error", message: "Gagal mendapatkan senarai permohonan reset." });
+  }
+});
+
 router.put("/staff/:id/approve-reset", authenticate, requireRole(["admin", "owner"]), async (req, res) => {
+
   try {
     const { data: staff } = await supabase.from("staff").select("reset_requested").eq("id", req.params.id).single();
     if (!staff || !staff.reset_requested) {
