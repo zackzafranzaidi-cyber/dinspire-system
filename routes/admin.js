@@ -3,7 +3,7 @@ const router = express.Router();
 const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
 const cache = require("../utils/cache");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 function escapeHTML(str) {
   if (str === null || str === undefined) return "";
