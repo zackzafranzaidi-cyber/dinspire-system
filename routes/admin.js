@@ -3,6 +3,7 @@ const router = express.Router();
 const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
 const cache = require("../utils/cache");
+const bcrypt = require("bcrypt");
 
 function escapeHTML(str) {
   if (str === null || str === undefined) return "";
@@ -418,5 +419,27 @@ router.post(
     }
   },
 );
+
+router.put("/staff/:id/approve-reset", authenticate, requireRole(["admin", "owner"]), async (req, res) => {
+  try {
+    const { data: staff } = await supabase.from("staff").select("reset_requested").eq("id", req.params.id).single();
+    if (!staff || !staff.reset_requested) {
+      return res.status(400).json({ status: "error", message: "Tiada permohonan reset untuk staf ini." });
+    }
+    
+    // Reset password back to 123123
+    const password_hash = await bcrypt.hash("123123", 10);
+    const { error } = await supabase.from("staff").update({
+      password_hash,
+      must_change_password: true,
+      reset_requested: false
+    }).eq("id", req.params.id);
+    
+    if (error) throw error;
+    res.json({ status: "success", message: "Kata laluan staf di-reset kepada 123123." });
+  } catch (err) {
+    res.status(500).json({ status: "error", message: "Ralat sistem kelulusan reset." });
+  }
+});
 
 module.exports = router;

@@ -340,19 +340,47 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
         .json({ status: "error", message: "Akaun tidak wujud." });
     }
 
-    // Semak pengesahan kata laluan (Hashing)
-    const isValid = await bcrypt.compare(password, user.password_hash);
+    // [DIBAIKI] Semak pengesahan kata laluan & Wajib Tukar (Force Password Change)
+    let isValid = false;
+    let requireChange = false;
+
+    if (roleFound === "staff" && (user.must_change_password || !user.password_hash)) {
+      requireChange = true;
+      if (!user.password_hash && password === "123123") {
+        isValid = true;
+      } else if (user.password_hash) {
+        isValid = await bcrypt.compare(password, user.password_hash);
+      } else {
+        await bcrypt.compare(password, "$2b$10$DummyHash12345678901234567890123456789012345678901234");
+      }
+    } else {
+      isValid = await bcrypt.compare(password, user.password_hash || "");
+    }
+
     if (!isValid) {
       loginAttempts[safeUsername] = (loginAttempts[safeUsername] || 0) + 1;
       return res
         .status(401)
         .json({
           status: "error",
-          message: "Akses ditolak. Kata laluan salah.",
+          message: "Kata laluan salah. Sila cuba lagi.",
         });
     }
 
     loginAttempts[safeUsername] = 0;
+
+    if (requireChange) {
+      const tempToken = jwt.sign(
+        { id: user.id, role: "staff", must_change: true },
+        process.env.JWT_SECRET_SYS,
+        { expiresIn: "10m", iss: "dinspire-sys" }
+      );
+      return res.json({
+        status: "REQUIRE_PASSWORD_CHANGE",
+        message: "Sila tetapkan kata laluan baharu anda.",
+        temp_token: tempToken
+      });
+    }
 
     // Keselamatan Tambahan: Pastikan jawatan sebenar staf ini DIBENARKAN untuk masuk ke portal yang sedang dibuka
     if (allowed_roles && Array.isArray(allowed_roles)) {
@@ -430,6 +458,42 @@ router.post("/logout-sys", (req, res) => {
     sameSite: "Strict",
   });
   res.json({ status: "success", message: "Staf/Owner telah log keluar." });
+});
+
+router.post("/staff/change-password", verifyLimiter, async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ status: "error", message: "Token sementara diperlukan." });
+  
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_SYS, { issuer: "dinspire-sys" });
+    if (!decoded.must_change || decoded.role !== "staff") throw new Error("Invalid token");
+
+    const { new_password } = req.body;
+    if (!new_password || new_password.length < 6) return res.status(400).json({ status: "error", message: "Kata laluan terlalu pendek." });
+
+    const password_hash = await bcrypt.hash(new_password, 10);
+    const { error } = await supabase
+      .from("staff")
+      .update({ password_hash, must_change_password: false, reset_requested: false })
+      .eq("id", decoded.id);
+      
+    if (error) throw error;
+
+    res.json({ status: "success", message: "Kata laluan berjaya dikemas kini. Sila log masuk." });
+  } catch (err) {
+    res.status(401).json({ status: "error", message: "Sesi tukar kata laluan tamat/tidak sah." });
+  }
+});
+
+router.post("/staff/request-reset", verifyLimiter, async (req, res) => {
+  const { username } = req.body;
+  if (!username) return res.status(400).json({ status: "error", message: "Username diperlukan." });
+
+  const { data, error } = await supabase.from("staff").update({ reset_requested: true }).eq("username", username).select();
+  
+  // Sentiasa kembalikan success untuk mengelakkan Enumeration (Timing Attack)
+  res.json({ status: "success", message: "Permohonan reset dihantar. Sila hubungi Admin untuk kelulusan." });
 });
 
 module.exports = router;
