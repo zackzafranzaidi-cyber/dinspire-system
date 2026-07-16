@@ -752,10 +752,7 @@ router.put(
         .eq("id", req.params.id);
       if (error) throw error;
 
-      console.log(`\n========================================`);
-      console.log(`[SIMULASI SMS - ORDER SHIPPED] Hantar untuk order ID: ${req.params.id}`);
-      console.log(`Mesej: Pesanan anda telah dihantar! No Tracking: ${tracking_no || "Sila rujuk sistem"}. Terima kasih kerana membeli-belah dengan Dinspire!`);
-      console.log(`========================================\n`);
+
       res.json({
         status: "success",
         message: "Pesanan dikemas kini ke Shipped.",
