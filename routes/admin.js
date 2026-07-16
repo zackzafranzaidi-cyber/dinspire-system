@@ -236,14 +236,42 @@ router.post(
             if (delAllErr) throw delAllErr;
           }
 
-          // 4. KENDALIKAN PENYIMPANAN PINTAR (UPSERT)
-          // Mengemas kini (Update) jika ID sudah wujud, atau menambah (Insert) jika ia rekod baru
+          // 4. KENDALIKAN PENYIMPANAN PINTAR (Insert vs Update)
           if (mappedItems.length > 0) {
-            const { error: upsertErr } = await supabase
+            const { data: existingData, error: fetchErr } = await supabase
               .from(table)
-              .upsert(mappedItems, { onConflict: "id" });
+              .select("id")
+              .in("id", currentIds);
+            if (fetchErr) throw fetchErr;
 
-            if (upsertErr) throw upsertErr;
+            const existingIds = existingData.map((d) => d.id);
+            const itemsToUpdate = mappedItems.filter((item) => existingIds.includes(item.id));
+            const itemsToInsert = mappedItems.filter((item) => !existingIds.includes(item.id));
+
+            // 4a. Tambah Rekod Baru
+            if (itemsToInsert.length > 0) {
+              if (table === "staff") {
+                const defaultHash = await bcrypt.hash("123123", 10);
+                itemsToInsert.forEach((i) => {
+                  i.password_hash = defaultHash;
+                  i.must_change_password = true;
+                  i.reset_requested = false;
+                });
+              }
+              const { error: insErr } = await supabase.from(table).insert(itemsToInsert);
+              if (insErr) throw insErr;
+            }
+
+            // 4b. Kemas Kini Rekod Sedia Ada
+            if (itemsToUpdate.length > 0) {
+              const updatePromises = itemsToUpdate.map((item) =>
+                supabase.from(table).update(item).eq("id", item.id)
+              );
+              const results = await Promise.all(updatePromises);
+              for (let r of results) {
+                if (r.error) throw r.error;
+              }
+            }
           }
         } catch (err) {
           console.error(`Ralat semasa menyelaraskan jadual ${table}:`, err);
