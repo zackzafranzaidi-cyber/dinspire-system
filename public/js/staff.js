@@ -56,6 +56,20 @@ function initStaffEventListeners() {
     .getElementById("btn-punch-out")
     ?.addEventListener("click", () => submitPunch("CLOCK OUT"));
 
+  // [DIBAIKI] Event Listeners untuk UI Kata Laluan
+  document.getElementById("link-forgot-password")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("forgot-password-screen").style.display = "block";
+  });
+  document.getElementById("link-back-login")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("forgot-password-screen").style.display = "none";
+    document.getElementById("login-screen").style.display = "block";
+  });
+  document.getElementById("btn-submit-cp")?.addEventListener("click", submitChangePassword);
+  document.getElementById("btn-submit-fp")?.addEventListener("click", submitForgotPassword);
+
   const tabs = ["dashboard", "walkin", "booking", "history", "profile"];
   tabs.forEach((tab) => {
     document.getElementById(`nav-${tab}`)?.addEventListener("click", (e) => {
@@ -98,11 +112,87 @@ async function loginStaffSystem() {
       showToast(`Selamat bertugas!`);
       fetchServicesForWalkin();
       showDashboard();
-    } else alert(data.message);
+    } else if (data.status === "REQUIRE_PASSWORD_CHANGE") {
+      window.tempChangePasswordToken = data.temp_token;
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("change-password-screen").style.display = "block";
+      showToast(data.message);
+    } else {
+      alert(data.message);
+    }
   } catch (err) {
     alert("Gagal menyambung ke pelayan.");
   }
   btn.innerText = "Log Masuk";
+}
+
+// [DIBAIKI] Fungsi Penukaran Kata Laluan Wajib
+async function submitChangePassword() {
+  const newPassword = document.getElementById("cp-new-password").value;
+  const btn = document.getElementById("btn-submit-cp");
+
+  if (!newPassword || newPassword.length < 6) {
+    alert("Kata laluan mestilah sekurang-kurangnya 6 aksara.");
+    return;
+  }
+  btn.innerText = "Mengemas kini...";
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/staff/change-password`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${window.tempChangePasswordToken}`
+      },
+      body: JSON.stringify({ new_password: newPassword }),
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      alert("Kata laluan berjaya ditukar! Sila log masuk semula dengan kata laluan baharu.");
+      window.tempChangePasswordToken = null;
+      document.getElementById("change-password-screen").style.display = "none";
+      document.getElementById("login-screen").style.display = "block";
+      document.getElementById("sys-password").value = "";
+      document.getElementById("cp-new-password").value = "";
+    } else {
+      alert(data.message);
+    }
+  } catch (err) {
+    alert("Sesi anda telah tamat. Sila log masuk semula.");
+  }
+  btn.innerText = "Kemaskini Kata Laluan";
+}
+
+// [DIBAIKI] Fungsi Mohon Reset Kata Laluan
+async function submitForgotPassword() {
+  const username = document.getElementById("fp-username").value.trim();
+  const btn = document.getElementById("btn-submit-fp");
+
+  if (!username) {
+    alert("Sila masukkan Username / ID Staf.");
+    return;
+  }
+  btn.innerText = "Menghantar...";
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/staff/request-reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      alert(data.message);
+      document.getElementById("forgot-password-screen").style.display = "none";
+      document.getElementById("login-screen").style.display = "block";
+      document.getElementById("fp-username").value = "";
+    } else {
+      alert(data.message);
+    }
+  } catch (err) {
+    alert("Gagal menyambung ke pelayan.");
+  }
+  btn.innerText = "Mohon Reset (Hantar Kepada Admin)";
 }
 
 function logoutStaff() {

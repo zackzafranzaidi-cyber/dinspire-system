@@ -102,6 +102,95 @@
           <button type="button" class="btn btn-primary" id="login-btn">
             Log Masuk
           </button>
+          
+          <!-- Lupa Kata Laluan Link -->
+          <div style="text-align: center; margin-top: 15px">
+            <a href="#" id="link-forgot-password" style="font-size: 13px; color: var(--primary-blue); text-decoration: none; font-weight: 600;">Lupa Kata Laluan?</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAPARAN TUKAR KATA LALUAN WAJIB (FORCE PASSWORD CHANGE) -->
+      <div id="change-password-screen" style="display: none">
+        <div style="text-align: center; margin-bottom: 30px; margin-top: 50px;">
+          <div
+            style="
+              width: 80px;
+              height: 80px;
+              background: var(--warning);
+              border-radius: 20px;
+              color: white;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              font-size: 35px;
+              margin: 0 auto 15px;
+              box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
+            "
+          >
+            <i class="fas fa-key"></i>
+          </div>
+          <h2 style="font-size: 24px; font-weight: 800">Tukar Kata Laluan</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px; max-width: 280px; margin-left: auto; margin-right: auto;">
+            Sebagai langkah keselamatan, anda diwajibkan menukar kata laluan sebelum meneruskan tugas.
+          </p>
+        </div>
+
+        <div style="width: 100%; max-width: 320px; margin: 0 auto;">
+          <input
+            type="password"
+            id="cp-new-password"
+            class="input-field"
+            placeholder="Kata Laluan Baharu (Min 6 Aksara)"
+            style="margin-bottom: 15px; border: 1px solid var(--border-color)"
+          />
+          <button type="button" class="btn btn-primary" id="btn-submit-cp">
+            Kemaskini Kata Laluan
+          </button>
+        </div>
+      </div>
+
+      <!-- PAPARAN LUPA KATA LALUAN (REQUEST RESET) -->
+      <div id="forgot-password-screen" style="display: none">
+        <div style="text-align: center; margin-bottom: 30px; margin-top: 50px;">
+          <div
+            style="
+              width: 80px;
+              height: 80px;
+              background: var(--danger);
+              border-radius: 20px;
+              color: white;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              font-size: 35px;
+              margin: 0 auto 15px;
+              box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+            "
+          >
+            <i class="fas fa-lock"></i>
+          </div>
+          <h2 style="font-size: 24px; font-weight: 800">Lupa Kata Laluan</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px; max-width: 280px; margin-left: auto; margin-right: auto;">
+            Sila masukkan ID Staf / Username anda. Permohonan Reset akan dihantar untuk kelulusan Pihak Pengurusan (Admin/Owner).
+          </p>
+        </div>
+
+        <div style="width: 100%; max-width: 320px; margin: 0 auto;">
+          <input
+            type="text"
+            id="fp-username"
+            class="input-field"
+            placeholder="Username / ID Staf"
+            style="margin-bottom: 15px; border: 1px solid var(--border-color)"
+          />
+          <button type="button" class="btn btn-primary" id="btn-submit-fp">
+            Mohon Reset (Hantar Kepada Admin)
+          </button>
+          
+          <div style="text-align: center; margin-top: 20px">
+            <a href="#" id="link-back-login" style="font-size: 13px; color: var(--text-muted); text-decoration: underline;">Kembali ke Log Masuk</a>
+          </div>
         </div>
       </div>
 
