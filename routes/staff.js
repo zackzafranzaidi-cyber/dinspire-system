@@ -172,9 +172,14 @@ function hitungJarak(lat1, lon1, lat2, lon2) {
 }
 
 // ⚠️ TUKAR KOORDINAT INI KEPADA KOORDINAT SEBENAR KEDAI ANDA ⚠️
-const KEDAI_LAT = 3.0; // Contoh Latitud
+const KEDAI_LAT = 3.0; // Contoh Latitud (Isi dengan lokasi kedai sebenar)
 const KEDAI_LON = 101.0; // Contoh Longitud
 const MAKSIMUM_JARAK_METER = 500; // Staf wajib berada dalam lingkungan 500 meter dari kedai
+
+// ==========================================
+// Pangkalan In-Memory Mutex Lock (Menghalang Race Conditions / TOCTOU)
+// ==========================================
+const punchLocks = new Set();
 
 // ==========================================
 // 2. Rekod Kehadiran (Punch In / Punch Out) Dibaiki
@@ -213,6 +218,13 @@ router.post(
     const tarikh = myTime.toISOString().split("T")[0];
     const hari = myTime.toLocaleDateString("ms-MY", { weekday: "long" });
     const masa = myTime.toISOString().split("T")[1].substring(0, 8);
+
+    // [DIBAIKI] Race Condition Lock untuk Punch In/Out
+    const lockKey = `${staff_id}_${tarikh}_${type}`;
+    if (punchLocks.has(lockKey)) {
+      return res.status(409).json({ status: "error", message: "Rekod anda sedang diproses. Sila tunggu sebentar." });
+    }
+    punchLocks.add(lockKey);
 
     try {
       if (type === "CLOCK IN") {
@@ -255,20 +267,34 @@ router.post(
           message: "Berjaya Punch In di " + namaCawangan,
         });
       } else if (type === "CLOCK OUT") {
+        const { data: existPunch } = await supabase
+          .from("punch_cards")
+          .select("id")
+          .eq("staff_id", staff_id)
+          .eq("tarikh", tarikh)
+          .single();
+
+        if (!existPunch) {
+          return res.status(400).json({ status: "error", message: "Anda belum Punch In hari ini." });
+        }
+
         const { error } = await supabase
           .from("punch_cards")
-          .update({ waktu_out: masa })
-          .eq("staff_id", staff_id)
-          .eq("tarikh", tarikh);
+          .update({
+            clock_out: masa,
+            lokasi: location,
+          })
+          .eq("id", existPunch.id);
 
         if (error) throw error;
-        res.json({ status: "success", message: "Berjaya Punch Out" });
       }
-    } catch (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ status: "error", message: "Ralat sistem pangkalan data." });
+
+      punchLocks.delete(lockKey);
+      res.json({ status: "success", message: `Berjaya ${type} pada ${masa}.` });
+    } catch (err) {
+      if (typeof lockKey !== "undefined") punchLocks.delete(lockKey);
+      console.error("Ralat Rekod Kehadiran:", err);
+      res.status(500).json({ status: "error", message: "Ralat sistem. Cuba sebentar lagi." });
     }
   },
 );

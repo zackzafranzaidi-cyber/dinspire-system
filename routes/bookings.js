@@ -68,6 +68,12 @@ async function uploadReceiptToStorage(base64Image, orderNo) {
 const fpx = require("../utils/fpx");
 
 // ==========================================
+// Pangkalan In-Memory Mutex Lock (Menghalang Race Conditions / TOCTOU)
+// ==========================================
+const bookingLocks = new Set();
+const oncallLocks = new Set();
+
+// ==========================================
 // 1. Pelanggan Buat Tempahan (Booking)
 // ==========================================
 router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
@@ -121,6 +127,19 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       order_no = "DB" + crypto.randomUUID().split("-")[0].toUpperCase();
     }
 
+    // [DIBAIKI] Halang Time-Machine (Tempahan masa lepas)
+    const bookingDateTime = new Date(`${booking_date}T${booking_time}`);
+    if (bookingDateTime < new Date()) {
+      return res.status(400).json({ status: "error", message: "Tarikh atau masa tempahan telah berlalu." });
+    }
+
+    // [DIBAIKI] Race Condition Lock
+    const lockKey = `${staff_id}_${booking_date}_${booking_time}`;
+    if (bookingLocks.has(lockKey)) {
+      return res.status(409).json({ status: "error", message: "Maaf, slot ini sedang diproses untuk pelanggan lain." });
+    }
+    bookingLocks.add(lockKey);
+
     // [DIBAIKI] Perlindungan Double Booking Peringkat Aplikasi
     const { data: existBook } = await supabase
       .from("booking_records")
@@ -141,6 +160,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       (existBook && existBook.length > 0) ||
       (existTreat && existTreat.length > 0)
     ) {
+      bookingLocks.delete(lockKey);
       return res
         .status(409)
         .json({
@@ -375,6 +395,19 @@ router.post(
           .status(404)
           .json({ status: "error", message: "Pelanggan tidak dijumpai." });
 
+      // [DIBAIKI] Halang Time-Machine On-Call
+      const bookingDateTime = new Date(`${date}T${time}`);
+      if (bookingDateTime < new Date()) {
+        return res.status(400).json({ status: "error", message: "Tarikh atau masa tempahan telah berlalu." });
+      }
+
+      // [DIBAIKI] Race Condition Lock OnCall
+      const lockKey = `${barber}_${date}_${time}`;
+      if (oncallLocks.has(lockKey)) {
+        return res.status(409).json({ status: "error", message: "Slot On-Call ini sedang diproses." });
+      }
+      oncallLocks.add(lockKey);
+
       const { data: setSvc } = await supabase
         .from("settings")
         .select("setting_value")
@@ -477,7 +510,10 @@ router.post(
           payment_url: fpxResult.payment_url
         });
       }
+      oncallLocks.delete(lockKey);
     } catch (error) {
+      if (typeof lockKey !== "undefined") oncallLocks.delete(lockKey);
+      console.error("Booking Error:", error);
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
     }
   },
@@ -514,11 +550,17 @@ router.post(
           .json({ status: "error", message: "Sesi anda tamat." });
 
       // AMBIL HARGA SEBENAR DARI PANGKALAN DATA SUPABASE
-      const itemIds = Object.keys(cart_items);
+      const itemIds = Object.keys(cart_items || {});
       if (itemIds.length === 0)
         return res
           .status(400)
           .json({ status: "error", message: "Troli kosong." });
+
+      // [DIBAIKI] Halang Massive Array DoS (Bom Troli)
+      if (itemIds.length > 50)
+        return res
+          .status(400)
+          .json({ status: "error", message: "Troli melebihi had (Maks: 50 jenis)." });
 
       const { data: productsDB } = await supabase
         .from("products")

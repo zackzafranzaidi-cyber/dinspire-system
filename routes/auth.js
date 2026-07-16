@@ -74,6 +74,13 @@ router.post("/request-otp", otpLimiter, async (req, res) => {
 router.post("/register", verifyLimiter, async (req, res) => {
   try {
     const { username, phone, address, avatar_url, otp, password } = req.body;
+    
+    // [DIBAIKI] Stored XSS Prevention
+    const xssRegex = /<[^>]*>?/gm;
+    if (xssRegex.test(username) || xssRegex.test(address)) {
+      return res.status(400).json({ status: "error", message: "Kandungan tidak sah. Sila buang simbol berbahaya." });
+    }
+
     if (!password || password.length < 6 || password.length > 72) {
       return res.status(400).json({ status: "error", message: "Kata laluan mestilah antara 6 hingga 72 aksara." });
     }
@@ -144,45 +151,51 @@ router.post("/login", verifyLimiter, async (req, res) => {
     return res.status(400).json({ status: "error", message: "Sila masukkan kata laluan." });
   }
 
-  const { data: user, error } = await supabase
-    .from("customers")
-    .select("*")
-    .eq("phone", phone)
-    .single();
+  if (loginAttempts[phone] && loginAttempts[phone] > 10) {
+    return res.status(429).json({ status: "error", message: "Akaun dikunci sementara akibat terlalu banyak percubaan gagal." });
+  }
 
-  if (error || !user)
-    return res
-      .status(401)
-      .json({
+  try {
+    const { data: user } = await supabase.from("customers").select("*").eq("phone", phone).single();
+    if (!user) {
+      return res.status(404).json({
         status: "error",
         message: "Akaun tidak dijumpai. Sila daftar dahulu.",
       });
+    }
 
-  const isValid = await bcrypt.compare(password, user.password_hash || "");
-  if (!isValid) {
-    return res.status(401).json({ status: "error", message: "Kata laluan salah." });
+    const isValid = await bcrypt.compare(password, user.password_hash || "");
+    if (!isValid) {
+      loginAttempts[phone] = (loginAttempts[phone] || 0) + 1;
+      return res.status(401).json({ status: "error", message: "Kata laluan salah." });
+    }
+
+    loginAttempts[phone] = 0;
+
+    const token = jwt.sign(
+      { id: user.id, role: "customer" },
+      process.env.JWT_SECRET_CLIENT,
+      { expiresIn: "1h" }, // [DIBAIKI] Tempoh dipendekkan ke 1 jam bagi mengecilkan tingkap bahaya JWT
+    );
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    };
+
+    if (remember) {
+      cookieOptions.maxAge = 30 * 24 * 60 * 60 * 1000;
+    }
+
+    res.cookie("din_token_client", token, cookieOptions);
+
+    delete user.password_hash;
+    res.json({ status: "success", user });
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    res.status(500).json({ status: "error", message: "Ralat sistem log masuk." });
   }
-
-  const token = jwt.sign(
-    { id: user.id, role: "customer" },
-    process.env.JWT_SECRET_CLIENT,
-    { expiresIn: "30d" },
-  );
-
-  const cookieOptions = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-  };
-  
-  if (remember) {
-    cookieOptions.maxAge = 30 * 24 * 60 * 60 * 1000;
-  }
-
-  res.cookie("din_token_client", token, cookieOptions);
-
-  delete user.password_hash;
-  res.json({ status: "success", user });
 });
 
 // ==========================================

@@ -3,6 +3,14 @@ const router = express.Router();
 const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
 const { generateBusinessInsights } = require("../utils/ai");
+const rateLimit = require("express-rate-limit");
+
+// [DIBAIKI] AI Billing Exhaustion Prevention (Limit 5 req / 5 min)
+const aiLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 5,
+  message: { status: "error", message: "Had pertanyaan AI tercapai. Sila tunggu 5 minit untuk menyejukkan enjin AI." }
+});
 
 router.get(
   "/dashboard",
@@ -191,6 +199,7 @@ router.post(
   "/ai-insights",
   authenticate,
   requireRole(["owner"]),
+  aiLimiter, // [DIBAIKI] Sekatan AI Billing Exhaustion
   async (req, res) => {
     const { prompt, activeTab, timeFilter } = req.body;
     if (!prompt)
