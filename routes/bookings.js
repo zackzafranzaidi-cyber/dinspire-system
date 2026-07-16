@@ -322,9 +322,9 @@ router.post(
       receipt_url,
       price,
     } = req.body;
-    const staff_id = req.user.id;
-    const parsedPrice = parseFloat(price) || 0.0;
-    const receiptName = "WLK" + Math.floor(1000 + Math.random() * 9000);
+      const staff_id = req.user.id;
+      const parsedPrice = Math.abs(parseFloat(price) || 0.0);
+      const receiptName = "WLK" + Math.floor(1000 + Math.random() * 9000);
     let finalReceiptUrl = await uploadReceiptToStorage(
       receipt_url,
       receiptName,
@@ -801,13 +801,13 @@ router.post(
 
       const { error } = await supabase
         .from("reviews")
-        .insert([
-          {
-            no_booking: order_no,
-            bintang: parseInt(stars),
-            review_text: review_text,
-          },
-        ]);
+          .insert([
+            {
+              no_booking: order_no,
+              bintang: Math.max(1, Math.min(5, parseInt(stars) || 5)),
+              review_text: review_text,
+            },
+          ]);
       if (error) throw error;
 
       // Padam cache supaya ulasan baharu segera terpapar di laman utama
@@ -858,10 +858,10 @@ router.post("/webhook/fpx", async (req, res) => {
     // Beritahu gateway FPX yang kita terima webhook ini dengan berjaya
     res.status(200).json({ status: "success", message: "Webhook processed securely" });
 
-  } catch (error) {
-    console.error("Ralat Keselamatan Webhook FPX:", error.message);
-    res.status(403).json({ status: "error", message: error.message });
-  }
-});
+    } catch (error) {
+      console.error("Ralat Keselamatan Webhook FPX:", error.message);
+      res.status(403).json({ status: "error", message: "Gagal memproses webhook." });
+    }
+  });
 
 module.exports = router;

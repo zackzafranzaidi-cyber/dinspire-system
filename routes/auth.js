@@ -127,7 +127,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
   } catch (err) {
     require('fs').writeFileSync('crash.txt', err.stack);
     console.error("UNCAUGHT EXCEPTION IN /REGISTER:", err);
-    res.status(500).json({ status: "error", message: "Ralat sistem: " + err.message });
+    res.status(500).json({ status: "error", message: "Ralat sistem: Pendaftaran tergendala seketika." });
   }
 });
 

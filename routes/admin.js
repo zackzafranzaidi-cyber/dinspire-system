@@ -409,7 +409,7 @@ router.post(
         .status(500)
         .json({
           status: "error",
-          message: error.message || "Ralat menyimpan pangkalan data.",
+          message: "Ralat menyimpan pangkalan data. Sila cuba sebentar lagi.",
         });
     }
   },
