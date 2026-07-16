@@ -219,11 +219,11 @@ router.post(
           // 3. KENDALIKAN PEMADAMAN SECARA SELAMAT (Targeted Delete)
           // Bukannya memadam semua rekod, kita HANYA padam rekod lama yang TIADA dalam senarai baru frontend
           if (currentIds.length > 0) {
-            // Gunakan Array terus ke dalam fungsi 'in' Supabase untuk elak isu sintaks/SQL Injection
+            // Gunakan format string dengan kurungan untuk not.in bagi mematuhi sintaks PostgREST
             const { error: delErr } = await supabase
               .from(table)
               .delete()
-              .not("id", "in", currentIds);
+              .not("id", "in", "(" + currentIds.join(",") + ")");
 
             if (delErr) throw delErr;
           } else {
