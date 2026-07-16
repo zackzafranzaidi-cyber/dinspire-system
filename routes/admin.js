@@ -293,13 +293,7 @@ router.post(
       // [DIBAIKI] Semakan Imej Produk
       // ==========================================
       if (data.Products) {
-        const { error: delProdErr } = await supabase
-          .from("products")
-          .delete()
-          .neq("id", "00000000-0000-0000-0000-000000000000");
-        if (delProdErr) throw delProdErr;
-
-        let prodArr = [];
+        let processedProducts = [];
         for (let i = 0; i < data.Products.length; i++) {
           let p = data.Products[i];
           let url = p.imageUrl;
@@ -311,14 +305,12 @@ router.post(
               );
             url = uploaded;
           }
-          prodArr.push({ id: p.id, nama: p.name, harga: p.price, gambar: url });
+          processedProducts.push({ ...p, imageUrl: url });
         }
-        if (prodArr.length > 0) {
-          const { error: insProdErr } = await supabase
-            .from("products")
-            .insert(prodArr);
-          if (insProdErr) throw insProdErr;
-        }
+        
+        await syncData("products", processedProducts, (i) => ({
+          id: i.id, nama: i.name, harga: i.price, gambar: i.imageUrl
+        }));
       }
 
       // ==========================================
@@ -367,9 +359,9 @@ router.post(
       // SIMPAN FEE KE JADUAL SETTINGS
       if (data.Settings) {
         const settingKeys = [
-          { key: "shipping_fee", val: data.Settings.shipping_fee },
-          { key: "service_fee", val: data.Settings.service_fee },
-          { key: "peratus_komisen", val: data.Settings.peratus_komisen },
+          { key: "shipping_fee", val: Math.max(0, parseFloat(data.Settings.shipping_fee) || 0) },
+          { key: "service_fee", val: Math.max(0, parseFloat(data.Settings.service_fee) || 0) },
+          { key: "peratus_komisen", val: Math.max(0, parseFloat(data.Settings.peratus_komisen) || 0) },
         ];
 
         for (let s of settingKeys) {

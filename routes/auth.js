@@ -76,6 +76,11 @@ router.post("/register", verifyLimiter, async (req, res) => {
       return res.status(400).json({ status: "error", message: "Kata laluan mestilah sekurang-kurangnya 6 aksara." });
     }
 
+    const { data: existUser } = await supabase.from("customers").select("id").eq("phone", phone).single();
+    if (existUser) {
+      return res.status(400).json({ status: "error", message: "Nombor telefon ini sudah didaftarkan." });
+    }
+
     // Semak OTP di jadual baharu 'otps'
     const { data: otpRecord } = await supabase
       .from("otps")

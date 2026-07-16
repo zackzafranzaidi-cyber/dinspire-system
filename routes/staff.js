@@ -229,6 +229,11 @@ router.post(
           if (brData) namaCawangan = brData.nama_cawangan;
         }
 
+        const { data: existPunch } = await supabase.from("punch_cards").select("id").eq("staff_id", staff_id).eq("tarikh", tarikh).single();
+        if (existPunch) {
+          return res.status(400).json({ status: "error", message: "Anda sudah Punch In hari ini." });
+        }
+
         const { error } = await supabase.from("punch_cards").insert([
           {
             staff_id: staff_id,

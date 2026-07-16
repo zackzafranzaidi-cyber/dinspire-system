@@ -746,16 +746,21 @@ router.put(
   async (req, res) => {
     const { tracking_no } = req.body;
     try {
+      const { data: order } = await supabase.from("product_orders").select("status").eq("id", req.params.id).single();
+      if (!order) return res.status(404).json({ status: "error", message: "Pesanan tidak dijumpai." });
+
       const { error } = await supabase
         .from("product_orders")
         .update({ status: "Shipped", tracking_no: tracking_no || "Tiada" })
         .eq("id", req.params.id);
       if (error) throw error;
 
-      console.log(`\n========================================`);
-      console.log(`[SIMULASI SMS - ORDER SHIPPED] Hantar untuk order ID: ${req.params.id}`);
-      console.log(`Mesej: Pesanan anda telah dihantar! No Tracking: ${tracking_no || "Sila rujuk sistem"}. Terima kasih kerana membeli-belah dengan Dinspire!`);
-      console.log(`========================================\n`);
+      if (order.status !== "Shipped") {
+        console.log(`\n========================================`);
+        console.log(`[SIMULASI SMS - ORDER SHIPPED] Hantar untuk order ID: ${req.params.id}`);
+        console.log(`Mesej: Pesanan anda telah dihantar! No Tracking: ${tracking_no || "Sila rujuk sistem"}. Terima kasih kerana membeli-belah dengan Dinspire!`);
+        console.log(`========================================\n`);
+      }
       res.json({
         status: "success",
         message: "Pesanan dikemas kini ke Shipped.",
