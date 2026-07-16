@@ -275,6 +275,16 @@ router.post(
           }
         } catch (err) {
           console.error(`Ralat semasa menyelaraskan jadual ${table}:`, err);
+          if (err.code === "23503") {
+            throw new Error(
+              `Tidak boleh memadam data dalam jadual '${table}' kerana ia sedang digunakan oleh rekod lain (contoh: Tempahan pelanggan atau resit). Sila pastikan rekod ini tidak terikat sebelum memadamnya.`
+            );
+          }
+          if (err.code === "22P02" && String(err.message).includes("uuid")) {
+            throw new Error(
+              `Terdapat penambahan rekod baharu dengan format ID yang tidak sah pada jadual '${table}'. Sila pastikan anda mengakses portal ini menggunakan sambungan selamat (HTTPS) atau pelayar web yang moden.`
+            );
+          }
           throw err; // Lemparkan ralat ke blok catch utama router untuk rollback/respons ralat
         }
       };
@@ -437,12 +447,18 @@ router.post(
       });
     } catch (error) {
       console.error("Ralat Menyimpan Admin CMS:", error);
+      
+      let errorMsg = "Ralat menyimpan pangkalan data. Sila cuba sebentar lagi.";
+      if (error.message && (error.message.includes("Tidak boleh memadam data") || error.message.includes("format ID yang tidak sah"))) {
+        errorMsg = error.message;
+      }
+      
       // Menghantar mesej ralat yang tepat kepada UI Admin
       res
         .status(500)
         .json({
           status: "error",
-          message: "Ralat menyimpan pangkalan data. Sila cuba sebentar lagi.",
+          message: errorMsg,
         });
     }
   },
