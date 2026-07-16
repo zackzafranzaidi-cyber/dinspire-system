@@ -16,6 +16,8 @@ const otpLimiter = rateLimit({
   },
 });
 
+const loginAttempts = {};
+
 // 2. Had Akses untuk MENGESAHKAN (Meneka) OTP & Log Masuk Sistem
 const verifyLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
@@ -72,8 +74,8 @@ router.post("/request-otp", otpLimiter, async (req, res) => {
 router.post("/register", verifyLimiter, async (req, res) => {
   try {
     const { username, phone, address, avatar_url, otp, password } = req.body;
-    if (!password || password.length < 6) {
-      return res.status(400).json({ status: "error", message: "Kata laluan mestilah sekurang-kurangnya 6 aksara." });
+    if (!password || password.length < 6 || password.length > 72) {
+      return res.status(400).json({ status: "error", message: "Kata laluan mestilah antara 6 hingga 72 aksara." });
     }
 
     const { data: existUser } = await supabase.from("customers").select("id").eq("phone", phone).single();
@@ -231,13 +233,17 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
   // KITA ABAIKAN JAWATAN YANG DIHANTAR DARI KLIEN (Elak Role Spoofing)
   const { username, password, allowed_roles, remember } = req.body;
 
-  if (!username || !password) {
+  if (!username || !password || password.length > 72) {
     return res
       .status(400)
       .json({
         status: "error",
-        message: "Sila isi nama pengguna dan kata laluan.",
+        message: "Sila isi nama pengguna dan kata laluan yang sah.",
       });
+  }
+
+  if (loginAttempts[username] && loginAttempts[username] > 10) {
+    return res.status(429).json({ status: "error", message: "Akaun dikunci sementara akibat terlalu banyak percubaan gagal." });
   }
 
   try {
@@ -292,6 +298,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     // Semak pengesahan kata laluan (Hashing)
     const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) {
+      loginAttempts[username] = (loginAttempts[username] || 0) + 1;
       return res
         .status(401)
         .json({
@@ -299,6 +306,8 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
           message: "Akses ditolak. Kata laluan salah.",
         });
     }
+
+    loginAttempts[username] = 0;
 
     // Keselamatan Tambahan: Pastikan jawatan sebenar staf ini DIBENARKAN untuk masuk ke portal yang sedang dibuka
     if (allowed_roles && Array.isArray(allowed_roles)) {

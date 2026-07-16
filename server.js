@@ -14,6 +14,15 @@ const app = express();
 app.use(helmet());
 app.use(compression());
 
+// [DIBAIKI] Menghalang Pelayar dari Menyimpan (Cache) Data Sensitif (JSON Leak)
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.setHeader("Surrogate-Control", "no-store");
+  next();
+});
+
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minit
   max: 500, // 500 permintaan setiap 15 minit untuk API am

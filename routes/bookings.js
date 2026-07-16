@@ -45,7 +45,7 @@ async function uploadReceiptToStorage(base64Image, orderNo) {
       );
     }
 
-    const fileName = `receipt_${orderNo}_${Date.now()}.${realExtension}`;
+    const fileName = `receipt_${crypto.randomUUID()}.${realExtension}`;
 
     const { data, error } = await supabase.storage
       .from("receipts")
@@ -85,7 +85,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
   try {
     const { data: cust } = await supabase
       .from("customers")
-      .select("name, phone")
+      .select("name, phone, email")
       .eq("id", customer_id)
       .single();
     if (!cust)
@@ -110,7 +110,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
         .eq("id", service_id)
         .maybeSingle();
       if (svc) harga_rm = parseFloat(svc.harga);
-      order_no = "TR" + Math.floor(1000 + Math.random() * 9000);
+      order_no = "TR" + crypto.randomUUID().split("-")[0].toUpperCase();
     } else {
       const { data: svc } = await supabase
         .from("haircuts")
@@ -118,7 +118,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
         .eq("id", service_id)
         .maybeSingle();
       if (svc) harga_rm = parseFloat(svc.harga);
-      order_no = "DB" + Math.floor(1000 + Math.random() * 9000);
+      order_no = "DB" + crypto.randomUUID().split("-")[0].toUpperCase();
     }
 
     // [DIBAIKI] Perlindungan Double Booking Peringkat Aplikasi
@@ -150,7 +150,6 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
     }
 
     const payment_method = req.body.payment_method || "fpx";
-    const receipt_url = req.body.receipt_url || null;
 
     let fpxResult;
     let finalReceiptUrl = "";
@@ -188,6 +187,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
 
     const basePayload = {
       no_booking: order_no,
+      customer_id: customer_id,
       nama_pelanggan: cust.name,
       no_phone: cust.phone,
       tarikh: booking_date,
@@ -324,7 +324,7 @@ router.post(
     } = req.body;
       const staff_id = req.user.id;
       const parsedPrice = Math.abs(parseFloat(price) || 0.0);
-      const receiptName = "WLK" + Math.floor(1000 + Math.random() * 9000);
+      const receiptName = "WLK" + crypto.randomUUID().split("-")[0].toUpperCase();
     let finalReceiptUrl = await uploadReceiptToStorage(
       receipt_url,
       receiptName,
@@ -367,7 +367,7 @@ router.post(
     try {
       const { data: cust } = await supabase
         .from("customers")
-        .select("name")
+        .select("name, email")
         .eq("id", customer_id)
         .single();
       if (!cust)
@@ -390,10 +390,9 @@ router.post(
         .maybeSingle();
       if (svcHaircut) harga_rm = parseFloat(svcHaircut.harga);
 
-      const order_no = "DBC" + Math.floor(1000 + Math.random() * 9000);
+      const order_no = "DBC" + crypto.randomUUID().split("-")[0].toUpperCase();
       
       const payment_method = req.body.payment_method || "fpx";
-      const receipt_url = req.body.receipt_url || null;
 
       let fpxResult;
       let finalReceiptUrl = "";
@@ -432,6 +431,7 @@ router.post(
       const { error } = await supabase.from("oncall_records").insert([
         {
           no_booking: order_no,
+          customer_id: customer_id,
           nama_pelanggan: cust.name,
           tarikh: date,
           masa: time,
@@ -505,7 +505,7 @@ router.post(
 
       const { data: cust } = await supabase
         .from("customers")
-        .select("name")
+        .select("name, email")
         .eq("id", customer_id)
         .single();
       if (!cust)
@@ -536,7 +536,7 @@ router.post(
       for (let id of itemIds) {
         let dbProduct = productsDB.find((p) => p.id == id);
         if (dbProduct) {
-          let qty = parseInt(cart_items[id].qty) || 1;
+          let qty = Math.max(1, Math.min(100, parseInt(cart_items[id].qty) || 1));
           trustedCartItems[id] = {
             id: dbProduct.id,
             name: dbProduct.nama, // Guna nama dari DB (Bukan dari pelayar)
@@ -549,10 +549,9 @@ router.post(
       }
 
       const order_uuid = crypto.randomUUID();
-      const receipt_name = "PRD" + Math.floor(100000 + Math.random() * 900000);
+      const receipt_name = "PRD" + crypto.randomUUID().split("-")[0].toUpperCase();
       
       const payment_method = req.body.payment_method || "fpx";
-      const receipt_url = req.body.receipt_url || null;
 
       let fpxResult;
       let finalReceiptUrl = "";
@@ -591,6 +590,7 @@ router.post(
       const { error } = await supabase.from("product_orders").insert([
         {
           id: order_uuid,
+          customer_id: customer_id,
           nama_pembeli: cust.name,
           senarai_produk: JSON.stringify(trustedCartItems), // Simpan data yang telah disucikan
           lokasi_penghantaran: address,
@@ -632,7 +632,7 @@ router.get(
     try {
       const { data: cust } = await supabase
         .from("customers")
-        .select("name, phone")
+        .select("id, name, phone")
         .eq("id", req.user.id)
         .single();
       if (!cust)
@@ -641,25 +641,23 @@ router.get(
       const { data: prodOrders } = await supabase
         .from("product_orders")
         .select("id, senarai_produk, status, tracking_no, created_at")
-        .eq("nama_pembeli", cust.name);
+        .eq("customer_id", req.user.id);
       const { data: bookOrders } = await supabase
         .from("booking_records")
         .select(
           "no_booking, tarikh, masa, status, created_at, haircuts(nama_potongan)",
         )
-        .eq("no_phone", cust.phone);
+        .eq("customer_id", req.user.id);
       const { data: treatOrders } = await supabase
         .from("treatment_records")
         .select(
           "no_booking, tarikh, masa, status, created_at, treatments(nama_rawatan)",
         )
-        .eq("no_phone", cust.phone);
+        .eq("customer_id", req.user.id);
       const { data: oncallOrders } = await supabase
         .from("oncall_records")
-        .select(
-          "no_booking, tarikh, masa, status, created_at, haircuts(nama_potongan)",
-        )
-        .eq("nama_pelanggan", cust.name);
+        .select("no_booking, tarikh, masa, status, created_at, address")
+        .eq("customer_id", req.user.id);
 
       let allNotifications = [];
       (prodOrders || []).forEach((o) => {
@@ -699,9 +697,7 @@ router.get(
           created_at: o.created_at,
           date: o.tarikh,
           time: o.masa,
-          service_name: o.haircuts
-            ? o.haircuts.nama_potongan
-            : "Servis On-Call",
+          service_name: "Servis On-Call",
         });
       });
 
@@ -802,6 +798,11 @@ router.post(
 
       if (!validBooking && !validTreatment) {
         return res.status(403).json({ status: "error", message: "Akses ditolak. Tempahan tidak sah atau belum selesai." });
+      }
+
+      const { data: existReview } = await supabase.from("reviews").select("id").eq("no_booking", order_no).single();
+      if (existReview) {
+        return res.status(400).json({ status: "error", message: "Anda telah memberikan ulasan untuk tempahan ini." });
       }
 
       const { error } = await supabase

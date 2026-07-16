@@ -185,12 +185,15 @@ router.post(
   requireRole(["staff"]),
   async (req, res) => {
     // Kini menerima nilai latitud dan longitud dari peranti frontend
-    const { type, location, lat, lon } = req.body;
+    const { type, location, lat: rawLat, lon: rawLon } = req.body;
     const staff_id = req.user.id;
     const username = req.user.username;
 
-    // Semakan Geofencing untuk staf (Wajib berada di kedai)
-    if (!lat || !lon || lat === 0 || lon === 0) {
+    // [DIBAIKI] Semakan Geofencing ketat (Halang String Type-Juggling Bypass)
+    const lat = parseFloat(rawLat);
+    const lon = parseFloat(rawLon);
+    
+    if (isNaN(lat) || isNaN(lon) || lat === 0 || lon === 0) {
       return res.status(403).json({
         status: "error",
         message: "Koordinat GPS tidak sah. Lokasi wajib diaktifkan dan tepat.",
