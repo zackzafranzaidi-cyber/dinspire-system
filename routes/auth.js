@@ -174,6 +174,7 @@ router.post("/login", verifyLimiter, async (req, res) => {
 
   res.cookie("din_token_client", token, cookieOptions);
 
+  delete user.password_hash;
   res.json({ status: "success", user });
 });
 

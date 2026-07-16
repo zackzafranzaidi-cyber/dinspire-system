@@ -212,7 +212,7 @@ router.post(
             const { error: delErr } = await supabase
               .from(table)
               .delete()
-              .not("id", "in", `(${currentIds.join(",")})`);
+              .not("id", "in", currentIds);
 
             if (delErr) throw delErr;
           } else {
