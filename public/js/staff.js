@@ -60,12 +60,12 @@ function initStaffEventListeners() {
   document.getElementById("link-forgot-password")?.addEventListener("click", (e) => {
     e.preventDefault();
     document.getElementById("login-screen").style.display = "none";
-    document.getElementById("forgot-password-screen").style.display = "block";
+    document.getElementById("forgot-password-screen").style.display = "flex";
   });
   document.getElementById("link-back-login")?.addEventListener("click", (e) => {
     e.preventDefault();
     document.getElementById("forgot-password-screen").style.display = "none";
-    document.getElementById("login-screen").style.display = "block";
+    document.getElementById("login-screen").style.display = "flex";
   });
   document.getElementById("btn-submit-cp")?.addEventListener("click", submitChangePassword);
   document.getElementById("btn-submit-fp")?.addEventListener("click", submitForgotPassword);
@@ -115,7 +115,7 @@ async function loginStaffSystem() {
     } else if (data.status === "REQUIRE_PASSWORD_CHANGE") {
       window.tempChangePasswordToken = data.temp_token;
       document.getElementById("login-screen").style.display = "none";
-      document.getElementById("change-password-screen").style.display = "block";
+      document.getElementById("change-password-screen").style.display = "flex";
       showToast(data.message);
     } else {
       alert(data.message);
@@ -151,7 +151,7 @@ async function submitChangePassword() {
       alert("Kata laluan berjaya ditukar! Sila log masuk semula dengan kata laluan baharu.");
       window.tempChangePasswordToken = null;
       document.getElementById("change-password-screen").style.display = "none";
-      document.getElementById("login-screen").style.display = "block";
+      document.getElementById("login-screen").style.display = "flex";
       document.getElementById("sys-password").value = "";
       document.getElementById("cp-new-password").value = "";
     } else {
@@ -184,7 +184,7 @@ async function submitForgotPassword() {
     if (data.status === "success") {
       alert(data.message);
       document.getElementById("forgot-password-screen").style.display = "none";
-      document.getElementById("login-screen").style.display = "block";
+      document.getElementById("login-screen").style.display = "flex";
       document.getElementById("fp-username").value = "";
     } else {
       alert(data.message);
