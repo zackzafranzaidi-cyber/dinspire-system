@@ -68,10 +68,11 @@ async function uploadReceiptToStorage(base64Image, orderNo) {
 const fpx = require("../utils/fpx");
 
 // ==========================================
-// Pangkalan In-Memory Mutex Lock (Menghalang Race Conditions / TOCTOU)
+// Pangkalan In-Memory Mutex Lock (Anti Race Condition / TOCTOU)
 // ==========================================
 const bookingLocks = new Set();
 const oncallLocks = new Set();
+const reviewLocks = new Set(); // [DIBAIKI] Mengelak klon Ulasan 1 Bintang (Review Race Condition)
 
 // ==========================================
 // 1. Pelanggan Buat Tempahan (Booking)
@@ -815,14 +816,20 @@ router.post(
   requireRole(["customer"]),
   async (req, res) => {
     const { order_no, stars, review_text } = req.body;
-    try {
-      if (!order_no)
-        return res
-          .status(400)
-          .json({ status: "error", message: "No Tempahan wajib diisi." });
+      try {
+        if (!order_no)
+          return res
+            .status(400)
+            .json({ status: "error", message: "No Tempahan wajib diisi." });
+            
+        // [DIBAIKI] Race Condition Lock untuk Ulasan (Elak botnet SPAM)
+        if (reviewLocks.has(order_no)) {
+          return res.status(409).json({ status: "error", message: "Ulasan anda sedang diproses. Sila tunggu sebentar." });
+        }
+        reviewLocks.add(order_no);
 
-      // [DIBAIKI] Semakan Pemilikan Tempahan untuk mengelakkan Spam
-      const { data: validBooking } = await supabase
+        // [DIBAIKI] Semakan Pemilikan Tempahan untuk mengelakkan Spam
+        const { data: validBooking } = await supabase
         .from("booking_records")
         .select("id")
         .eq("no_booking", order_no)
@@ -839,11 +846,13 @@ router.post(
         .single();
 
       if (!validBooking && !validTreatment) {
+        reviewLocks.delete(order_no);
         return res.status(403).json({ status: "error", message: "Akses ditolak. Tempahan tidak sah atau belum selesai." });
       }
 
       const { data: existReview } = await supabase.from("reviews").select("id").eq("no_booking", order_no).single();
       if (existReview) {
+        reviewLocks.delete(order_no);
         return res.status(400).json({ status: "error", message: "Anda telah memberikan ulasan untuk tempahan ini." });
       }
 
@@ -860,12 +869,16 @@ router.post(
 
       // Padam cache supaya ulasan baharu segera terpapar di laman utama
       cache.del("shop_data");
-
-      res.json({ status: "success", message: "Ulasan berjaya disimpan." });
+  
+      reviewLocks.delete(order_no);
+      res.json({
+        status: "success",
+        message: "Terima kasih atas ulasan anda!",
+      });
     } catch (error) {
-      res
-        .status(500)
-        .json({ status: "error", message: "Ralat menyimpan ulasan." });
+      if (typeof order_no !== "undefined") reviewLocks.delete(order_no);
+      console.error("Ralat Ulasan:", error);
+      res.status(500).json({ status: "error", message: "Gagal menghantar ulasan." });
     }
   },
 );

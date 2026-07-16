@@ -9,16 +9,24 @@ function authenticate(req, res, next) {
 
   // [DIBAIKI] Guna Kunci Khas Sistem
   if (tokenSys) {
-    try {
-      req.users.sys = jwt.verify(tokenSys, process.env.JWT_SECRET_SYS);
-    } catch (e) {}
+    if (global.jwtBlacklist && global.jwtBlacklist.has(tokenSys)) {
+      // Token ini sudah dibatalkan (Logged Out)
+    } else {
+      try {
+        req.users.sys = jwt.verify(tokenSys, process.env.JWT_SECRET_SYS);
+      } catch (e) {}
+    }
   }
 
   // [DIBAIKI] Guna Kunci Khas Pelanggan
   if (tokenClient) {
-    try {
-      req.users.client = jwt.verify(tokenClient, process.env.JWT_SECRET_CLIENT);
-    } catch (e) {}
+    if (global.jwtBlacklist && global.jwtBlacklist.has(tokenClient)) {
+      // Token ini sudah dibatalkan (Logged Out)
+    } else {
+      try {
+        req.users.client = jwt.verify(tokenClient, process.env.JWT_SECRET_CLIENT);
+      } catch (e) {}
+    }
   }
 
   if (!req.users.sys && !req.users.client) {

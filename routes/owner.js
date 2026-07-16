@@ -202,7 +202,13 @@ router.post(
   aiLimiter, // [DIBAIKI] Sekatan AI Billing Exhaustion
   async (req, res) => {
     const { prompt, activeTab, timeFilter } = req.body;
-    if (!prompt)
+
+    // [DIBAIKI] AI Payload Bloat (Letupan Pengebilan Token)
+    const safePrompt = (prompt || "").substring(0, 500);
+    const safeTab = (activeTab || "").substring(0, 100);
+    const safeTimeFilter = (timeFilter || "").substring(0, 50);
+
+    if (!safePrompt)
       return res
         .status(400)
         .json({
@@ -281,12 +287,12 @@ router.post(
         MaklumBalasPelanggan: reviews,
       };
 
-      // 3. Hantar ke Enjin AI Gemini berserta konteks UI semasa
+      // 3. Hantar ke Enjin AI Gemini berserta konteks AI semasa
       const aiResponseText = await generateBusinessInsights(
-        prompt,
+        safePrompt,
         businessContext,
-        activeTab,
-        timeFilter,
+        safeTab,
+        safeTimeFilter,
       );
 
       // 4. Pulangkan hasil kepada UI

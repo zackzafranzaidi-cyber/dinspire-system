@@ -75,11 +75,16 @@ router.post("/register", verifyLimiter, async (req, res) => {
   try {
     const { username, phone, address, avatar_url, otp, password } = req.body;
     
-    // [DIBAIKI] Stored XSS Prevention
+    // [DIBAIKI] Stored XSS Prevention & Unbounded String DB Exhaustion
     const xssRegex = /<[^>]*>?/gm;
     if (xssRegex.test(username) || xssRegex.test(address)) {
       return res.status(400).json({ status: "error", message: "Kandungan tidak sah. Sila buang simbol berbahaya." });
     }
+    
+    // Had panjang maksima
+    const safeUsername = (username || "").substring(0, 100);
+    const safeAddress = (address || "").substring(0, 255);
+    const safePhone = (phone || "").substring(0, 20);
 
     if (!password || password.length < 6 || password.length > 72) {
       return res.status(400).json({ status: "error", message: "Kata laluan mestilah antara 6 hingga 72 aksara." });
@@ -120,10 +125,15 @@ router.post("/register", verifyLimiter, async (req, res) => {
         });
 
     const password_hash = await bcrypt.hash(password, 10);
-    const { error } = await supabase
-      .from("customers")
-      .insert([{ name: username, phone, address, avatar_url, password_hash }]);
-    if (error) {
+    const { error } = await supabase.from("customers").insert([
+      {
+        name: safeUsername,
+        phone: safePhone,
+        address: safeAddress,
+        avatar_url,
+        password_hash,
+      },
+    ]);if (error) {
       console.error("REGISTER ERROR:", error);
       return res
         .status(500)
@@ -181,7 +191,7 @@ router.post("/login", verifyLimiter, async (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: true,
-      sameSite: "None",
+      sameSite: "Strict", // [DIBAIKI] Mengurangkan risiko CSRF
     };
 
     if (remember) {
@@ -223,17 +233,22 @@ router.post("/forgot-password/request-otp", otpLimiter, async (req, res) => {
 
 router.post("/forgot-password/reset", verifyLimiter, async (req, res) => {
   const { phone, otp, new_password } = req.body;
+
+  // [DIBAIKI] Musnahkan OTP terlebih dahulu supaya tidak boleh dikitar semula (OTP Fixation)
+  const { data: otpRecord } = await supabase.from("otps").select("*").eq("phone", phone).eq("otp_code", otp).single();
+  if (otpRecord) {
+    await supabase.from("otps").delete().eq("phone", phone);
+  }
+
+  if (!otpRecord) return res.status(400).json({ status: "error", message: "Kod OTP salah atau tidak wujud." });
+  if (new Date(otpRecord.expires_at) < new Date()) return res.status(400).json({ status: "error", message: "Kod OTP tamat tempoh." });
+
   if (!new_password || new_password.length < 6) {
     return res.status(400).json({ status: "error", message: "Kata laluan mestilah sekurang-kurangnya 6 aksara." });
   }
 
-  const { data: otpRecord } = await supabase.from("otps").select("*").eq("phone", phone).eq("otp_code", otp).single();
-  if (!otpRecord) return res.status(400).json({ status: "error", message: "Kod OTP salah atau tidak wujud." });
-  if (new Date(otpRecord.expires_at) < new Date()) return res.status(400).json({ status: "error", message: "Kod OTP tamat tempoh." });
-
   const password_hash = await bcrypt.hash(new_password, 10);
   await supabase.from("customers").update({ password_hash }).eq("phone", phone);
-  await supabase.from("otps").delete().eq("phone", phone);
 
   res.json({ status: "success", message: "Kata laluan telah berjaya ditetapkan semula. Sila log masuk." });
 });
@@ -350,7 +365,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: true,
-      sameSite: "None",
+      sameSite: "Strict", // [DIBAIKI] Mengurangkan risiko CSRF
     };
     
     if (remember) {
@@ -376,19 +391,25 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
 // ==========================================
 
 router.post("/logout-client", (req, res) => {
+  const token = req.cookies.din_token_client;
+  if (token && global.jwtBlacklist) global.jwtBlacklist.add(token);
+
   res.clearCookie("din_token_client", {
     httpOnly: true,
     secure: true,
-    sameSite: "None",
+    sameSite: "Strict",
   });
   res.json({ status: "success", message: "Pelanggan telah log keluar." });
 });
 
 router.post("/logout-sys", (req, res) => {
+  const token = req.cookies.din_token_sys;
+  if (token && global.jwtBlacklist) global.jwtBlacklist.add(token);
+
   res.clearCookie("din_token_sys", {
     httpOnly: true,
     secure: true,
-    sameSite: "None",
+    sameSite: "Strict",
   });
   res.json({ status: "success", message: "Staf/Owner telah log keluar." });
 });

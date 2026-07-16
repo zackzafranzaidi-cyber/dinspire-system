@@ -5,12 +5,28 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
+const schedule = require("node-schedule");
+const supabase = require("./config/db");
 const logger = require("./utils/logger"); // Import Winston logger
 const app = express();
 
 // ========================================================
+// [DIBAIKI] Pengesahan Kunci Kriptografi & Fail-Fast Mechanism
+// ========================================================
+if (!process.env.JWT_SECRET_CLIENT || !process.env.JWT_SECRET_SYS) {
+  console.error("FATAL ERROR: JWT_SECRET tidak dijumpai. Sistem dimatikan (Fail-Fast) bagi mengelak pemalsuan JWT.");
+  process.exit(1);
+}
+
+// ========================================================
+// Pangkalan JWT Blacklist Global (Sesi Zombie In-Memory)
+// ========================================================
+global.jwtBlacklist = new Set();
+
+// ========================================================
 // [DIBAIKI] Perlindungan Tambahan (Enterprise-Grade Security)
 // ========================================================
+app.disable("x-powered-by"); // Menghalang 'Information Disclosure' pelayan Express
 app.use(helmet());
 app.use(compression());
 
@@ -123,8 +139,63 @@ app.use((err, req, res, next) => {
   });
 });
 
+// ========================================================
+// [DIBAIKI] Auto-Recovery SMS Jadual In-Memory
+// ========================================================
+async function recoverSMSReminders() {
+  try {
+    console.log("Menyemak pemulihan SMS Peringatan...");
+    
+    // Tarik tempahan 'Aktif'
+    const { data: bookings } = await supabase
+      .from("booking_records")
+      .select("no_booking, tarikh, masa, no_phone")
+      .eq("status", "Aktif");
+
+    if (bookings) {
+      bookings.forEach((b) => {
+        if (!b.tarikh || !b.masa) return;
+        const bDate = new Date(`${b.tarikh}T${b.masa}`);
+        const reminderTime = new Date(bDate.getTime() - 2 * 60 * 60 * 1000);
+        
+        if (reminderTime > new Date()) {
+          schedule.scheduleJob(reminderTime, function() {
+            console.log(`\n[AUTO-RECOVERY SMS] Hantar ke: ${b.no_phone} | Tempahan: ${b.no_booking}`);
+          });
+        }
+      });
+      console.log(`Berjaya memulihkan ${bookings.length} jadual SMS Tempahan.`);
+    }
+
+    // Tarik oncall 'Aktif'
+    const { data: oncalls } = await supabase
+      .from("oncall_records")
+      .select("no_booking, tarikh, masa, customer_id")
+      .eq("status", "Aktif");
+      
+    if (oncalls) {
+      oncalls.forEach((o) => {
+        if (!o.tarikh || !o.masa) return;
+        const oDate = new Date(`${o.tarikh}T${o.masa}`);
+        const reminderTime = new Date(oDate.getTime() - 2 * 60 * 60 * 1000);
+        
+        if (reminderTime > new Date()) {
+          schedule.scheduleJob(reminderTime, function() {
+            console.log(`\n[AUTO-RECOVERY SMS] Hantar ke Pelanggan On-Call ID: ${o.customer_id} | Tempahan: ${o.no_booking}`);
+          });
+        }
+      });
+      console.log(`Berjaya memulihkan ${oncalls.length} jadual SMS On-Call.`);
+    }
+
+  } catch (error) {
+    console.error("Gagal memulihkan SMS jadual:", error);
+  }
+}
+
 // Mulakan Pelayan
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server Dinspire berjalan di port ${PORT}`);
+  await recoverSMSReminders(); // Jalankan Auto-Recovery selepas pelayan hidup
 });
