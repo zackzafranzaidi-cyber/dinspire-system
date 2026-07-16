@@ -29,6 +29,13 @@ function isValidImageBuffer(buffer) {
 
 async function uploadReceiptToStorage(base64Image, orderNo) {
   if (!base64Image || !base64Image.startsWith("data:image")) return base64Image;
+  
+  // [DIBAIKI] Pembekuan Teras Pemproses (Regex DoS)
+  if (base64Image.length > 5000000) {
+    console.error("Resit terlalu besar (Melebihi 5MB).");
+    return null;
+  }
+
   try {
     const matches = base64Image.match(
       /^data:image\/([A-Za-z-+\/]+);base64,(.+)$/,
@@ -73,6 +80,7 @@ const fpx = require("../utils/fpx");
 const bookingLocks = new Set();
 const oncallLocks = new Set();
 const reviewLocks = new Set(); // [DIBAIKI] Mengelak klon Ulasan 1 Bintang (Review Race Condition)
+const completionLocks = new Set(); // [DIBAIKI] Mengelak Race Condition semasa penyiapan pesanan
 
 // ==========================================
 // 1. Pelanggan Buat Tempahan (Booking)
@@ -293,6 +301,12 @@ router.put(
         .status(400)
         .json({ status: "error", message: "Harga tidak sah!" });
 
+    // [DIBAIKI] Pengklonan Butang Selesai (Race Condition)
+    if (completionLocks.has(orderNo)) {
+      return res.status(409).json({ status: "error", message: "Pesanan ini sedang diselesaikan." });
+    }
+    completionLocks.add(orderNo);
+
     let finalReceiptUrl = await uploadReceiptToStorage(receipt_url, orderNo);
 
     try {
@@ -318,8 +332,10 @@ router.put(
       const { error } = await query;
       if (error) throw error;
 
+      completionLocks.delete(orderNo);
       res.json({ status: "success", message: "Servis disahkan selesai" });
     } catch (error) {
+      if (typeof orderNo !== "undefined") completionLocks.delete(orderNo);
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
     }
   },
@@ -803,8 +819,8 @@ router.put(
   async (req, res) => {
     const { tracking_no } = req.body;
     
-    // [DIBAIKI] Stored XSS via Nombor Tracking
-    const safeTrackingNo = (tracking_no || "Tiada").replace(/<[^>]*>?/gm, "").substring(0, 100);
+    // [DIBAIKI] Stored XSS via Nombor Tracking & Type Confusion
+    const safeTrackingNo = String(tracking_no || "Tiada").replace(/<[^>]*>?/gm, "").substring(0, 100);
 
     try {
       const { data: order } = await supabase.from("product_orders").select("status").eq("id", req.params.id).single();
@@ -877,6 +893,9 @@ router.post(
         reviewLocks.delete(order_no);
         return res.status(400).json({ status: "error", message: "Anda telah memberikan ulasan untuk tempahan ini." });
       }
+        
+      // [DIBAIKI] DB Exhaustion (Pengehadan Panjang Teks Ulasan)
+      const safeReviewText = String(review_text || "").substring(0, 500);
 
       const { error } = await supabase
         .from("reviews")
@@ -884,7 +903,7 @@ router.post(
             {
               no_booking: order_no,
               bintang: Math.max(1, Math.min(5, parseInt(stars) || 5)),
-              review_text: review_text,
+              review_text: safeReviewText,
             },
           ]);
       if (error) throw error;

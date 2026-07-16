@@ -24,7 +24,8 @@ router.get("/", async (req, res) => {
       supabase.from("branches").select("*").limit(50),
       supabase.from("staff").select("id, username, jenis_staf, branch_id").limit(100),
       supabase.from("products").select("*").limit(200),
-      supabase.from("settings").select("*").limit(50),
+      // [DIBAIKI] Ketirisan Rahsia Syarikat: Jangan fetch peratus_komisen
+      supabase.from("settings").select("setting_key, setting_value").in("setting_key", ["posters", "shipping_fee", "service_fee"]).limit(50),
     ]);
 
     let posters = [];

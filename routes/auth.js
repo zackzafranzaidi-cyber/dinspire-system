@@ -6,17 +6,17 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const rateLimit = require("express-rate-limit");
 
-// 1. Had Akses untuk MEMINTA OTP
+// ==========================================
+// LIMITER
+// ==========================================
 const otpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 25,
-  message: {
-    status: "error",
-    message: "Terlalu banyak permintaan OTP. Sila cuba lagi selepas 15 minit.",
-  },
+  max: 3,
+  message: { status: "error", message: "Terlalu banyak permintaan OTP." },
 });
 
 const loginAttempts = {};
+const otpAttempts = {}; // [DIBAIKI] Brute-Force OTP Tracking
 
 // 2. Had Akses untuk MENGESAHKAN (Meneka) OTP & Log Masuk Sistem
 const verifyLimiter = rateLimit({
@@ -75,16 +75,20 @@ router.post("/register", verifyLimiter, async (req, res) => {
   try {
     const { username, phone, address, avatar_url, otp, password } = req.body;
     
-    // [DIBAIKI] Stored XSS Prevention & Unbounded String DB Exhaustion
+    // [DIBAIKI] Type Confusion DoS & Stored XSS Prevention
+    const safeUsernameStr = String(username || "");
+    const safeAddressStr = String(address || "");
+    const safePhoneStr = String(phone || "");
+    
     const xssRegex = /<[^>]*>?/gm;
-    if (xssRegex.test(username) || xssRegex.test(address)) {
+    if (xssRegex.test(safeUsernameStr) || xssRegex.test(safeAddressStr)) {
       return res.status(400).json({ status: "error", message: "Kandungan tidak sah. Sila buang simbol berbahaya." });
     }
     
     // Had panjang maksima
-    const safeUsername = (username || "").substring(0, 100);
-    const safeAddress = (address || "").substring(0, 255);
-    const safePhone = (phone || "").substring(0, 20);
+    const safeUsername = safeUsernameStr.substring(0, 100).replace(/<[^>]*>?/gm, "");
+    const safeAddress = safeAddressStr.substring(0, 255).replace(/<[^>]*>?/gm, "");
+    const safePhone = safePhoneStr.substring(0, 20);
 
     if (!password || password.length < 6 || password.length > 72) {
       return res.status(400).json({ status: "error", message: "Kata laluan mestilah antara 6 hingga 72 aksara." });
@@ -168,6 +172,8 @@ router.post("/login", verifyLimiter, async (req, res) => {
   try {
     const { data: user } = await supabase.from("customers").select("*").eq("phone", phone).single();
     if (!user) {
+      // [DIBAIKI] Timing Attack Protection (Dummy Hashing)
+      await bcrypt.compare(password, "$2b$10$DummyHash12345678901234567890123456789012345678901234");
       return res.status(404).json({
         status: "error",
         message: "Akaun tidak dijumpai. Sila daftar dahulu.",
@@ -185,7 +191,7 @@ router.post("/login", verifyLimiter, async (req, res) => {
     const token = jwt.sign(
       { id: user.id, role: "customer" },
       process.env.JWT_SECRET_CLIENT,
-      { expiresIn: "1h" }, // [DIBAIKI] Tempoh dipendekkan ke 1 jam bagi mengecilkan tingkap bahaya JWT
+      { expiresIn: "1h", iss: "dinspire-sys" }, // [DIBAIKI] Zero-Trust Boundary & JWT Expiry
     );
 
     const cookieOptions = {
@@ -233,14 +239,24 @@ router.post("/forgot-password/request-otp", otpLimiter, async (req, res) => {
 
 router.post("/forgot-password/reset", verifyLimiter, async (req, res) => {
   const { phone, otp, new_password } = req.body;
-
-  // [DIBAIKI] Musnahkan OTP terlebih dahulu supaya tidak boleh dikitar semula (OTP Fixation)
-  const { data: otpRecord } = await supabase.from("otps").select("*").eq("phone", phone).eq("otp_code", otp).single();
-  if (otpRecord) {
-    await supabase.from("otps").delete().eq("phone", phone);
+  
+  if (otpAttempts[phone] && otpAttempts[phone] > 3) {
+    return res.status(429).json({ status: "error", message: "Terlalu banyak percubaan salah. Sila mohon OTP baharu." });
   }
 
-  if (!otpRecord) return res.status(400).json({ status: "error", message: "Kod OTP salah atau tidak wujud." });
+  const { data: otpRecord } = await supabase.from("otps").select("*").eq("phone", phone).eq("otp_code", String(otp)).single();
+  
+  if (!otpRecord) {
+    // [DIBAIKI] Infinite OTP Brute-Force Protection
+    otpAttempts[phone] = (otpAttempts[phone] || 0) + 1;
+    if (otpAttempts[phone] > 3) await supabase.from("otps").delete().eq("phone", phone);
+    return res.status(400).json({ status: "error", message: "Kod OTP salah atau tidak wujud." });
+  }
+  
+  // Jika betul, padam dari DB
+  await supabase.from("otps").delete().eq("phone", phone);
+  otpAttempts[phone] = 0;
+
   if (new Date(otpRecord.expires_at) < new Date()) return res.status(400).json({ status: "error", message: "Kod OTP tamat tempoh." });
 
   if (!new_password || new_password.length < 6) {
@@ -258,23 +274,22 @@ router.post("/forgot-password/reset", verifyLimiter, async (req, res) => {
 // ==========================================
 
 router.post("/system-login", verifyLimiter, async (req, res) => {
-  // KITA ABAIKAN JAWATAN YANG DIHANTAR DARI KLIEN (Elak Role Spoofing)
-  const { username, password, allowed_roles, remember } = req.body;
-
-  if (!username || !password || password.length > 72) {
-    return res
-      .status(400)
-      .json({
-        status: "error",
-        message: "Sila isi nama pengguna dan kata laluan yang sah.",
-      });
-  }
-
-  if (loginAttempts[username] && loginAttempts[username] > 10) {
-    return res.status(429).json({ status: "error", message: "Akaun dikunci sementara akibat terlalu banyak percubaan gagal." });
-  }
-
   try {
+    const { username, password, allowed_roles, remember } = req.body;
+    
+    // [DIBAIKI] Type Confusion DoS HPP
+    const safeUsername = String(username || "");
+
+    if (!safeUsername || !password) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "Sila lengkapkan semua medan." });
+    }
+
+    if (loginAttempts[safeUsername] && loginAttempts[safeUsername] > 10) {
+      return res.status(429).json({ status: "error", message: "Akaun dikunci sementara akibat terlalu banyak percubaan gagal." });
+    }
+
     let user = null;
     let roleFound = null;
 
@@ -283,7 +298,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     let { data: owner } = await supabase
       .from("owners")
       .select("*")
-      .eq("username", username)
+      .eq("username", safeUsername)
       .single();
     if (owner) {
       user = owner;
@@ -295,7 +310,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
       let { data: admin } = await supabase
         .from("admins")
         .select("*")
-        .eq("username", username)
+        .eq("username", safeUsername)
         .single();
       if (admin) {
         user = admin;
@@ -308,7 +323,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
       let { data: staff } = await supabase
         .from("staff")
         .select("*")
-        .eq("username", username)
+        .eq("username", safeUsername)
         .single();
       if (staff) {
         user = staff;
@@ -318,6 +333,8 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
 
     // Jika tiada rekod dalam mana-mana jadual
     if (!user) {
+      // [DIBAIKI] Timing Attack Protection (Dummy Hashing)
+      await bcrypt.compare(password, "$2b$10$DummyHash12345678901234567890123456789012345678901234");
       return res
         .status(401)
         .json({ status: "error", message: "Akaun tidak wujud." });
@@ -326,7 +343,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     // Semak pengesahan kata laluan (Hashing)
     const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) {
-      loginAttempts[username] = (loginAttempts[username] || 0) + 1;
+      loginAttempts[safeUsername] = (loginAttempts[safeUsername] || 0) + 1;
       return res
         .status(401)
         .json({
@@ -335,7 +352,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
         });
     }
 
-    loginAttempts[username] = 0;
+    loginAttempts[safeUsername] = 0;
 
     // Keselamatan Tambahan: Pastikan jawatan sebenar staf ini DIBENARKAN untuk masuk ke portal yang sedang dibuka
     if (allowed_roles && Array.isArray(allowed_roles)) {
@@ -359,6 +376,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
 
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET_SYS, {
       expiresIn: remember ? "30d" : "12h",
+      iss: "dinspire-sys" // [DIBAIKI] Zero-Trust Boundary
     });
     delete user.password_hash;
 

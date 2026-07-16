@@ -32,9 +32,16 @@ function isValidImageBuffer(buffer) {
   return null;
 }
 
-// [DIBAIKI] Fungsi Upload Keselamatan Tinggi (Anti-Malware)
+// [DIBAIKI] Fungsi Upload Keselamatan Tinggi (Anti-Malware & Regex DoS)
 async function uploadToStorage(base64Image, folder, namePrefix) {
   if (!base64Image || !base64Image.startsWith("data:image")) return base64Image;
+  
+  // [DIBAIKI] Pembekuan Teras Pemproses (Regex DoS)
+  if (base64Image.length > 5000000) {
+    console.error("Fail terlalu besar (Melebihi 5MB).");
+    return null;
+  }
+
   try {
     const matches = base64Image.match(
       /^data:image\/([A-Za-z-+\/]+);base64,(.+)$/,

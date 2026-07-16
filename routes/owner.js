@@ -203,10 +203,10 @@ router.post(
   async (req, res) => {
     const { prompt, activeTab, timeFilter } = req.body;
 
-    // [DIBAIKI] AI Payload Bloat (Letupan Pengebilan Token)
-    const safePrompt = (prompt || "").substring(0, 500);
-    const safeTab = (activeTab || "").substring(0, 100);
-    const safeTimeFilter = (timeFilter || "").substring(0, 50);
+    // [DIBAIKI] AI Payload Bloat (Letupan Pengebilan Token) & Type Confusion
+    const safePrompt = String(prompt || "").substring(0, 500);
+    const safeTab = String(activeTab || "").substring(0, 100);
+    const safeTimeFilter = String(timeFilter || "").substring(0, 50);
 
     if (!safePrompt)
       return res

@@ -60,6 +60,18 @@ const globalLimiter = rateLimit({
 });
 app.use("/api/", globalLimiter);
 
+// [DIBAIKI] Had Akses Drastik untuk Log Masuk (DDoS Login Vector)
+const loginLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minit
+  max: 5, // 5 percubaan sahaja seminit dari IP yang sama
+  message: {
+    status: "error",
+    message: "Terlalu banyak percubaan log masuk dari rangkaian anda. Sila tunggu 1 minit.",
+  },
+});
+app.use("/api/auth/login", loginLimiter);
+app.use("/api/auth/system-login", loginLimiter);
+
 // 1. Tetapan CORS menggunakan persekitaran
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((url) => url.trim())
