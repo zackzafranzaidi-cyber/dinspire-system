@@ -189,9 +189,9 @@ router.post("/login", verifyLimiter, async (req, res) => {
     loginAttempts[phone] = 0;
 
     const token = jwt.sign(
-      { id: user.id, role: "customer" },
+      { id: user.id, role: "customer", iss: "dinspire-sys" },
       process.env.JWT_SECRET_CLIENT,
-      { expiresIn: "1h", iss: "dinspire-sys" }, // [DIBAIKI] Zero-Trust Boundary & JWT Expiry
+      { expiresIn: "1h" }, // [DIBAIKI] Zero-Trust Boundary & JWT Expiry
     );
 
     const cookieOptions = {
@@ -371,9 +371,9 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
 
     if (requireChange) {
       const tempToken = jwt.sign(
-        { id: user.id, role: "staff", must_change: true },
+        { id: user.id, role: "staff", must_change: true, iss: "dinspire-sys" },
         process.env.JWT_SECRET_SYS,
-        { expiresIn: "10m", iss: "dinspire-sys" }
+        { expiresIn: "10m" }
       );
       return res.json({
         status: "REQUIRE_PASSWORD_CHANGE",
@@ -397,6 +397,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
       id: user.id,
       username: user.username,
       role: roleFound,
+      iss: "dinspire-sys", // [DIBAIKI] Zero-Trust Boundary
     };
     if (roleFound === "staff") {
       jwtPayload.jenis_staf = user.jenis_staf;
@@ -404,7 +405,6 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
 
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET_SYS, {
       expiresIn: remember ? "30d" : "12h",
-      iss: "dinspire-sys" // [DIBAIKI] Zero-Trust Boundary
     });
     delete user.password_hash;
 
