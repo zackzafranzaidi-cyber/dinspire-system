@@ -717,7 +717,7 @@ function renderBranchTable(stats) {
   tbody.innerHTML = sorted
     .map(
       (k) =>
-        `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800">${k}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[k].count}</td><td class="py-3 px-2 text-right font-black text-gray-900">RM ${stats[k].sales.toFixed(2)}</td></tr>`,
+        `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800">${escapeHTML(k)}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[k].count}</td><td class="py-3 px-2 text-right font-black text-gray-900">RM ${stats[k].sales.toFixed(2)}</td></tr>`,
     )
     .join("");
 }
@@ -733,7 +733,7 @@ function renderStaffTable(stats) {
   tbody.innerHTML = sortedStaff
     .map(
       (name) =>
-        `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">${name.charAt(0)}</div>${name}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[name].count}</td><td class="py-3 px-2 text-right font-black text-gray-900">RM ${stats[name].sales.toFixed(2)}</td></tr>`,
+        `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">${escapeHTML(name).charAt(0)}</div>${escapeHTML(name)}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[name].count}</td><td class="py-3 px-2 text-right font-black text-gray-900">RM ${stats[name].sales.toFixed(2)}</td></tr>`,
     )
     .join("");
 }
@@ -776,8 +776,8 @@ function renderAttendanceTable(punchList) {
     let html = `
             <tr class="hover:bg-gray-50 transition border-b border-gray-100 last:border-0">
                 <td class="py-3 px-2 font-semibold text-gray-900 flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">${initial}</div>
-                    ${name}
+                    <div class="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">${escapeHTML(initial)}</div>
+                    ${escapeHTML(name)}
                 </td>
                 <td class="py-3 px-2 text-right font-bold text-gray-900">${timeStr}</td>
             </tr>
@@ -800,8 +800,8 @@ function renderCashTable(stats) {
     let html = `
             <tr class="hover:bg-gray-50 transition border-b border-gray-100 last:border-0">
                 <td class="py-3 px-2 font-semibold text-gray-900 flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">${initial}</div>
-                    ${name}
+                    <div class="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">${escapeHTML(initial)}</div>
+                    ${escapeHTML(name)}
                 </td>
                 <td class="py-3 px-2 text-right font-bold text-gray-900">RM ${stats[name].cash.toFixed(2)}</td>
             </tr>
@@ -861,8 +861,8 @@ function renderTxServisTable(bookings) {
                     <div class="text-[9px] text-gray-400 mb-0.5 leading-none tracking-wide">${tFormat}</div>
                     <div class="flex justify-between items-center mt-0.5">
                         <div class="max-w-[70%] text-left">
-                            <div class="text-[12px] text-gray-800 uppercase font-bold leading-none">${b.Username || "PELANGGAN"}</div>
-                            <div class="text-[10px] text-gray-400 mt-1 leading-none truncate">${b.ServiceName || "-"}</div>
+                            <div class="text-[12px] text-gray-800 uppercase font-bold leading-none">${escapeHTML(b.Username || "PELANGGAN")}</div>
+                            <div class="text-[10px] text-gray-400 mt-1 leading-none truncate">${escapeHTML(b.ServiceName || "-")}</div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
                             <div class="text-[12px] font-semibold text-blue-600 tracking-wide leading-none">+RM ${(parseFloat(b.Price) || 0).toFixed(2)}</div>
@@ -870,11 +870,11 @@ function renderTxServisTable(bookings) {
                     </div>
                 </div>
                 <div id="det-s-${index}" class="hidden bg-gray-50 px-3 py-2 text-xs text-gray-700 border-t border-gray-100 rounded-b-lg">
-                    <div class="mb-2"><span class="px-2 py-0.5 rounded text-[8px] font-bold ${badge} uppercase tracking-wider">${b.Category}</span></div>
+                    <div class="mb-2"><span class="px-2 py-0.5 rounded text-[8px] font-bold ${badge} uppercase tracking-wider">${escapeHTML(b.Category)}</span></div>
                     <div class="grid grid-cols-2 gap-y-2 gap-x-4">
-                        <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">No. Order</span><span class="font-bold text-gray-900">${b.OrderNo || "-"}</span></div>
-                        <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">Barber</span><span class="font-bold text-gray-900">${b.Barber || "-"}</span></div>
-                        <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">Cara Bayaran</span><span class="font-bold text-gray-900">${typeStr}</span></div>
+                        <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">No. Order</span><span class="font-bold text-gray-900">${escapeHTML(b.OrderNo || "-")}</span></div>
+                        <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">Barber</span><span class="font-bold text-gray-900">${escapeHTML(b.Barber || "-")}</span></div>
+                        <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">Cara Bayaran</span><span class="font-bold text-gray-900">${escapeHTML(typeStr)}</span></div>
                     </div>
                     ${btn}
                 </div>
@@ -956,8 +956,8 @@ function renderTxProdukTable(orders) {
                     <div class="text-[9px] text-gray-400 mb-0.5 leading-none tracking-wide">${tFormat}</div>
                     <div class="flex justify-between items-center mt-0.5">
                         <div class="max-w-[70%] text-left">
-                            <div class="text-[12px] text-gray-800 uppercase font-bold leading-none">${o.User || o.nama_pembeli || "PELANGGAN"}</div>
-                            <div class="text-[10px] text-gray-400 mt-1 leading-none truncate">${pNames.join(", ") || "Pesanan Produk"}</div>
+                            <div class="text-[12px] text-gray-800 uppercase font-bold leading-none">${escapeHTML(o.User || o.nama_pembeli || "PELANGGAN")}</div>
+                            <div class="text-[10px] text-gray-400 mt-1 leading-none truncate">${escapeHTML(pNames.join(", ") || "Pesanan Produk")}</div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
                             <div class="text-[12px] font-semibold text-blue-600 tracking-wide leading-none">+RM ${(parseFloat(o._calculatedTotal) || 0).toFixed(2)}</div>
@@ -965,10 +965,10 @@ function renderTxProdukTable(orders) {
                     </div>
                 </div>
                 <div id="det-p-${index}" class="hidden bg-gray-50 px-3 py-2 text-xs text-gray-700 border-t border-gray-100 rounded-b-lg">
-                    <div class="mb-2 flex items-center gap-2"><span class="px-2 py-0.5 rounded text-[8px] font-bold ${badgeColor} uppercase tracking-wider">Status: ${stat}</span></div>
+                    <div class="mb-2 flex items-center gap-2"><span class="px-2 py-0.5 rounded text-[8px] font-bold ${badgeColor} uppercase tracking-wider">Status: ${escapeHTML(stat)}</span></div>
                     <div class="grid grid-cols-2 gap-y-2 gap-x-4">
-                        <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">No. Order</span><span class="font-bold text-gray-900">#${o.OrderNo || String(o.id).substring(0, 8).toUpperCase() || "-"}</span></div>
-                        <div class="col-span-2"><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">Alamat Penghantaran</span><span class="font-bold text-gray-900 whitespace-normal leading-relaxed">${o.Address || o.lokasi_penghantaran || "-"}</span></div>
+                        <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">No. Order</span><span class="font-bold text-gray-900">#${escapeHTML(o.OrderNo || String(o.id).substring(0, 8).toUpperCase() || "-")}</span></div>
+                        <div class="col-span-2"><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">Alamat Penghantaran</span><span class="font-bold text-gray-900 whitespace-normal leading-relaxed">${escapeHTML(o.Address || o.lokasi_penghantaran || "-")}</span></div>
                     </div>
                     ${actionArea}
                     ${btn}
@@ -1036,13 +1036,13 @@ function renderReviewsTable(reviews) {
 
         return `<div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="text-xs font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-full">${orderNo || "#"}</span>
+                        <span class="text-xs font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-full">${escapeHTML(orderNo || "#")}</span>
                         <span class="text-amber-500 text-sm tracking-widest drop-shadow-sm">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span>
                     </div>
                     <p class="text-sm text-gray-700 mt-3 mb-4 leading-relaxed font-medium">"${escapeHTML(text)}"</p>
                     <div class="flex flex-wrap gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-                        <span class="bg-gray-50 px-2 py-1 rounded border border-gray-100"><i class="fas fa-user-tie mr-1 text-gray-400"></i> ${barberName}</span>
-                        <span class="bg-gray-50 px-2 py-1 rounded border border-gray-100"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i> ${branchName}</span>
+                        <span class="bg-gray-50 px-2 py-1 rounded border border-gray-100"><i class="fas fa-user-tie mr-1 text-gray-400"></i> ${escapeHTML(barberName)}</span>
+                        <span class="bg-gray-50 px-2 py-1 rounded border border-gray-100"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i> ${escapeHTML(branchName)}</span>
                     </div>
                 </div>`;
       })
@@ -1069,7 +1069,7 @@ function renderPunchTable(punchData) {
       if (locText.includes("TIDAK DIBENARKAN") || locText.includes("GAGAL"))
         locText = "Tiada Akses GPS";
       let gpsBtn = isGmap
-        ? `<a href="${locStr}" target="_blank" class="text-blue-600 font-bold text-[10px] md:text-xs hover:underline">Lihat Peta</a>`
+        ? `<a href="${escapeHTML(locStr)}" target="_blank" class="text-blue-600 font-bold text-[10px] md:text-xs hover:underline">Lihat Peta</a>`
         : `<span class="text-[9px] text-gray-400 font-bold leading-tight truncate w-[60px] md:w-auto inline-block uppercase" title="${escapeHTML(locStr)}">${escapeHTML(locText || "N/A")}</span>`;
 
       let timestampVal = p.Timestamp || p.created_at || p.tarikh;
@@ -1083,9 +1083,9 @@ function renderPunchTable(punchData) {
       let badgeClass = act.includes("IN") ? "badge-in" : "badge-out";
 
       return `<tr class="hover:bg-gray-50 border-b border-gray-50">
-            <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-600 whitespace-nowrap text-center">${dateFmt} <span class="text-gray-400 ml-1 font-bold block md:inline">${masaFmt}</span></td>
-            <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-gray-900 whitespace-nowrap text-center">${staffName}</td>
-            <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out ${badgeClass}">${act}</span></td>
+            <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-600 whitespace-nowrap text-center">${escapeHTML(dateFmt)} <span class="text-gray-400 ml-1 font-bold block md:inline">${escapeHTML(masaFmt)}</span></td>
+            <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-gray-900 whitespace-nowrap text-center">${escapeHTML(staffName)}</td>
+            <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out ${badgeClass}">${escapeHTML(act)}</span></td>
             <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap">${gpsBtn}</td>
         </tr>`;
     })

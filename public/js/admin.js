@@ -202,7 +202,7 @@ function renderTable(tabName) {
         let opts = `<option value="" disabled selected>-- Pilih Cawangan --</option>`;
         (appData["Branches"] || []).forEach((b) => {
           let sel = row[c] === b.id ? "selected" : "";
-          opts += `<option value="${b.id}" ${sel}>${b.name}</option>`;
+          opts += `<option value="${b.id}" ${sel}>${escapeHTML(b.name)}</option>`;
         });
         html += `<td><select onchange="updateData('${tabName}', ${index}, '${c}', this.value)" style="padding:10px; border-radius:8px; border:1px solid #E5E5EA; width:100%; outline:none; font-weight:600; font-family:inherit; background:#F4F5F8;">${opts}</select></td>`;
       } else {
