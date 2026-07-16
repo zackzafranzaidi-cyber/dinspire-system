@@ -344,7 +344,25 @@ router.post(
       price,
     } = req.body;
       const staff_id = req.user.id;
-      const parsedPrice = Math.abs(parseFloat(price) || 0.0);
+      
+      // [DIBAIKI] Lompang Rentas Masa Walk-in
+      const walkinDateTime = new Date(`${booking_date}T${booking_time}`);
+      if (walkinDateTime < new Date(new Date().setHours(0,0,0,0))) {
+        return res.status(400).json({ status: "error", message: "Tarikh Walk-in tidak boleh menggunakan tarikh semalam." });
+      }
+
+      // [DIBAIKI] Kecurian Tunai (Server-Side Price Trust)
+      let hargaSebenar = 0.0;
+      const { data: svcData } = await supabase.from("haircuts").select("harga").eq("id", service_id).maybeSingle();
+      if (svcData) {
+        hargaSebenar = parseFloat(svcData.harga);
+      } else {
+        const { data: trtData } = await supabase.from("treatments").select("harga").eq("id", service_id).maybeSingle();
+        if (trtData) hargaSebenar = parseFloat(trtData.harga);
+      }
+      
+      const parsedPrice = hargaSebenar; // Abaikan price dari frontend (req.body.price)
+
       const receiptName = "WLK" + crypto.randomUUID().split("-")[0].toUpperCase();
     let finalReceiptUrl = await uploadReceiptToStorage(
       receipt_url,
@@ -784,20 +802,24 @@ router.put(
   requireRole(["admin", "owner"]),
   async (req, res) => {
     const { tracking_no } = req.body;
+    
+    // [DIBAIKI] Stored XSS via Nombor Tracking
+    const safeTrackingNo = (tracking_no || "Tiada").replace(/<[^>]*>?/gm, "").substring(0, 100);
+
     try {
       const { data: order } = await supabase.from("product_orders").select("status").eq("id", req.params.id).single();
       if (!order) return res.status(404).json({ status: "error", message: "Pesanan tidak dijumpai." });
 
       const { error } = await supabase
         .from("product_orders")
-        .update({ status: "Shipped", tracking_no: tracking_no || "Tiada" })
+        .update({ status: "Shipped", tracking_no: safeTrackingNo })
         .eq("id", req.params.id);
       if (error) throw error;
 
       if (order.status !== "Shipped") {
         console.log(`\n========================================`);
         console.log(`[SIMULASI SMS - ORDER SHIPPED] Hantar untuk order ID: ${req.params.id}`);
-        console.log(`Mesej: Pesanan anda telah dihantar! No Tracking: ${tracking_no || "Sila rujuk sistem"}. Terima kasih kerana membeli-belah dengan Dinspire!`);
+        console.log(`Mesej: Pesanan anda telah dihantar! No Tracking: ${safeTrackingNo}. Terima kasih kerana membeli-belah dengan Dinspire!`);
         console.log(`========================================\n`);
       }
       res.json({

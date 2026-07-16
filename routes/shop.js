@@ -19,12 +19,12 @@ router.get("/", async (req, res) => {
       { data: prData },
       { data: allSettings },
     ] = await Promise.all([
-      supabase.from("haircuts").select("*"),
-      supabase.from("treatments").select("*"),
-      supabase.from("branches").select("*"),
-      supabase.from("staff").select("id, username, jenis_staf, branch_id"),
-      supabase.from("products").select("*"),
-      supabase.from("settings").select("*"),
+      supabase.from("haircuts").select("*").limit(200),
+      supabase.from("treatments").select("*").limit(200),
+      supabase.from("branches").select("*").limit(50),
+      supabase.from("staff").select("id, username, jenis_staf, branch_id").limit(100),
+      supabase.from("products").select("*").limit(200),
+      supabase.from("settings").select("*").limit(50),
     ]);
 
     let posters = [];

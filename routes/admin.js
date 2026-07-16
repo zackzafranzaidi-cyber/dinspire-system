@@ -196,8 +196,11 @@ router.post(
       const syncData = async (table, items, mapFn) => {
         if (!items) return;
 
+        // [DIBAIKI] Mass Array Exhaustion (Admin DoS)
+        const safeItems = items.slice(0, 500);
+
         // 1. Petakan data daripada frontend ke format pangkalan data
-        const mappedItems = items.map(mapFn);
+        const mappedItems = safeItems.map(mapFn);
 
         // 2. Ambil semua ID yang aktif dihantar dari frontend
         const currentIds = mappedItems
@@ -251,18 +254,18 @@ router.post(
           ...(data.OnCall || []).map((x) => ({ ...x, kategori: "On-Call" })),
         ],
         (i) => ({
-          id: i.id,
-          nama_potongan: i.name,
-          diskripsi: i.desc || "-",
-          harga: i.price,
-          kategori: i.kategori,
-        }),
+            id: i.id,
+            nama_potongan: i.name,
+            diskripsi: i.desc || "-",
+            harga: Math.max(0, parseFloat(i.price) || 0), // [DIBAIKI] Negative Pricing Fix
+            kategori: i.kategori,
+          }),
       );
       await syncData("treatments", data.Treatments, (i) => ({
         id: i.id,
         nama_rawatan: i.name,
         diskripsi: i.desc || "-",
-        harga: i.price,
+        harga: Math.max(0, parseFloat(i.price) || 0), // [DIBAIKI] Negative Pricing Fix
       }));
       await syncData("branches", data.Branches, (i) => ({
         id: i.id,
@@ -294,8 +297,9 @@ router.post(
       // ==========================================
       if (data.Products) {
         let processedProducts = [];
-        for (let i = 0; i < data.Products.length; i++) {
-          let p = data.Products[i];
+        const safeProducts = data.Products.slice(0, 500); // [DIBAIKI] Mass Array Exhaustion limit for loops
+        for (let i = 0; i < safeProducts.length; i++) {
+          let p = safeProducts[i];
           let url = p.imageUrl;
           if (url && url.startsWith("data:image")) {
             let uploaded = await uploadToStorage(url, "products", `prod_${i}`);
@@ -309,7 +313,7 @@ router.post(
         }
         
         await syncData("products", processedProducts, (i) => ({
-          id: i.id, nama: i.name, harga: i.price, gambar: i.imageUrl
+          id: i.id, nama: i.name, harga: Math.max(0, parseFloat(i.price) || 0), gambar: i.imageUrl
         }));
       }
 
@@ -318,8 +322,9 @@ router.post(
       // ==========================================
       if (data.Posters) {
         let finalPosters = [];
-        for (let i = 0; i < data.Posters.length; i++) {
-          let p = data.Posters[i];
+        const safePosters = data.Posters.slice(0, 50); // Maksimum 50 poster
+        for (let i = 0; i < safePosters.length; i++) {
+          let p = safePosters[i];
           let finalUrl = p.imageUrl;
           if (finalUrl && finalUrl.startsWith("data:image")) {
             let uploaded = await uploadToStorage(

@@ -19,9 +19,20 @@ if (!process.env.JWT_SECRET_CLIENT || !process.env.JWT_SECRET_SYS) {
 }
 
 // ========================================================
-// Pangkalan JWT Blacklist Global (Sesi Zombie In-Memory)
+// [DIBAIKI] Pangkalan JWT Blacklist Global (Sesi Zombie In-Memory & Memory Leak Fix)
 // ========================================================
-global.jwtBlacklist = new Set();
+global.jwtBlacklist = new Map();
+
+// Pembersih Memori Automatik (Garbage Collector) setiap 1 jam
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, timestamp] of global.jwtBlacklist.entries()) {
+    // Jika token sudah berada dalam senarai hitam lebih dari 24 Jam, padam dari memori
+    if (now - timestamp > 24 * 60 * 60 * 1000) {
+      global.jwtBlacklist.delete(token);
+    }
+  }
+}, 60 * 60 * 1000);
 
 // ========================================================
 // [DIBAIKI] Perlindungan Tambahan (Enterprise-Grade Security)
@@ -50,17 +61,16 @@ const globalLimiter = rateLimit({
 app.use("/api/", globalLimiter);
 
 // 1. Tetapan CORS menggunakan persekitaran
-// Nota Keselamatan: !origin membenarkan akses dari sumber bukan pelayar (seperti Postman/Mobile App).
-// Jika backend ini hanya untuk laman web, !origin harus dibuang untuk mengelakkan eksploitasi API secara terus.
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((url) => url.trim())
   : [];
 
 const corsOptions = {
   origin: function (origin, callback) {
+    // [DIBAIKI] Pembuangan `!origin` (Cross-Origin API Abuse Fix)
+    // Aplikasi Mobile dan skrip luar KINI WAJIB menghantar Origin yang sah.
     if (
-      !origin ||
-      allowedOrigins.indexOf(origin) !== -1 ||
+      allowedOrigins.includes(origin) ||
       origin === "https://dinspirebarbershop.com" ||
       origin.endsWith(".dinspirebarbershop.com") ||
       origin.endsWith(".vercel.app")

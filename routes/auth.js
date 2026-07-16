@@ -392,7 +392,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
 
 router.post("/logout-client", (req, res) => {
   const token = req.cookies.din_token_client;
-  if (token && global.jwtBlacklist) global.jwtBlacklist.add(token);
+  if (token && global.jwtBlacklist) global.jwtBlacklist.set(token, Date.now());
 
   res.clearCookie("din_token_client", {
     httpOnly: true,
@@ -404,7 +404,7 @@ router.post("/logout-client", (req, res) => {
 
 router.post("/logout-sys", (req, res) => {
   const token = req.cookies.din_token_sys;
-  if (token && global.jwtBlacklist) global.jwtBlacklist.add(token);
+  if (token && global.jwtBlacklist) global.jwtBlacklist.set(token, Date.now());
 
   res.clearCookie("din_token_sys", {
     httpOnly: true,
