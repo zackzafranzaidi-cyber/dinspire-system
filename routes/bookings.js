@@ -213,11 +213,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       if (error) throw error;
     }
 
-    // SIMULASI SMS TEMPahan BERJAYA
-    console.log(`\n========================================`);
-    console.log(`[SIMULASI SMS - BOOKING BERJAYA] Hantar ke: ${cust.phone}`);
-    console.log(`Mesej: Tempahan berjaya! No: ${order_no}. Tarikh: ${booking_date} Masa: ${booking_time}.`);
-    console.log(`========================================\n`);
+
 
     // PERINGATAN 2 JAM
     try {
@@ -451,10 +447,7 @@ router.post(
 
       if (error) throw error;
 
-      console.log(`\n========================================`);
-      console.log(`[SIMULASI SMS - ON-CALL BERJAYA] Hantar kepada Pelanggan: ${cust.name}`);
-      console.log(`Mesej: Tempahan On-Call berjaya! No: ${order_no}. Tarikh: ${date} Masa: ${time}. Barber akan ke lokasi anda.`);
-      console.log(`========================================\n`);
+
 
       try {
         const bookingDateTime = new Date(`${date}T${time}`);
@@ -609,10 +602,7 @@ router.post(
 
       if (error) throw error;
 
-      console.log(`\n========================================`);
-      console.log(`[SIMULASI SMS - ORDER PRODUK BERJAYA] Hantar ke: ${cust.name}`);
-      console.log(`Mesej: Terima kasih! Pesanan produk anda sedang disediakan. Kami akan maklumkan nombor tracking kelak.`);
-      console.log(`========================================\n`);
+
       if (payment_method === "qr") {
         res.json({
           status: "success",
