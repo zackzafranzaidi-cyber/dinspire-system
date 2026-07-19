@@ -503,8 +503,8 @@ function openMapPicker(index) {
       <p style="font-size:13px; color:#666; margin-bottom:10px;">Klik pada peta untuk menetapkan koordinat (Pin Merah).</p>
       <div id="map-picker" style="height: 350px; border-radius: 8px; border: 1px solid #ccc; z-index:0;"></div>
       <div style="margin-top:15px; display:flex; gap:10px;">
-        <input type="text" id="map-lat" class="input-field" value="${initialLat}" readonly style="flex:1; background:#f4f4f4;">
-        <input type="text" id="map-lng" class="input-field" value="${initialLng}" readonly style="flex:1; background:#f4f4f4;">
+        <input type="text" id="map-lat" class="input-field" value="${initialLat}" style="flex:1; background:#ffffff; border:1px solid #ccc; padding:8px; border-radius:6px;" onchange="updateMapFromInput()">
+        <input type="text" id="map-lng" class="input-field" value="${initialLng}" style="flex:1; background:#ffffff; border:1px solid #ccc; padding:8px; border-radius:6px;" onchange="updateMapFromInput()">
       </div>
     `,
     width: 600,
@@ -512,11 +512,28 @@ function openMapPicker(index) {
     confirmButtonText: "Simpan Koordinat",
     cancelButtonText: "Batal",
     didOpen: () => {
-      // Initialize Leaflet map inside SweetAlert
-      mapInstance = L.map("map-picker").setView([initialLat, initialLng], 13);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap"
+      // Initialize Leaflet map inside SweetAlert (Higher zoom for better shop visibility)
+      mapInstance = L.map("map-picker").setView([initialLat, initialLng], 17);
+      
+      // Use Google Maps standard tiles for better detail
+      L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
+        attribution: "© Google Maps",
+        maxZoom: 21
       }).addTo(mapInstance);
+      
+      window.updateMapFromInput = function() {
+        const lat = parseFloat(document.getElementById("map-lat").value);
+        const lng = parseFloat(document.getElementById("map-lng").value);
+        if (!isNaN(lat) && !isNaN(lng)) {
+           const latlng = [lat, lng];
+           mapInstance.setView(latlng, 18);
+           if (currentMarker) {
+              currentMarker.setLatLng(latlng);
+           } else {
+              currentMarker = L.marker(latlng).addTo(mapInstance);
+           }
+        }
+      };
       
       // Tambah fungsi carian lokasi (Search Bar)
       L.Control.geocoder({
