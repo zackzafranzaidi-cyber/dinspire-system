@@ -517,6 +517,22 @@ function openMapPicker(index) {
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenStreetMap"
       }).addTo(mapInstance);
+      
+      // Tambah fungsi carian lokasi (Search Bar)
+      L.Control.geocoder({
+        defaultMarkGeocode: false
+      })
+      .on('markgeocode', function(e) {
+        var bbox = e.geocode.bbox;
+        var poly = L.polygon([
+          bbox.getSouthEast(),
+          bbox.getNorthEast(),
+          bbox.getNorthWest(),
+          bbox.getSouthWest()
+        ]);
+        mapInstance.fitBounds(poly.getBounds());
+      })
+      .addTo(mapInstance);
 
       if (branch.lat && branch.lng) {
          currentMarker = L.marker([branch.lat, branch.lng]).addTo(mapInstance);
