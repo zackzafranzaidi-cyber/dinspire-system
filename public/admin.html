@@ -9,7 +9,14 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-      <link rel="manifest" href="/manifest.json">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Leaflet for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#ffffff">
 </head>
   <body>
@@ -104,7 +111,7 @@
 
     <!-- [DIBAIKI] Masukkan Library SweetAlert2 dari CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="js/admin.js?v=17"></script>
+    <script src="js/admin.js?v=18"></script>
       <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {

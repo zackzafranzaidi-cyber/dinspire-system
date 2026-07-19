@@ -11,6 +11,11 @@ const logger = require("./utils/logger"); // Import Winston logger
 const app = express();
 
 // ========================================================
+// [DIBAIKI] Tetapan Proksi untuk Load Balancer (Rate Limiter Fix)
+// ========================================================
+app.set("trust proxy", 1);
+
+// ========================================================
 // [DIBAIKI] Pengesahan Kunci Kriptografi & Fail-Fast Mechanism
 // ========================================================
 if (!process.env.JWT_SECRET_CLIENT || !process.env.JWT_SECRET_SYS) {

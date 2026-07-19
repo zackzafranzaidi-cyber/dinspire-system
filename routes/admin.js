@@ -106,6 +106,7 @@ router.get(
         { data: stData },
         { data: prData },
         { data: setAll },
+        { data: genData },
       ] = await Promise.all([
         supabase.from("haircuts").select("*"),
         supabase.from("treatments").select("*"),
@@ -113,6 +114,7 @@ router.get(
         supabase.from("staff").select("*"),
         supabase.from("products").select("*"),
         supabase.from("settings").select("*"),
+        supabase.from("general_staff").select("*"),
       ]);
 
       let posters = [];
@@ -159,6 +161,8 @@ router.get(
             id: b.id,
             name: b.nama_cawangan,
             location: b.lokasi,
+            lat: b.lat,
+            lng: b.lng,
           })),
           Barbers: (stData || [])
             .filter((s) => s.jenis_staf === "In-Branch")
@@ -170,6 +174,10 @@ router.get(
           OnCallBarbers: (stData || [])
             .filter((s) => s.jenis_staf === "On-Call")
             .map((s) => ({ id: s.id, name: s.username })),
+          GeneralStaff: (genData || []).map((s) => ({
+            id: s.id,
+            name: s.username,
+          })),
           Products: (prData || []).map((p) => ({
             id: p.id,
             name: p.nama,
@@ -250,7 +258,7 @@ router.post(
 
             // 4a. Tambah Rekod Baru
             if (itemsToInsert.length > 0) {
-              if (table === "staff") {
+              if (table === "staff" || table === "general_staff") {
                 const defaultHash = await bcrypt.hash("123123", 10);
                 itemsToInsert.forEach((i) => {
                   i.password_hash = defaultHash;
@@ -317,6 +325,12 @@ router.post(
         id: i.id,
         nama_cawangan: i.name,
         lokasi: i.location,
+        lat: parseFloat(i.lat) || null,
+        lng: parseFloat(i.lng) || null,
+      }));
+      await syncData("general_staff", data.GeneralStaff, (i) => ({
+        id: i.id,
+        username: i.name,
       }));
       await syncData(
         "staff",

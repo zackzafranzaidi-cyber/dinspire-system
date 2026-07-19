@@ -331,6 +331,20 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
       }
     }
 
+    // 4. Cari dalam jadual 'general_staff'
+    if (!user) {
+      let { data: genStaff } = await supabase
+        .from("general_staff")
+        .select("*")
+        .eq("username", safeUsername)
+        .single();
+      if (genStaff) {
+        // [PENTING] general_staff dipinjamkan role 'staff' supaya dibenarkan masuk ke Staff Portal
+        user = { ...genStaff, jenis_staf: "General", is_general: true };
+        roleFound = "staff";
+      }
+    }
+
     // Jika tiada rekod dalam mana-mana jadual
     if (!user) {
       // [DIBAIKI] Timing Attack Protection (Dummy Hashing)
@@ -401,6 +415,9 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     };
     if (roleFound === "staff") {
       jwtPayload.jenis_staf = user.jenis_staf;
+      if (user.is_general) {
+        jwtPayload.is_general = true;
+      }
     }
 
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET_SYS, {
@@ -473,8 +490,10 @@ router.post("/staff/change-password", verifyLimiter, async (req, res) => {
     if (!new_password || new_password.length < 6) return res.status(400).json({ status: "error", message: "Kata laluan terlalu pendek." });
 
     const password_hash = await bcrypt.hash(new_password, 10);
+    const table = decoded.is_general ? "general_staff" : "staff";
+    
     const { error } = await supabase
-      .from("staff")
+      .from(table)
       .update({ password_hash, must_change_password: false, reset_requested: false })
       .eq("id", decoded.id);
       
@@ -490,7 +509,9 @@ router.post("/staff/request-reset", verifyLimiter, async (req, res) => {
   const { username } = req.body;
   if (!username) return res.status(400).json({ status: "error", message: "Username diperlukan." });
 
-  const { data, error } = await supabase.from("staff").update({ reset_requested: true }).eq("username", username).select();
+  // Update in both tables (only the one with matching username will be affected)
+  await supabase.from("staff").update({ reset_requested: true }).eq("username", username);
+  await supabase.from("general_staff").update({ reset_requested: true }).eq("username", username);
   
   // Sentiasa kembalikan success untuk mengelakkan Enumeration (Timing Attack)
   res.json({ status: "success", message: "Permohonan reset dihantar. Sila hubungi Admin untuk kelulusan." });

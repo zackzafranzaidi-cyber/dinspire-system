@@ -30,6 +30,7 @@ const SCHEMAS = {
   WalkInServices: ["id", "name", "price"],
   Products: ["id", "name", "price", "imageUrl"],
   Posters: ["id", "imageUrl"],
+  GeneralStaff: ["id", "name"],
 };
 
 let currentTab = "Haircuts";
@@ -140,6 +141,7 @@ function switchTab(tabName, el) {
     Treatments: "Rawatan",
     Branches: "Cawangan",
     Barbers: "Barbers (Staff)",
+    GeneralStaff: "General Staff",
     OnCall: "Servis OnCall",
     OnCallBarbers: "Barbers OnCall",
     WalkInServices: "Harga Walk-In",
@@ -211,6 +213,15 @@ function renderTable(tabName) {
           opts += `<option value="${b.id}" ${sel}>${escapeHTML(b.name)}</option>`;
         });
         html += `<td><select onchange="updateData('${tabName}', ${index}, '${c}', this.value)" style="padding:10px; border-radius:8px; border:1px solid #E5E5EA; width:100%; outline:none; font-weight:600; font-family:inherit; background:#F4F5F8;">${opts}</select></td>`;
+      } else if (tabName === "Branches" && c === "location") {
+        html += `<td>
+          <div class="input-row" style="display:flex; gap:10px;">
+            <input type="text" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)" style="flex:1;">
+            <button class="action-btn" style="background:#4CAF50; color:white; min-width:40px; border-radius:8px;" onclick="openMapPicker(${index})" title="Tetapkan Lokasi GPS">
+              <i class="fas fa-map-marker-alt"></i>
+            </button>
+          </div>
+        </td>`;
       } else {
         html += `<td><div class="input-row"><input type="text" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)"></div></td>`;
       }
@@ -476,4 +487,86 @@ async function approveReset(staffId, staffName) {
   } catch (err) {
     Swal.fire({ icon: "error", title: "Ralat Sistem", text: "Gagal menghubungi pelayan." });
   }
+}
+
+let mapInstance = null;
+let currentMarker = null;
+
+function openMapPicker(index) {
+  const branch = appData.Branches[index];
+  const initialLat = branch.lat || 3.1390; // Default: KL
+  const initialLng = branch.lng || 101.6869;
+
+  Swal.fire({
+    title: `Lokasi GPS: ${escapeHTML(branch.name)}`,
+    html: `
+      <p style="font-size:13px; color:#666; margin-bottom:10px;">Klik pada peta untuk menetapkan koordinat (Pin Merah).</p>
+      <div id="map-picker" style="height: 350px; border-radius: 8px; border: 1px solid #ccc; z-index:0;"></div>
+      <div style="margin-top:15px; display:flex; gap:10px;">
+        <input type="text" id="map-lat" class="input-field" value="${initialLat}" readonly style="flex:1; background:#f4f4f4;">
+        <input type="text" id="map-lng" class="input-field" value="${initialLng}" readonly style="flex:1; background:#f4f4f4;">
+      </div>
+    `,
+    width: 600,
+    showCancelButton: true,
+    confirmButtonText: "Simpan Koordinat",
+    cancelButtonText: "Batal",
+    didOpen: () => {
+      // Initialize Leaflet map inside SweetAlert
+      mapInstance = L.map("map-picker").setView([initialLat, initialLng], 13);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap"
+      }).addTo(mapInstance);
+
+      if (branch.lat && branch.lng) {
+         currentMarker = L.marker([branch.lat, branch.lng]).addTo(mapInstance);
+      }
+
+      mapInstance.on("click", function(e) {
+         const lat = e.latlng.lat.toFixed(6);
+         const lng = e.latlng.lng.toFixed(6);
+         
+         if (currentMarker) {
+            currentMarker.setLatLng(e.latlng);
+         } else {
+            currentMarker = L.marker(e.latlng).addTo(mapInstance);
+         }
+         
+         document.getElementById("map-lat").value = lat;
+         document.getElementById("map-lng").value = lng;
+      });
+      
+      // Fix leaflet rendering bug in hidden div (sweetalert opening animation)
+      setTimeout(() => { mapInstance.invalidateSize(); }, 250);
+    },
+    preConfirm: () => {
+      const lat = parseFloat(document.getElementById("map-lat").value);
+      const lng = parseFloat(document.getElementById("map-lng").value);
+      if (isNaN(lat) || isNaN(lng)) {
+         Swal.showValidationMessage("Sila letakkan pin di atas peta.");
+         return false;
+      }
+      return { lat, lng };
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      appData.Branches[index].lat = result.value.lat;
+      appData.Branches[index].lng = result.value.lng;
+      
+      Swal.fire({
+         icon: "success",
+         title: "Tersimpan Sementara",
+         text: "Koordinat berjaya ditetapkan. Sila tekan 'Simpan ke Cloud' untuk simpan sepenuhnya.",
+         timer: 2000,
+         showConfirmButton: false
+      });
+    }
+    
+    // Cleanup map instance
+    if (mapInstance) {
+       mapInstance.remove();
+       mapInstance = null;
+       currentMarker = null;
+    }
+  });
 }

@@ -131,12 +131,15 @@ router.get(
         monthlyCashOnHand += parseFloat(w.harga_rm) || 0;
       });
 
+      const { data: branchesData } = await supabase.from("branches").select("id, nama_cawangan");
+      
       res.json({
         status: "success",
         bookings: allBookings,
         commissionPercent: commissionPercent,
         monthlyCashOnHand: monthlyCashOnHand,
         reviews: [],
+        branches: branchesData || [],
       });
     } catch (error) {
       console.error(error);
@@ -171,9 +174,6 @@ function hitungJarak(lat1, lon1, lat2, lon2) {
   return R * c; // Hasilnya adalah Jarak dalam meter
 }
 
-// ⚠️ TUKAR KOORDINAT INI KEPADA KOORDINAT SEBENAR KEDAI ANDA ⚠️
-const KEDAI_LAT = 3.0; // Contoh Latitud (Isi dengan lokasi kedai sebenar)
-const KEDAI_LON = 101.0; // Contoh Longitud
 const MAKSIMUM_JARAK_METER = 500; // Staf wajib berada dalam lingkungan 500 meter dari kedai
 
 // ==========================================
@@ -190,9 +190,11 @@ router.post(
   requireRole(["staff"]),
   async (req, res) => {
     // Kini menerima nilai latitud dan longitud dari peranti frontend
-    const { type, location, lat: rawLat, lon: rawLon } = req.body;
+    // Juga menerima branch_id khas untuk General Staff
+    const { type, location, lat: rawLat, lon: rawLon, branch_id: reqBranchId } = req.body;
     const staff_id = req.user.id;
     const username = req.user.username;
+    const isGeneral = req.user.is_general;
 
     // [DIBAIKI] Semakan Geofencing ketat (Halang String Type-Juggling Bypass)
     const lat = parseFloat(rawLat);
@@ -205,21 +207,13 @@ router.post(
       });
     }
 
-    const jarakDariKedai = hitungJarak(lat, lon, KEDAI_LAT, KEDAI_LON);
-    if (jarakDariKedai > MAKSIMUM_JARAK_METER) {
-      return res.status(403).json({
-        status: "error",
-        message: `Anda berada ${(jarakDariKedai / 1000).toFixed(1)} km dari kedai. Tolong Punch di dalam kedai!`,
-      });
-    }
-
+    // [DIBAIKI] Race Condition Lock untuk Punch In/Out
     const now = new Date();
     const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000); // Waktu Malaysia
     const tarikh = myTime.toISOString().split("T")[0];
     const hari = myTime.toLocaleDateString("ms-MY", { weekday: "long" });
     const masa = myTime.toISOString().split("T")[1].substring(0, 8);
 
-    // [DIBAIKI] Race Condition Lock untuk Punch In/Out
     const lockKey = `${staff_id}_${tarikh}_${type}`;
     if (punchLocks.has(lockKey)) {
       return res.status(409).json({ status: "error", message: "Rekod anda sedang diproses. Sila tunggu sebentar." });
@@ -227,26 +221,71 @@ router.post(
     punchLocks.add(lockKey);
 
     try {
+      let targetBranchId = null;
+      
       if (type === "CLOCK IN") {
-        const { data: stData } = await supabase
-          .from("staff")
-          .select("branch_id")
-          .eq("id", staff_id)
-          .single();
-        let namaCawangan = "Cawangan Utama";
-
-        if (stData && stData.branch_id) {
-          const { data: brData } = await supabase
-            .from("branches")
-            .select("nama_cawangan")
-            .eq("id", stData.branch_id)
+        if (isGeneral) {
+          if (!reqBranchId) {
+             throw new Error("Sila pilih cawangan terlebih dahulu.");
+          }
+          targetBranchId = reqBranchId;
+        } else {
+          const { data: stData } = await supabase
+            .from("staff")
+            .select("branch_id")
+            .eq("id", staff_id)
             .single();
-          if (brData) namaCawangan = brData.nama_cawangan;
+          targetBranchId = stData ? stData.branch_id : null;
         }
+      } else if (type === "CLOCK OUT") {
+         // Untuk clock out, kita cari punch card hari ini untuk mengetahui cawangan mana
+         const { data: existPunch } = await supabase
+          .from("punch_cards")
+          .select("id, cawangan")
+          .eq("staff_id", staff_id)
+          .eq("tarikh", tarikh)
+          .single();
+          
+         if (!existPunch) {
+            throw new Error("Anda belum Punch In hari ini.");
+         }
+         // Kita dapatkan branch_id berdasarkan nama cawangan (jika perlu)
+         // Tetapi cara terbaik adalah mengambil cawangan terus.
+         // Wait, to calculate distance, we need the branch's lat/lng. 
+         const { data: brByName } = await supabase.from("branches").select("id, lat, lng").eq("nama_cawangan", existPunch.cawangan).single();
+         if (brByName) targetBranchId = brByName.id;
+      }
 
+      // Geofencing Dynamic
+      let namaCawangan = "Cawangan Utama";
+      if (targetBranchId) {
+        const { data: brData } = await supabase
+          .from("branches")
+          .select("nama_cawangan, lat, lng")
+          .eq("id", targetBranchId)
+          .single();
+          
+        if (brData) {
+           namaCawangan = brData.nama_cawangan;
+           const targetLat = parseFloat(brData.lat);
+           const targetLng = parseFloat(brData.lng);
+           
+           if (!isNaN(targetLat) && !isNaN(targetLng) && targetLat !== 0) {
+              const jarakDariKedai = hitungJarak(lat, lon, targetLat, targetLng);
+              if (jarakDariKedai > MAKSIMUM_JARAK_METER) {
+                throw new Error(`Anda berada ${(jarakDariKedai / 1000).toFixed(1)} km dari ${namaCawangan}. Tolong Punch di dalam kedai!`);
+              }
+           } else {
+              // Cawangan tiada lat/lng disetkan, benarkan punch secara bebas
+              console.log(`[INFO] Cawangan ${namaCawangan} tiada koordinat GPS. Geofencing dilangkau.`);
+           }
+        }
+      }
+
+      if (type === "CLOCK IN") {
         const { data: existPunch } = await supabase.from("punch_cards").select("id").eq("staff_id", staff_id).eq("tarikh", tarikh).single();
         if (existPunch) {
-          return res.status(400).json({ status: "error", message: "Anda sudah Punch In hari ini." });
+          throw new Error("Anda sudah Punch In hari ini.");
         }
 
         const { error } = await supabase.from("punch_cards").insert([

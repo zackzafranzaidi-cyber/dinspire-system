@@ -318,6 +318,16 @@ async function loadDashboardData() {
       staffData.reviews = data.reviews || [];
       staffData.commissionPercent = data.commissionPercent || 50;
       staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
+      
+      if (loggedInStaff.is_general) {
+         document.getElementById("general-staff-branch-container").style.display = "block";
+         const select = document.getElementById("general-branch-select");
+         if (data.branches && data.branches.length > 0) {
+            select.innerHTML = '<option value="" disabled selected>-- Pilih Cawangan Bertugas --</option>' +
+               data.branches.map(b => `<option value="${b.id}">${b.nama_cawangan.replace(/[&<>'"]/g, '')}</option>`).join("");
+         }
+      }
+      
       calculateDashboardStats();
       renderBookingList();
       renderHistoryList();
@@ -563,17 +573,28 @@ function submitPunch(type) {
   statusText.innerText = "Mendapatkan lokasi GPS...";
 
   const hantarDataKePelayan = (lokasi, latitude = 0, longitude = 0) => {
+    let reqBody = {
+      type: type,
+      location: lokasi,
+      lat: latitude,
+      lon: longitude,
+    };
+    
+    if (loggedInStaff.is_general) {
+      const selectedBranch = document.getElementById("general-branch-select").value;
+      if (!selectedBranch && type === "CLOCK IN") {
+         statusText.innerText = "";
+         alert("Sila pilih cawangan bertugas terlebih dahulu!");
+         return;
+      }
+      reqBody.branch_id = selectedBranch;
+    }
+
     fetch(`${API_BASE_URL}/staff/punch`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      // Menghantar parameter baharu (lat & lon) ke laluan API
-      body: JSON.stringify({
-        type: type,
-        location: lokasi,
-        lat: latitude,
-        lon: longitude,
-      }),
+      body: JSON.stringify(reqBody),
     })
       .then((res) => res.json())
       .then((data) => {

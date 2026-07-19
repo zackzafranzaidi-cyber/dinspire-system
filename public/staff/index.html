@@ -398,6 +398,7 @@
                 Kehadiran GPS
               </h3>
               <p
+                id="punch-info-text"
                 style="
                   font-size: 12px;
                   color: var(--text-muted);
@@ -407,6 +408,14 @@
               >
                 Sistem akan merekodkan cawangan anda secara automatik.
               </p>
+              
+              <div id="general-staff-branch-container" style="display:none; margin-bottom: 15px;">
+                <label style="display:block; font-size:12px; font-weight:600; color:var(--text-main); margin-bottom:5px; text-align:left;">Sila pilih cawangan bertugas hari ini:</label>
+                <select id="general-branch-select" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); font-family:inherit; outline:none; background:#F8F9FA;">
+                   <option value="" disabled selected>-- Memuatkan Cawangan --</option>
+                </select>
+              </div>
+              
               <button
                 type="button"
                 class="btn btn-primary"
@@ -468,7 +477,7 @@
       </nav>
     </div>
 
-    <script src="../js/staff.js"></script>
+    <script src="../js/staff.js?v=18"></script>
       <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
