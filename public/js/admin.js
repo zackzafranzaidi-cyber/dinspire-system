@@ -40,6 +40,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (isLogged) {
     document.getElementById("login-overlay").style.display = "none";
     loadData();
+  } else {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+        preloader.style.opacity = '0';
+        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
+    }
   }
 });
 
@@ -126,6 +132,12 @@ async function loadData() {
     }
   } catch (err) {
     console.error(err);
+  } finally {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+        preloader.style.opacity = '0';
+        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
+    }
   }
 }
 

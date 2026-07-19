@@ -1,0 +1,118 @@
+<USER_REQUEST>
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Barbershop - Mesin Clipper (T-Outliner)</title>
+    <style>
+        /* --- RESET & BASIC STYLES --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0b0c10; /* Hitam kebiruan premium */
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- LOADING WRAPPER --- */
+        .loading-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: #0b0c10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-in-out, visibility 0.8s;
+        }
+
+        /* --- CONTAINER MESIN CLIPPER --- */
+        .clipper-container {
+            width: 130px;
+            height: 130px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Paksi putaran di bahagian bawah (tapak tapak tangan) */
+            transform-origin: 50% 80%; 
+            /* Animasi mesin beralun ke kiri dan kanan seolah-olah sedang "fading" */
+            animation: clipper-sweep 3s ease-in-out infinite;
+        }
+
+        @keyframes clipper-sweep {
+            0%, 100% { transform: rotate(-12deg) translateY(0); }
+            50%      { transform: rotate(12deg) translateY(-8px); }
+        }
+
+        /* --- SVG CLIPPER TEPAT --- */
+        .perfect-clipper {
+            width: 100%;
+            height: 100%;
+            color: #ffffff; /* 1 War
+<truncated 3664 bytes>
+                    <!-- Bilah Bawah (Static T-Blade) -->
+                    <path d="M 32,28 L 68,28 L 68,25 Q 68,22 55,22 L 45,22 Q 32,22 32,25 Z" />
+                    <!-- Gigi Sikat (Teeth) pada bilah bawah menggunakan stroke-dasharray -->
+                    <line x1="33" y1="21.5" x2="67" y2="21.5" stroke-width="1.5" stroke-dasharray="1.5, 1.5" />
+                    
+                </g>
+
+                <!-- BILAH ATAS BERGETAR (Moving Blade) -->
+                <!-- Kapsul melengkung yang dianimasikan bergetar laju di paksi X -->
+                <rect x="36" y="18.5" width="28" height="3" rx="1.5" fill="currentColor" class="vibrating-blade" />
+
+            </svg>
+            
+        </div>
+        <div class="loading-text">MERAPIKAN</div>
+    </div>
+
+    <!-- Konten Utama Website -->
+    <div class="main-content" id="content">
+        <h1 style="font-weight: 300; letter-spacing: 2px;">THE GENTLEMAN</h1>
+        <p style="color: #888; margin-top: 10px;">Ketepatan pada tahap tertinggi.</p>
+    </div>
+
+    <!-- Script Logika Loading -->
+    <script>
+        window.addEventListener('load', function() {
+            const preloader = document.getElementById('preloader');
+            const content = document.getElementById('content');
+
+            setTimeout(function() {
+                preloader.style.opacity = '0';
+                
+                setTimeout(function() {
+                    preloader.style.visibility = 'hidden';
+                    setTimeout(() => {
+                        content.classList.add('visible');
+                    }, 50);
+                }, 800); 
+                
+            }, 3000); // Simulasi masa loading (3 saat supaya sempat lihat rambut jatuh)
+        });
+    </script>
+
+</body>
+</html>
+
+kelemahan render sistem akan tertidur apabila tiada pengguna selama 15 minit kan? saya nak semasa sistem sedang 'bangun', atau sedang loading apa-apa, gunakan loading ini.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-07-19T19:52:28+08:00.
+</ADDITIONAL_METADATA>

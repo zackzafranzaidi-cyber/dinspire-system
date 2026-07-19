@@ -58,11 +58,35 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <link rel="stylesheet" href="../css/owner.css?v=16" />
+    <link rel="stylesheet" href="../css/owner.css?v=25" />
+    <link rel="stylesheet" href="../css/loader.css?v=1" />
       <link rel="manifest" href="/owner/manifest_owner.json?v=7">
     <meta name="theme-color" content="#ffffff">
 </head>
   <body class="flex h-screen overflow-hidden bg-[#f3f4f6]">
+    <!-- Area Loading -->
+    <div class="loading-wrapper" id="preloader">
+        <div class="clipper-container">
+            <svg class="perfect-clipper" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <line x1="38" y1="22" x2="41" y2="24" class="hair hair-1" />
+                <line x1="60" y1="21" x2="58" y2="25" class="hair hair-2" />
+                <line x1="50" y1="20" x2="51" y2="23" class="hair hair-3" />
+                <g stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round">
+                    <path d="M 40,80 Q 40,50 46,35 L 54,35 Q 60,50 60,80 Q 50,86 40,80 Z" />
+                    <rect x="47" y="52" width="6" height="8" rx="2" fill="currentColor" />
+                    <line x1="48" y1="54.5" x2="52" y2="54.5" stroke="#0b0c10" stroke-width="1" />
+                    <line x1="48" y1="57.5" x2="52" y2="57.5" stroke="#0b0c10" stroke-width="1" />
+                    <path d="M 47,84 Q 47,91 50,91 Q 53,91 53,84" />
+                    <rect x="46" y="28" width="8" height="7" fill="currentColor" />
+                    <path d="M 32,28 L 68,28 L 68,25 Q 68,22 55,22 L 45,22 Q 32,22 32,25 Z" />
+                    <line x1="33" y1="21.5" x2="67" y2="21.5" stroke-width="1.5" stroke-dasharray="1.5, 1.5" />
+                </g>
+                <rect x="36" y="18.5" width="28" height="3" rx="1.5" fill="currentColor" class="vibrating-blade" />
+            </svg>
+        </div>
+        <div class="loading-text">MERAPIKAN</div>
+    </div>
+    <div id="toast" class="toast"></div>
     <!-- SKRIN KUNCI -->
     <div id="login-overlay">
       <div class="login-box">

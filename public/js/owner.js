@@ -184,6 +184,12 @@ document.addEventListener("DOMContentLoaded", () => {
       initChart();
     } catch (e) {}
     fetchOwnerDashboardData();
+  } else {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+        preloader.style.opacity = '0';
+        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
+    }
   }
 });
 
@@ -242,6 +248,12 @@ function logoutOwner() {
 function closeLoading() {
   document.getElementById("loading-overlay").style.display = "none";
   document.getElementById("loading-overlay").classList.remove("flex");
+  
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+      preloader.style.opacity = '0';
+      setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
+  }
 }
 
 function switchTab(tabName, element = null) {

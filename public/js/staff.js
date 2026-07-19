@@ -278,11 +278,17 @@ async function loadBranchOptions() {
       select.innerHTML =
         '<option value="" disabled selected>Pilih Cawangan</option>' +
         data.Branches.map(
-          (b) => `<option value="${b.name}">${b.name}</option>`,
+          (b) => `<option value="${b.id}">${b.name}</option>`,
         ).join("");
     }
   } catch (e) {
-    console.error("Gagal ambil cawangan");
+    console.error("Failed to load branches", e);
+  } finally {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+        preloader.style.opacity = '0';
+        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
+    }
   }
 }
 
