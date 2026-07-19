@@ -11,6 +11,54 @@ let loggedInStaff = null;
 let shopSettings = { walkin: [] };
 let staffData = { bookings: [], reviews: [], commissionPercent: 50 };
 
+// ==========================================
+// PENGURUSAN DATA LUAR TALIAN (OFFLINE SYNC)
+// ==========================================
+const OfflineSyncManager = {
+  queue: JSON.parse(localStorage.getItem("din_offline_queue") || "[]"),
+  
+  saveToQueue(url, method, payload, successMessage) {
+    this.queue.push({ url, method, payload, successMessage, timestamp: Date.now() });
+    localStorage.setItem("din_offline_queue", JSON.stringify(this.queue));
+  },
+  
+  async sync() {
+    if (!navigator.onLine || this.queue.length === 0) return;
+    
+    showToast("Menyelaraskan data offline (Syncing)...");
+    let newQueue = [];
+    
+    for (let item of this.queue) {
+      try {
+        const res = await fetch(item.url, {
+          method: item.method,
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(item.payload),
+        });
+        const data = await res.json();
+        if (data.status === "success") {
+           console.log("Synced:", item.successMessage);
+        } else {
+           console.error("Failed to sync:", data.message);
+        }
+      } catch (err) {
+        newQueue.push(item);
+      }
+    }
+    
+    this.queue = newQueue;
+    localStorage.setItem("din_offline_queue", JSON.stringify(this.queue));
+    
+    if (this.queue.length === 0) {
+       showToast("Semua data offline berjaya dihantar!");
+       if (typeof loadDashboardData === "function") loadDashboardData();
+    }
+  }
+};
+
+window.addEventListener('online', () => OfflineSyncManager.sync());
+
 // [DIBAIKI] Fungsi keselamatan XSS
 function escapeHTML(str) {
   if (!str) return "";
@@ -516,6 +564,27 @@ function submitWalkIn() {
       receipt_url: base64,
     };
 
+    const handleSuccess = (msg) => {
+      showToast(msg);
+      document.getElementById("wi-name").value = "";
+      if(document.getElementById("wi-phone")) document.getElementById("wi-phone").value = "";
+      document.getElementById("wi-service").value = "";
+      document.getElementById("wi-price").value = "";
+      document.getElementById("wi-receipt").value = "";
+      document.getElementById("wi-receipt-group").style.display = "none";
+      document.getElementById("wi-payment").value = "Cash";
+      switchView("dashboard");
+      if (typeof loadDashboardData === "function") loadDashboardData();
+    };
+
+    if (!navigator.onLine) {
+      OfflineSyncManager.saveToQueue(`${API_BASE_URL}/bookings/walkin`, "POST", payload, "Rekod Walk-In Berjaya Disimpan!");
+      handleSuccess("Tersimpan di Luar Talian (Offline)");
+      btn.innerText = "Sahkan Walk-In";
+      btn.disabled = false;
+      return;
+    }
+
     fetch(`${API_BASE_URL}/bookings/walkin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -525,22 +594,14 @@ function submitWalkIn() {
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") {
-          showToast("Rekod Walk-In Berjaya Disimpan!");
-          document.getElementById("wi-name").value = "";
-          if(document.getElementById("wi-phone")) document.getElementById("wi-phone").value = "";
-          document.getElementById("wi-service").value = "";
-          document.getElementById("wi-price").value = "";
-          document.getElementById("wi-receipt").value = "";
-          document.getElementById("wi-receipt-group").style.display = "none";
-          document.getElementById("wi-payment").value = "Cash";
-          switchView("dashboard");
-          loadDashboardData();
+          handleSuccess("Rekod Walk-In Berjaya Disimpan!");
         } else alert("Ralat: " + data.message);
         btn.innerText = "Sahkan Walk-In";
         btn.disabled = false;
       })
       .catch((err) => {
-        alert("Gagal menyimpan rekod Walk-In.");
+        OfflineSyncManager.saveToQueue(`${API_BASE_URL}/bookings/walkin`, "POST", payload, "Rekod Walk-In Berjaya Disimpan!");
+        handleSuccess("Gagal berhubung. Data disimpan offline.");
         btn.innerText = "Sahkan Walk-In";
         btn.disabled = false;
       });
@@ -596,6 +657,13 @@ function submitPunch(type) {
       reqBody.branch_id = selectedBranch;
     }
 
+    if (!navigator.onLine) {
+       OfflineSyncManager.saveToQueue(`${API_BASE_URL}/staff/punch`, "POST", reqBody, `Berjaya ${type}`);
+       statusText.innerHTML = `<span style="color:var(--success);">Tersimpan Offline (${type})</span>`;
+       showToast("Data disimpan sementara ketiadaan internet");
+       return;
+    }
+
     fetch(`${API_BASE_URL}/staff/punch`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -611,10 +679,10 @@ function submitPunch(type) {
           statusText.innerHTML = `<span style="color:var(--danger);">${data.message}</span>`;
         }
       })
-      .catch(
-        (e) =>
-          (statusText.innerHTML = `<span style="color:var(--danger);">Ralat sambungan pelayan.</span>`),
-      );
+      .catch((e) => {
+        OfflineSyncManager.saveToQueue(`${API_BASE_URL}/staff/punch`, "POST", reqBody, `Berjaya ${type}`);
+        statusText.innerHTML = `<span style="color:var(--success);">Tersimpan Offline (${type})</span>`;
+      });
   };
 
   if (
