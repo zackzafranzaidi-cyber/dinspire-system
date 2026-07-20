@@ -498,12 +498,12 @@ function checkLoginState() {
     );
     document.getElementById("home-welcome-name").innerText = escapeHTML(
       currentUser.name || currentUser.username,
-    );
+    ) + " :)";
   } else {
     currentUser = null;
     document.getElementById("account-logged-out").style.display = "block";
     document.getElementById("account-logged-in").style.display = "none";
-    document.getElementById("home-welcome-name").innerText = "Tetamu";
+    document.getElementById("home-welcome-name").innerText = "new friend :)";
   }
 }
 
