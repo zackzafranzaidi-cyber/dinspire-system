@@ -36,9 +36,9 @@ const i18n_index = {
     "avatar-confirm": "Confirm Selection",
 
     // Home View
-    "home-welcome": "Welcome,",
-    "home-guest": "Guest!",
-    "home-location": "Kuala Ketil, Kedah",
+    "home-welcome": "Hello ",
+    "home-guest": "new friend :)",
+    "home-location": "Dinspire home",
     "home-promo": "Promotions & News",
     "home-reviews": "Live Customer Reviews",
 
@@ -160,9 +160,9 @@ const i18n_index = {
     "avatar-confirm": "Sahkan Pilihan",
 
     // Home View
-    "home-welcome": "Selamat Datang,",
-    "home-guest": "Tetamu!",
-    "home-location": "Kuala Ketil, Kedah",
+    "home-welcome": "Hello ",
+    "home-guest": "new friend :)",
+    "home-location": "Dinspire home",
     "home-promo": "Promosi & Berita",
     "home-reviews": "Ulasan Live Pelanggan",
 
