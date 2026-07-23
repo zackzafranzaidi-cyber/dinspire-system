@@ -98,15 +98,15 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
   const customer_id = req.user.id;
 
   try {
-    const { data: cust } = await supabase
+    const { data: cust, error: custError } = await supabase
       .from("customers")
-      .select("name, phone, email")
+      .select("name, phone")
       .eq("id", customer_id)
       .single();
     if (!cust)
       return res
-        .status(404)
-        .json({ status: "error", message: "Sesi tidak sah." });
+        .status(401)
+        .json({ status: "error", message: "BOOKINGS_NO_CUST: Sesi anda telah tamat atau tidak wujud. Sila log masuk semula." });
 
     const { data: setSvc } = await supabase
       .from("settings")
@@ -420,15 +420,15 @@ router.post(
     const customer_id = req.user.id;
 
     try {
-      const { data: cust } = await supabase
+      const { data: cust, error: custError } = await supabase
         .from("customers")
-        .select("name, email")
+        .select("name, phone")
         .eq("id", customer_id)
         .single();
       if (!cust)
         return res
-          .status(404)
-          .json({ status: "error", message: "Pelanggan tidak dijumpai." });
+          .status(401)
+          .json({ status: "error", message: "ONCALL_NO_CUST: Pelanggan tidak dijumpai." });
 
       // [DIBAIKI] Halang Time-Machine On-Call
       const bookingDateTime = new Date(`${date}T${time}`);
@@ -548,8 +548,8 @@ router.post(
       oncallLocks.delete(lockKey);
     } catch (error) {
       if (typeof lockKey !== "undefined") oncallLocks.delete(lockKey);
-      console.error("Booking Error:", error);
-      res.status(500).json({ status: "error", message: "Ralat pelayan." });
+      console.error(error);
+      return res.status(500).json({ status: "error", message: "Gagal memproses tempahan." });
     }
   },
 );
@@ -574,15 +574,15 @@ router.post(
         .maybeSingle();
       let shippingFee = setShip ? parseFloat(setShip.setting_value) : 0;
 
-      const { data: cust } = await supabase
+      const { data: cust, error: custError } = await supabase
         .from("customers")
-        .select("name, email")
+        .select("name, phone")
         .eq("id", customer_id)
         .single();
       if (!cust)
         return res
-          .status(404)
-          .json({ status: "error", message: "Sesi anda tamat." });
+          .status(401)
+          .json({ status: "error", message: "PRODUCTS_NO_CUST: Sesi anda tamat." });
 
       // AMBIL HARGA SEBENAR DARI PANGKALAN DATA SUPABASE
       const itemIds = Object.keys(cart_items || {});
@@ -694,9 +694,7 @@ router.post(
       }
     } catch (error) {
       console.error(error);
-      res
-        .status(500)
-        .json({ status: "error", message: "Ralat memproses pesanan." });
+      return res.status(500).json({ status: "error", message: "Gagal memproses belian." });
     }
   },
 );

@@ -40,10 +40,29 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // ========================================================
+// [DIBAIKI] Pembersihan Automatik Tempahan Terbengkalai (Anti Slot-Hoarding)
+// ========================================================
+schedule.scheduleJob("*/5 * * * *", async () => {
+  try {
+    const timeLimit = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    
+    // Padam tempahan yang masih belum dibayar (FPX_PENDING) melebihi 15 minit
+    await supabase.from("booking_records").delete().eq("status", "Belum").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
+    await supabase.from("treatment_records").delete().eq("status", "Belum").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
+    await supabase.from("oncall_records").delete().eq("status", "Belum").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
+    await supabase.from("product_orders").delete().eq("status", "Preparing").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
+  } catch (err) {
+    console.error("Gagal membersihkan slot terbengkalai:", err);
+  }
+});
+
+// ========================================================
 // [DIBAIKI] Perlindungan Tambahan (Enterprise-Grade Security)
 // ========================================================
 app.disable("x-powered-by"); // Menghalang 'Information Disclosure' pelayan Express
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Dimatikan untuk membenarkan pemuatan CDN luar (Leaflet/SweetAlert) dan skrip inline
+}));
 app.use(compression());
 
 // [DIBAIKI] Menghalang Pelayar dari Menyimpan (Cache) Data Sensitif (JSON Leak)
@@ -87,10 +106,11 @@ const corsOptions = {
     // [DIBAIKI] Pembuangan `!origin` (Cross-Origin API Abuse Fix)
     // Aplikasi Mobile dan skrip luar KINI WAJIB menghantar Origin yang sah.
     if (
+      !origin || // Benarkan direct access/same-origin
       allowedOrigins.includes(origin) ||
       origin === "https://dinspirebarbershop.com" ||
-      origin.endsWith(".dinspirebarbershop.com") ||
-      origin.endsWith(".vercel.app")
+      (origin && origin.endsWith(".dinspirebarbershop.com")) ||
+      (origin && origin.endsWith(".vercel.app"))
     ) {
       callback(null, true);
     } else {
@@ -136,7 +156,11 @@ app.use("/api/shop-data", shopRoutes);
 app.use("/api/owner", ownerRoutes);
 app.use("/api/admin", adminRoutes);
 
-// ... (kod routes sedia ada seperti app.use('/api/admin', adminRoutes); )
+// ========================================================
+// SERVE STATIC FILES (Frontend)
+// ========================================================
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
 
 // ========================================================
 // [DIBAIKI] Pengendali Ralat Global (Global Error Handler)
@@ -222,6 +246,7 @@ async function recoverSMSReminders() {
 
 // Mulakan Pelayan
 const PORT = process.env.PORT || 3000;
+// Mulakan pelayan pada port yang ditetapkan (Trigger Restart)
 app.listen(PORT, async () => {
   console.log(`Server Dinspire berjalan di port ${PORT}`);
   await recoverSMSReminders(); // Jalankan Auto-Recovery selepas pelayan hidup

@@ -139,6 +139,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
       },
     ]);if (error) {
       console.error("REGISTER ERROR:", error);
+      require('fs').writeFileSync('debug-register.txt', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
       return res
         .status(500)
         .json({
@@ -197,7 +198,7 @@ router.post("/login", verifyLimiter, async (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: true,
-      sameSite: "Strict", // [DIBAIKI] Mengurangkan risiko CSRF
+      sameSite: "None", // [DIBAIKI] Benarkan Live Server
     };
 
     if (remember) {
@@ -428,7 +429,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: true,
-      sameSite: "Strict", // [DIBAIKI] Mengurangkan risiko CSRF
+      sameSite: "None", // [DIBAIKI] Benarkan Live Server
     };
     
     if (remember) {
@@ -460,7 +461,7 @@ router.post("/logout-client", (req, res) => {
   res.clearCookie("din_token_client", {
     httpOnly: true,
     secure: true,
-    sameSite: "Strict",
+    sameSite: "None",
   });
   res.json({ status: "success", message: "Pelanggan telah log keluar." });
 });
@@ -472,7 +473,7 @@ router.post("/logout-sys", (req, res) => {
   res.clearCookie("din_token_sys", {
     httpOnly: true,
     secure: true,
-    sameSite: "Strict",
+    sameSite: "None",
   });
   res.json({ status: "success", message: "Staf/Owner telah log keluar." });
 });

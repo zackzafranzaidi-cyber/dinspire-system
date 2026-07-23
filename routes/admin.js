@@ -216,7 +216,14 @@ router.post(
         const safeItems = items.slice(0, 500);
 
         // 1. Petakan data daripada frontend ke format pangkalan data
-        const mappedItems = safeItems.map(mapFn);
+        const mappedItems = safeItems.map((item) => {
+          const mapped = mapFn(item);
+          // Padamkan medan 'id' jika ia kosong (string kosong) supaya Postgres boleh auto-generate UUID
+          if (mapped.id === "" || mapped.id === null || mapped.id === undefined) {
+            delete mapped.id;
+          }
+          return mapped;
+        });
 
         // 2. Ambil semua ID yang aktif dihantar dari frontend
         const currentIds = mappedItems
