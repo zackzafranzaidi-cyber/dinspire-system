@@ -929,7 +929,7 @@ function renderProducts(searchQuery = "") {
                             <span class="qty-num text-xs font-bold text-center w-5" id="temp-qty-${p.id}">1</span>
                             <button class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="changeTempQty('${p.id}', 1)">+</button>
                         </div>
-                        <button class="add-btn bg-gray-600 text-white rounded-lg px-3 py-1.5 text-xs font-bold ml-2" onclick="addToCart('${p.id}', '${(p.name || "").replace(/'/g, "\\'")}', ${parseFloat(p.price)}, '${p.imageUrl}')">${i18n_index[currentLang]["products-btn-add"]}</button>
+                        <button class="add-btn bg-gray-600 text-white rounded-lg px-2 py-1.5 text-xs font-bold" onclick="addToCart('${p.id}', '${(p.name || "").replace(/'/g, "\\'")}', ${parseFloat(p.price)}, '${p.imageUrl}')">${i18n_index[currentLang]["products-btn-add"]}</button>
                     </div>
                 </div>
             </div>
