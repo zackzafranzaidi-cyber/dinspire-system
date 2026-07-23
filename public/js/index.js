@@ -114,8 +114,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   
   const preloader = document.getElementById('preloader');
   if (preloader) {
-      preloader.style.opacity = '0';
-      setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
+      setTimeout(() => {
+          preloader.style.opacity = '0';
+          setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
+      }, 10000); // Tunggu 10 saat sebelum sembunyikan Clipper
   }
 });
 
