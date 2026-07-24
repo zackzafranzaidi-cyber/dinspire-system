@@ -8,6 +8,7 @@ const rateLimit = require("express-rate-limit");
 const schedule = require("node-schedule");
 const supabase = require("./config/db");
 const logger = require("./utils/logger"); // Import Winston logger
+const { runAnnualArchive } = require("./utils/archiver");
 const app = express();
 
 // ========================================================
@@ -70,9 +71,21 @@ schedule.scheduleJob("0 0 1 * *", async () => {
     // Padam semua cuti yang berlalu (sebelum bulan semasa)
     const { error } = await supabase.from("staff_leaves").delete().lt("tarikh", firstDayThisMonth);
     if (error) throw error;
-    console.log(`[CRON] Rekod cuti sebelum ${firstDayThisMonth} telah dipadam.`);
+    console.log("Notifikasi automatik penjadualan berjaya dipadam (Sebulan Berlalu).");
   } catch (err) {
     console.error("Gagal membersihkan rekod cuti lama:", err);
+  }
+});
+
+// ========================================================
+// [BAHARU] Cron Job: Pengarkiban Data Tahunan (Setiap 31 Disember, 11:59 Malam)
+// ========================================================
+schedule.scheduleJob("59 23 31 12 *", async () => {
+  try {
+    console.log("CRON: Memulakan rutin Pengarkiban Data Tahunan...");
+    await runAnnualArchive(false); // Produksi (Gunakan emel .env jika ada)
+  } catch (err) {
+    console.error("CRON ERROR: Gagal menjalankan Pengarkiban Tahunan", err);
   }
 });
 
@@ -175,6 +188,24 @@ app.use("/api/staff", staffRoutes);
 app.use("/api/shop-data", shopRoutes);
 app.use("/api/owner", ownerRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/public", require("./routes/public"));
+
+// ========================================================
+// [BAHARU] API Tersembunyi (Test Trigger) Untuk Pengarkiban Tahunan
+// ========================================================
+app.get("/api/owner/trigger-annual-archive", async (req, res) => {
+  try {
+    // Sesuai untuk testing: Guna Ethereal dan sasar ke zafran.zaidi@gmail.com
+    const result = await runAnnualArchive(true, "zafran.zaidi@gmail.com");
+    res.json({
+      status: "success",
+      message: "Proses pengarkiban berjaya disimulasikan.",
+      etherealPreviewUrl: result.etherealUrl
+    });
+  } catch (err) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
 
 // ========================================================
 // SERVE STATIC FILES (Frontend)

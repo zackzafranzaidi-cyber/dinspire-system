@@ -228,7 +228,8 @@ router.post(
         { data: reviews },
         { data: histBookings },
         { data: histWalkins },
-        { data: histTreatments }
+        { data: histTreatments },
+        { data: historicalSales }
       ] = await Promise.all([
         supabase
           .from("booking_records")
@@ -254,6 +255,7 @@ router.post(
         supabase.from("booking_records").select("tarikh, harga_rm, staff(username)").eq("status", "Selesai").order("created_at", { ascending: false }).limit(2000),
         supabase.from("walkin_records").select("tarikh, harga_rm, staff(username)").order("created_at", { ascending: false }).limit(2000),
         supabase.from("treatment_records").select("tarikh, harga_rm, staff(username)").eq("status", "Selesai").order("created_at", { ascending: false }).limit(2000),
+        supabase.from("historical_sales").select("*").order("tahun", { ascending: false }).limit(24),
       ]);
 
       // 1.5 Kira Jualan Bulanan Secara Agregat (Tahun/Bulan) dan Prestasi Staf
@@ -279,6 +281,23 @@ router.post(
       kumpulJualan(histBookings);
       kumpulJualan(histWalkins);
       kumpulJualan(histTreatments);
+
+      // Tambah data daripada arkib tahun lepas (historical_sales)
+      (historicalSales || []).forEach(h => {
+        let blnStr = String(h.bulan).padStart(2, "0");
+        let thnBln = `${h.tahun}-${blnStr}`;
+        
+        if (!LaporanJualanBulanan[thnBln]) LaporanJualanBulanan[thnBln] = 0;
+        LaporanJualanBulanan[thnBln] += parseFloat(h.total_jualan_servis) + parseFloat(h.total_jualan_produk);
+
+        if (h.top_staff && h.top_staff.nama) {
+          let sName = h.top_staff.nama;
+          if (!PrestasiStaf[sName]) PrestasiStaf[sName] = { jualan_rm: 0, jumlah_pelanggan: 0 };
+          // Anggaran kasar dari arkib
+          PrestasiStaf[sName].jualan_rm += parseFloat(h.total_jualan_servis); 
+          PrestasiStaf[sName].jumlah_pelanggan += parseInt(h.top_staff.jumlah_servis || 0);
+        }
+      });
 
       // 2. Formatkan data supaya mudah dibaca oleh AI (Kurangkan token)
       const businessContext = {
