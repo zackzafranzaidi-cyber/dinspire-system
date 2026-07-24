@@ -1083,71 +1083,137 @@ function renderReviewsTable(reviews) {
 
 function renderPunchTable(punchData) {
   const tbody = document.getElementById("table-punch");
-  punchData.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+  if (!tbody) return;
 
-  if (punchData.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang]["table-no-record"] || "Tiada Rekod"}</td></tr>`;
-    return;
-  }
+  // Kumpul data mengikut cawangan
+  let branches = {};
+  Object.keys(mapBarberBranch).forEach(name => {
+    let br = mapBarberBranch[name];
+    if (br === "On-Call") return; // Abaikan staf on-call untuk kehadiran
+    if (!branches[br]) branches[br] = { staff: [], punches: [], absents: [] };
+    if (!branches[br].staff.includes(name)) branches[br].staff.push(name);
+  });
 
-  tbody.innerHTML = punchData
-    .map((p) => {
-      let staffName =
-        p["Nama Staf"] || p.nama || (p.staff ? p.staff.username : "") || "-";
+  punchData.sort((a, b) => new Date(b.Timestamp || b.created_at || b.tarikh) - new Date(a.Timestamp || a.created_at || a.tarikh));
+
+  punchData.forEach(p => {
+    let staffName = p["Nama Staf"] || p.nama || (p.staff ? p.staff.username : "") || "-";
+    let br = mapBarberBranch[staffName] || "Tidak Ditetapkan";
+    if (br === "On-Call") return;
+    if (!branches[br]) branches[br] = { staff: [], punches: [], absents: [] };
+    branches[br].punches.push(p);
+  });
+
+  // Cari staf yang tiada rekod punch
+  Object.keys(branches).forEach(br => {
+    let punchedStaff = branches[br].punches.map(p => p["Nama Staf"] || p.nama || (p.staff ? p.staff.username : "") || "-");
+    branches[br].absents = branches[br].staff.filter(s => !punchedStaff.includes(s));
+  });
+
+  let html = "";
+  let hasAnyRecord = false;
+
+  Object.keys(branches).sort().forEach(br => {
+    let bData = branches[br];
+    if (bData.punches.length === 0 && bData.absents.length === 0) return;
+    hasAnyRecord = true;
+
+    // Header Cawangan
+    html += `<tr class="bg-gray-100 border-y border-gray-200">
+        <td colspan="4" class="py-2 px-3 text-xs font-bold text-gray-800 uppercase tracking-wider text-left">
+            <i class="fas fa-map-marker-alt text-red-500 mr-1"></i> ${escapeHTML(br)}
+        </td>
+    </tr>`;
+
+    // Senarai Hadir (Punches)
+    bData.punches.forEach(p => {
+      let staffName = p["Nama Staf"] || p.nama || (p.staff ? p.staff.username : "") || "-";
       let locStr = p["Lokasi GPS"] || p.lokasi || "";
       let isGmap = locStr.includes("http") || locStr.includes("google.com");
       let locText = locStr;
-      if (locText.includes("TIDAK DIBENARKAN") || locText.includes("GAGAL"))
-        locText = "Tiada Akses GPS";
+      if (locText.includes("TIDAK DIBENARKAN") || locText.includes("GAGAL")) locText = "Tiada Akses GPS";
       let gpsBtn = isGmap
         ? `<a href="${escapeHTML(locStr)}" target="_blank" class="text-blue-600 font-bold text-[10px] md:text-xs hover:underline">Lihat Peta</a>`
         : `<span class="text-[9px] text-gray-400 font-bold leading-tight truncate w-[60px] md:w-auto inline-block uppercase" title="${escapeHTML(locStr)}">${escapeHTML(locText || "N/A")}</span>`;
 
       let timestampVal = p.Timestamp || p.created_at || p.tarikh;
       let d = new Date(timestampVal);
-      let dateFmt = isNaN(d)
-        ? p.Tarikh || p.tarikh || "-"
-        : d.toLocaleDateString("ms-MY");
+      let dateFmt = isNaN(d) ? (p.Tarikh || p.tarikh || "-") : d.toLocaleDateString("ms-MY");
       let masaFmt = p.Masa || p.waktu_out || p.waktu_in || "-";
-
       let act = p.Aktiviti || (p.waktu_out ? "PUNCH OUT" : "PUNCH IN");
       let badgeClass = act.includes("IN") ? "badge-in" : "badge-out";
 
-      return `<tr class="hover:bg-gray-50 border-b border-gray-50">
+      html += `<tr class="hover:bg-gray-50 border-b border-gray-50">
             <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-600 whitespace-nowrap text-center">${escapeHTML(dateFmt)} <span class="text-gray-400 ml-1 font-bold block md:inline">${escapeHTML(masaFmt)}</span></td>
             <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-gray-900 whitespace-nowrap text-center">${escapeHTML(staffName)}</td>
             <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out ${badgeClass}">${escapeHTML(act)}</span></td>
             <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap">${gpsBtn}</td>
         </tr>`;
-    })
-    .join("");
+    });
+
+    // Senarai Tidak Hadir (Absents)
+    bData.absents.forEach(staffName => {
+      html += `<tr class="bg-red-50/30 hover:bg-red-50 border-b border-red-100">
+            <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-400 whitespace-nowrap text-center">-</td>
+            <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-red-600 whitespace-nowrap text-center">${escapeHTML(staffName)}</td>
+            <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out bg-red-100 text-red-700 border border-red-200">Tidak Hadir / Tiada Rekod</span></td>
+            <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap">-</td>
+        </tr>`;
+    });
+  });
+
+  if (!hasAnyRecord) {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang] && i18n[currentLang]["table-no-record"] ? i18n[currentLang]["table-no-record"] : "Tiada Rekod"}</td></tr>`;
+  } else {
+    tbody.innerHTML = html;
+  }
 }
 
 function renderLeavesTable(leavesData) {
   const tbody = document.getElementById("table-leaves");
   if (!tbody) return;
 
-  if (!leavesData || leavesData.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang] && i18n[currentLang]["table-no-record"] ? i18n[currentLang]["table-no-record"] : "Tiada Rekod"}</td></tr>`;
-    return;
-  }
-
-  // Sort by date descending
+  // Kumpul data mengikut cawangan
+  let branches = {};
   leavesData.sort((a, b) => new Date(b.tarikh) - new Date(a.tarikh));
 
-  tbody.innerHTML = leavesData
-    .map((l) => {
+  leavesData.forEach(l => {
+    let staffName = l.staff ? l.staff.username : "-";
+    let br = mapBarberBranch[staffName] || "Tidak Ditetapkan";
+    if (!branches[br]) branches[br] = [];
+    branches[br].push(l);
+  });
+
+  let html = "";
+  let hasAnyRecord = false;
+
+  Object.keys(branches).sort().forEach(br => {
+    hasAnyRecord = true;
+    // Header Cawangan
+    html += `<tr class="bg-gray-100 border-y border-gray-200">
+        <td colspan="3" class="py-2 px-3 text-xs font-bold text-gray-800 uppercase tracking-wider text-left">
+            <i class="fas fa-map-marker-alt text-red-500 mr-1"></i> ${escapeHTML(br)}
+        </td>
+    </tr>`;
+
+    branches[br].forEach(l => {
       let staffName = l.staff ? l.staff.username : "-";
       let dateObj = parseGSDate(l.tarikh);
       let dateFmt = dateObj ? dateObj.toLocaleDateString("ms-MY", { day: '2-digit', month: 'short', year: 'numeric' }) : l.tarikh;
       
-      return `<tr class="hover:bg-gray-50 border-b border-gray-50">
+      html += `<tr class="hover:bg-gray-50 border-b border-gray-50">
             <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-600 whitespace-nowrap text-center">${escapeHTML(dateFmt)}</td>
             <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-gray-900 whitespace-nowrap text-center">${escapeHTML(staffName)}</td>
             <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out badge-out">Cuti Rehat</span></td>
         </tr>`;
-    })
-    .join("");
+    });
+  });
+
+  if (!hasAnyRecord) {
+    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang] && i18n[currentLang]["table-no-record"] ? i18n[currentLang]["table-no-record"] : "Tiada Rekod"}</td></tr>`;
+  } else {
+    tbody.innerHTML = html;
+  }
 }
 
 function initChart() {
