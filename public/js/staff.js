@@ -127,6 +127,8 @@ function initStaffEventListeners() {
         loadDashboardData();
     });
   });
+
+  document.getElementById("btn-save-leave")?.addEventListener("click", submitLeaves);
 }
 
 async function loginStaffSystem() {
@@ -281,6 +283,9 @@ function showDashboard() {
   document.getElementById("prof-name").innerText = loggedInStaff.username;
   document.getElementById("prof-branch").innerText = `Cawangan: Tidak Tetap`;
   loadDashboardData();
+  
+  // Initialize leave system whenever dashboard is shown
+  initLeaveSystem();
 }
 
 function switchView(id) {
@@ -716,6 +721,109 @@ function showToast(msg) {
   t.innerText = msg;
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// ==========================================
+// 4. Sistem Pengurusan Cuti Staf (Flatpickr & SweetAlert)
+// ==========================================
+let leavePicker = null;
+
+async function initLeaveSystem() {
+  const today = new Date();
+  
+  // Peringatan Cuti setiap 25hb sehingga hujung bulan
+  if (today.getDate() >= 25) {
+     const hasReminded = sessionStorage.getItem("din_leave_reminded");
+     if (!hasReminded) {
+        if (typeof Swal !== "undefined") {
+          Swal.fire({
+             icon: 'info',
+             title: 'Peringatan Cuti!',
+             text: 'Sila pilih 4 hari cuti anda untuk bulan hadapan sebelum hujung bulan ini di ruangan Profil.',
+             confirmButtonColor: '#3b82f6'
+          });
+          sessionStorage.setItem("din_leave_reminded", "true");
+        }
+     }
+  }
+
+  const nextMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  const nextMonthYear = nextMonthDate.getFullYear();
+  const nextMonth = nextMonthDate.getMonth();
+  
+  const minDate = new Date(nextMonthYear, nextMonth, 1);
+  const maxDate = new Date(nextMonthYear, nextMonth + 1, 0); 
+
+  try {
+     const [resOthers, resMine] = await Promise.all([
+        fetch(`${API_BASE_URL}/staff/leaves`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/staff/my-leaves`, { credentials: "include" })
+     ]);
+     const othersData = await resOthers.json();
+     const myData = await resMine.json();
+     
+     const takenLeaves = othersData.leaves ? othersData.leaves.map(l => l.tarikh) : [];
+     const mySelectedLeaves = myData.leaves ? myData.leaves.map(l => l.tarikh) : [];
+     
+     if (typeof flatpickr !== "undefined") {
+       leavePicker = flatpickr("#leave-dates", {
+          mode: "multiple",
+          minDate: minDate,
+          maxDate: maxDate,
+          defaultDate: mySelectedLeaves,
+          disable: takenLeaves,
+          dateFormat: "Y-m-d",
+          onChange: function(selectedDates, dateStr, instance) {
+             if (selectedDates.length > 4) {
+                // Remove the last selected date to keep it at 4
+                selectedDates.pop();
+                instance.setDate(selectedDates);
+                if (typeof Swal !== "undefined") {
+                  Swal.fire('Had Maksimum', 'Anda hanya dibenarkan memilih tepat 4 hari cuti.', 'warning');
+                }
+             }
+          }
+       });
+     }
+  } catch (err) {
+     console.error("Gagal memuatkan sistem cuti", err);
+  }
+}
+
+async function submitLeaves() {
+   if (!leavePicker) return;
+   const selectedDates = leavePicker.selectedDates.map(d => {
+       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+   });
+   
+   if (selectedDates.length !== 4) {
+      if (typeof Swal !== "undefined") Swal.fire('Ralat', 'Sila pilih TEPAT 4 hari cuti.', 'error');
+      else alert('Sila pilih TEPAT 4 hari cuti.');
+      return;
+   }
+   
+   const btn = document.getElementById("btn-save-leave");
+   btn.innerText = "Menyimpan...";
+   
+   try {
+      const res = await fetch(`${API_BASE_URL}/staff/leaves`, {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         credentials: "include",
+         body: JSON.stringify({ dates: selectedDates })
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+         if (typeof Swal !== "undefined") Swal.fire('Berjaya', data.message, 'success');
+         else alert(data.message);
+      } else {
+         if (typeof Swal !== "undefined") Swal.fire('Gagal', data.message, 'error');
+         else alert(data.message);
+      }
+   } catch(err) {
+      if (typeof Swal !== "undefined") Swal.fire('Gagal', 'Sistem tidak dapat berhubung', 'error');
+   }
+   btn.innerHTML = '<i class="fas fa-save"></i> Simpan Cuti';
 }
 
 

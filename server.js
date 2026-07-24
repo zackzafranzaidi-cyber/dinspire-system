@@ -57,6 +57,26 @@ schedule.scheduleJob("*/5 * * * *", async () => {
 });
 
 // ========================================================
+// [DIBAIKI] Pembersihan Automatik Rekod Cuti Lepas (Jimat Storan)
+// ========================================================
+schedule.scheduleJob("0 0 1 * *", async () => {
+  // Berjalan pada 12:00 AM setiap 1 haribulan
+  try {
+    const now = new Date();
+    const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000); // Waktu Malaysia
+    // Dapatkan 1 haribulan untuk bulan semasa
+    const firstDayThisMonth = new Date(myTime.getFullYear(), myTime.getMonth(), 1).toISOString().split('T')[0];
+    
+    // Padam semua cuti yang berlalu (sebelum bulan semasa)
+    const { error } = await supabase.from("staff_leaves").delete().lt("tarikh", firstDayThisMonth);
+    if (error) throw error;
+    console.log(`[CRON] Rekod cuti sebelum ${firstDayThisMonth} telah dipadam.`);
+  } catch (err) {
+    console.error("Gagal membersihkan rekod cuti lama:", err);
+  }
+});
+
+// ========================================================
 // [DIBAIKI] Perlindungan Tambahan (Enterprise-Grade Security)
 // ========================================================
 app.disable("x-powered-by"); // Menghalang 'Information Disclosure' pelayan Express

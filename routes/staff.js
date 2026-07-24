@@ -283,6 +283,18 @@ router.post(
       }
 
       if (type === "CLOCK IN") {
+        // [DIBAIKI] Semak jika staf sedang bercuti hari ini
+        const { data: cutiHariIni } = await supabase
+          .from("staff_leaves")
+          .select("id")
+          .eq("staff_id", staff_id)
+          .eq("tarikh", tarikh)
+          .single();
+          
+        if (cutiHariIni) {
+           throw new Error("Anda sedang bercuti hari ini. Tidak dibenarkan Punch In.");
+        }
+
         const { data: existPunch } = await supabase.from("punch_cards").select("id").eq("staff_id", staff_id).eq("tarikh", tarikh).single();
         if (existPunch) {
           throw new Error("Anda sudah Punch In hari ini.");
@@ -337,5 +349,103 @@ router.post(
     }
   },
 );
+
+// ==========================================
+// 3. Pengurusan Cuti Staf (Leave Management)
+// ==========================================
+router.get("/leaves", authenticate, requireRole(["staff"]), async (req, res) => {
+  const staff_id = req.user.id;
+  try {
+    const { data: stData } = await supabase.from("staff").select("branch_id").eq("id", staff_id).single();
+    const branch_id = stData ? stData.branch_id : null;
+
+    if (!branch_id) {
+      return res.json({ status: "success", leaves: [] });
+    }
+
+    const { data: leaves } = await supabase
+      .from("staff_leaves")
+      .select("tarikh")
+      .eq("branch_id", branch_id)
+      .neq("staff_id", staff_id);
+
+    res.json({ status: "success", leaves: leaves || [] });
+  } catch (err) {
+    console.error("Ralat /leaves:", err);
+    res.status(500).json({ status: "error", message: "Gagal memuatkan data cuti." });
+  }
+});
+
+router.get("/my-leaves", authenticate, requireRole(["staff"]), async (req, res) => {
+  try {
+    const { data: leaves } = await supabase
+      .from("staff_leaves")
+      .select("tarikh")
+      .eq("staff_id", req.user.id);
+    res.json({ status: "success", leaves: leaves || [] });
+  } catch (err) {
+    console.error("Ralat /my-leaves:", err);
+    res.status(500).json({ status: "error", message: "Gagal memuatkan cuti anda." });
+  }
+});
+
+router.post("/leaves", authenticate, requireRole(["staff"]), async (req, res) => {
+  const staff_id = req.user.id;
+  const { dates } = req.body; 
+  
+  if (!Array.isArray(dates) || dates.length !== 4) {
+    return res.status(400).json({ status: "error", message: "Anda mesti memilih tepat 4 hari cuti." });
+  }
+
+  try {
+    const { data: stData } = await supabase.from("staff").select("branch_id").eq("id", staff_id).single();
+    const branch_id = stData ? stData.branch_id : null;
+
+    const now = new Date();
+    const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const nextMonth = myTime.getMonth() === 11 ? 0 : myTime.getMonth() + 1;
+    const nextMonthYear = myTime.getMonth() === 11 ? myTime.getFullYear() + 1 : myTime.getFullYear();
+    const firstDayNextMonth = new Date(nextMonthYear, nextMonth, 1).toISOString().split('T')[0];
+    const firstDayTwoMonths = new Date(nextMonthYear, nextMonth + 1, 1).toISOString().split('T')[0];
+
+    // Padam cuti bulan hadapan staf ini (untuk override)
+    await supabase.from("staff_leaves")
+      .delete()
+      .eq("staff_id", staff_id)
+      .gte("tarikh", firstDayNextMonth)
+      .lt("tarikh", firstDayTwoMonths);
+
+    if (branch_id) {
+       const { data: taken } = await supabase
+        .from("staff_leaves")
+        .select("tarikh")
+        .eq("branch_id", branch_id)
+        .in("tarikh", dates);
+        
+       if (taken && taken.length > 0) {
+         return res.status(400).json({ status: "error", message: `Tarikh ${taken[0].tarikh} telah diambil oleh staf lain di cawangan anda.` });
+       }
+    }
+
+    const inserts = dates.map(d => ({
+      staff_id: staff_id,
+      branch_id: branch_id,
+      tarikh: d
+    }));
+
+    const { error } = await supabase.from("staff_leaves").insert(inserts);
+    if (error) {
+      if (error.code === '23505') { 
+        return res.status(400).json({ status: "error", message: "Tarikh bertindih dengan staf lain di cawangan anda." });
+      }
+      throw error;
+    }
+
+    res.json({ status: "success", message: "Cuti bulan hadapan berjaya disimpan!" });
+  } catch (err) {
+    console.error("Ralat post /leaves:", err);
+    res.status(500).json({ status: "error", message: "Gagal menyimpan cuti." });
+  }
+});
 
 module.exports = router;
