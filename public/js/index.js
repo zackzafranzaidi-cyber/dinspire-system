@@ -543,7 +543,25 @@ let scheduleMonthOffset = 0;
 let scheduleSelectedDate = null;
 let scheduleSelectedTime = null;
 
-function openScheduleModal(formId) {
+let currentBarberLeaves = [];
+
+async function openScheduleModal(formId) {
+  const barberSelect = document.getElementById(`barber-${formId}`);
+  if (!barberSelect || !barberSelect.value) {
+     if (typeof Swal !== "undefined") {
+       Swal.fire({
+          icon: 'warning',
+          title: 'Perhatian',
+          text: 'Sila pilih Barber terlebih dahulu sebelum menetapkan tarikh dan masa.',
+          confirmButtonColor: '#3b82f6'
+       });
+     } else {
+       alert('Sila pilih Barber terlebih dahulu!');
+     }
+     return;
+  }
+  const barberId = barberSelect.value;
+  
   activeScheduleFormId = formId;
   scheduleMonthOffset = 0;
 
@@ -553,6 +571,15 @@ function openScheduleModal(formId) {
   scheduleSelectedTime = null;
 
   document.getElementById("schedule-modal").style.display = "flex";
+  
+  try {
+     const res = await fetch(`${API_BASE_URL}/bookings/staff-leaves?staff_id=${barberId}`);
+     const data = await res.json();
+     currentBarberLeaves = data.leaves || [];
+  } catch (err) {
+     currentBarberLeaves = [];
+  }
+
   setTimeout(() => {
     renderScheduleDate();
     renderScheduleTime();
@@ -573,7 +600,17 @@ function changeScheduleMonth(offset) {
 }
 
 function selectScheduleDate(dateStr) {
-  scheduleSelectedDate = new Date(dateStr);
+  const dateObj = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (dateObj <= today) return; // Tarikh lepas
+  if (currentBarberLeaves.includes(dateStr)) {
+    if (typeof Swal !== "undefined") Swal.fire('Cuti', 'Barber sedang bercuti pada tarikh ini.', 'info');
+    else showToast('Barber sedang bercuti pada tarikh ini.');
+    return;
+  }
+
+  scheduleSelectedDate = dateObj;
   scheduleSelectedTime = null;
   renderScheduleDate();
   renderScheduleTime();
@@ -642,11 +679,17 @@ function renderScheduleDate() {
     let cellDate = new Date(year, month, d);
     let dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     let isPastOrToday = cellDate <= today;
+    let isLeave = currentBarberLeaves.includes(dateString);
     let isSelected = cellDate.getTime() === scheduleSelectedDate.getTime();
 
     let classes = ["cal-date-dark"];
-    if (isPastOrToday) classes.push("disabled");
-    if (isSelected && !isPastOrToday) classes.push("selected");
+    if (isPastOrToday) {
+       classes.push("disabled");
+    } else if (isLeave) {
+       classes.push("disabled");
+       // Boleh tambah styling khas untuk cuti jika perlu
+    }
+    if (isSelected && !isPastOrToday && !isLeave) classes.push("selected");
 
     html += `<div class="${classes.join(" ")}" onclick="selectScheduleDate('${dateString}'); event.stopPropagation();">${d}</div>`;
   }

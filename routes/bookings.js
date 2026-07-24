@@ -83,6 +83,25 @@ const reviewLocks = new Set(); // [DIBAIKI] Mengelak klon Ulasan 1 Bintang (Revi
 const completionLocks = new Set(); // [DIBAIKI] Mengelak Race Condition semasa penyiapan pesanan
 
 // ==========================================
+// [FUNGSI BAHARU] Semak Cuti Staf (Untuk Sekatan Kalendar Pelanggan)
+// ==========================================
+router.get("/staff-leaves", async (req, res) => {
+  const { staff_id } = req.query;
+  if (!staff_id) return res.json({ status: "success", leaves: [] });
+
+  try {
+    const { data } = await supabase
+      .from("staff_leaves")
+      .select("tarikh")
+      .eq("staff_id", staff_id);
+    res.json({ status: "success", leaves: data ? data.map((d) => d.tarikh) : [] });
+  } catch (err) {
+    console.error("Ralat /staff-leaves:", err);
+    res.json({ status: "error", leaves: [] });
+  }
+});
+
+// ==========================================
 // 1. Pelanggan Buat Tempahan (Booking)
 // ==========================================
 router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
@@ -148,6 +167,19 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       return res.status(409).json({ status: "error", message: "Maaf, slot ini sedang diproses untuk pelanggan lain." });
     }
     bookingLocks.add(lockKey);
+
+    // [DIBAIKI] Semak jika staf sedang bercuti pada tarikh ini
+    const { data: cutiStaf } = await supabase
+      .from("staff_leaves")
+      .select("id")
+      .eq("staff_id", staff_id)
+      .eq("tarikh", booking_date)
+      .single();
+      
+    if (cutiStaf) {
+      if (bookingLocks.has(lockKey)) bookingLocks.delete(lockKey);
+      return res.status(400).json({ status: "error", message: "Maaf, Barber yang dipilih sedang bercuti pada tarikh tersebut." });
+    }
 
     // [DIBAIKI] Perlindungan Double Booking Peringkat Aplikasi
     const { data: existBook } = await supabase
@@ -442,6 +474,19 @@ router.post(
         return res.status(409).json({ status: "error", message: "Slot On-Call ini sedang diproses." });
       }
       oncallLocks.add(lockKey);
+
+      // [DIBAIKI] Semak jika staf sedang bercuti pada tarikh ini
+      const { data: cutiStaf } = await supabase
+        .from("staff_leaves")
+        .select("id")
+        .eq("staff_id", barber)
+        .eq("tarikh", date)
+        .single();
+        
+      if (cutiStaf) {
+        if (oncallLocks.has(lockKey)) oncallLocks.delete(lockKey);
+        return res.status(400).json({ status: "error", message: "Maaf, Barber yang dipilih sedang bercuti pada tarikh tersebut." });
+      }
 
       const { data: setSvc } = await supabase
         .from("settings")
