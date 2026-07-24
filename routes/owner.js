@@ -137,6 +137,7 @@ router.get(
         { data: reviews },
         { data: staffList },
         { data: branchList },
+        { data: staffLeaves },
       ] = await Promise.all([
         supabase
           .from("product_orders")
@@ -155,6 +156,7 @@ router.get(
           .limit(200),
         supabase.from("staff").select("username, jenis_staf, branch_id"),
         supabase.from("branches").select("id, nama_cawangan"),
+        supabase.from("staff_leaves").select("*, staff(username)").order("tarikh", { ascending: true }).limit(200),
       ]);
 
       let mapBarberBranch = {};
@@ -177,6 +179,7 @@ router.get(
         masterData: {
           bookings: allTransactions,
           punchCard: punchCards || [],
+          staffLeaves: staffLeaves || [],
           orders: productOrders || [],
           reviews: reviews || [],
           commissionPercent: commissionPercent,

@@ -346,6 +346,19 @@ function toggleTxTab(type) {
   document.getElementById("tx-" + type + "-view").classList.remove("hidden");
 }
 
+function togglePunchTab(type) {
+  document.getElementById("punch-hadir-view").classList.add("hidden");
+  document.getElementById("punch-cuti-view").classList.add("hidden");
+  
+  if (type === 'hadir') {
+    document.getElementById("punch-hadir-view").classList.remove("hidden");
+    document.getElementById("punch-hadir-view").classList.add("block");
+  } else {
+    document.getElementById("punch-cuti-view").classList.remove("hidden");
+    document.getElementById("punch-cuti-view").classList.add("block");
+  }
+}
+
 async function fetchOwnerDashboardData() {
   document.getElementById("loading-overlay").classList.add("flex");
   document.getElementById("loading-overlay").classList.remove("hidden");
@@ -439,8 +452,12 @@ function processData() {
       now,
     ),
   );
-  let filteredReviews = (masterData.reviews || []).filter((r) =>
+  const filteredReviews = (masterData.reviews || []).filter((r) =>
     isWithinFilter(r.Timestamp || r.created_at || r.tarikh, filterType, now),
+  );
+  
+  const filteredLeaves = (masterData.staffLeaves || []).filter((l) =>
+    isWithinFilter(l.tarikh, filterType, now),
   );
 
   let serviceRev = 0;
@@ -621,6 +638,8 @@ function processData() {
   renderTxProdukTable(filteredOrders);
   renderReviewsTable(filteredReviews);
   renderPunchTable(filteredPunch);
+  renderLeavesTable(filteredLeaves);
+  
   if (salesChartObj)
     updateBarChart(filteredBookings, filteredOrders, filterType);
 
@@ -1099,6 +1118,33 @@ function renderPunchTable(punchData) {
             <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-gray-900 whitespace-nowrap text-center">${escapeHTML(staffName)}</td>
             <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out ${badgeClass}">${escapeHTML(act)}</span></td>
             <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap">${gpsBtn}</td>
+        </tr>`;
+    })
+    .join("");
+}
+
+function renderLeavesTable(leavesData) {
+  const tbody = document.getElementById("table-leaves");
+  if (!tbody) return;
+
+  if (!leavesData || leavesData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang] && i18n[currentLang]["table-no-record"] ? i18n[currentLang]["table-no-record"] : "Tiada Rekod"}</td></tr>`;
+    return;
+  }
+
+  // Sort by date descending
+  leavesData.sort((a, b) => new Date(b.tarikh) - new Date(a.tarikh));
+
+  tbody.innerHTML = leavesData
+    .map((l) => {
+      let staffName = l.staff ? l.staff.username : "-";
+      let dateObj = parseGSDate(l.tarikh);
+      let dateFmt = dateObj ? dateObj.toLocaleDateString("ms-MY", { day: '2-digit', month: 'short', year: 'numeric' }) : l.tarikh;
+      
+      return `<tr class="hover:bg-gray-50 border-b border-gray-50">
+            <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-600 whitespace-nowrap text-center">${escapeHTML(dateFmt)}</td>
+            <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-gray-900 whitespace-nowrap text-center">${escapeHTML(staffName)}</td>
+            <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out badge-out">Cuti Rehat</span></td>
         </tr>`;
     })
     .join("");
