@@ -235,8 +235,16 @@ body {
 #tab-tx-produk:checked ~ .slider {
   left: calc(3px + (100% - 6px) / 2);
 }
+#tab-punch-hadir:checked ~ .slider {
+  left: 3px;
+}
+#tab-punch-cuti:checked ~ .slider {
+  left: calc(3px + (100% - 6px) / 2);
+}
 #tab-tx-servis:checked ~ label[for="tab-tx-servis"],
-#tab-tx-produk:checked ~ label[for="tab-tx-produk"] {
+#tab-tx-produk:checked ~ label[for="tab-tx-produk"],
+#tab-punch-hadir:checked ~ label[for="tab-punch-hadir"],
+#tab-punch-cuti:checked ~ label[for="tab-punch-cuti"] {
   color: #111827;
 }
 
