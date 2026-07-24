@@ -188,7 +188,6 @@ app.use("/api/staff", staffRoutes);
 app.use("/api/shop-data", shopRoutes);
 app.use("/api/owner", ownerRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/public", require("./routes/public"));
 
 // ========================================================
 // [BAHARU] API Tersembunyi (Test Trigger) Untuk Pengarkiban Tahunan
