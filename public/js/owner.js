@@ -1456,7 +1456,7 @@ async function askAI(isHidden = false) {
   const loadingMsg = document.createElement("div");
   loadingMsg.className = "flex gap-2 mb-4";
   loadingMsg.innerHTML = `
-        <div class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center shrink-0 mt-1"><i class="fas fa-robot text-[10px] text-white"></i></div>
+        <div class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center shrink-0 mt-1"><i class="fas fa-brain text-[10px] text-white"></i></div>
         <div class="bg-gray-800/80 border border-gray-700/50 text-gray-400 px-4 py-3 rounded-2xl rounded-tl-sm w-fit shadow-md flex items-center gap-2">
             <i class="fas fa-circle-notch fa-spin"></i> Sedang berfikir...
         </div>
@@ -1507,7 +1507,7 @@ async function askAI(isHidden = false) {
       const aiMsg = document.createElement("div");
       aiMsg.className = "flex gap-2 mb-4";
       aiMsg.innerHTML = `
-                <div class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center shrink-0 mt-1"><i class="fas fa-robot text-[10px] text-white"></i></div>
+                <div class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center shrink-0 mt-1"><i class="fas fa-brain text-[10px] text-white"></i></div>
                 <div class="bg-gray-800/80 border border-gray-700/50 text-gray-200 px-4 py-3 rounded-2xl rounded-tl-sm w-fit break-words shadow-md ai-markdown-content w-full overflow-hidden">
                     ${marked.parse(aiText)}
                 </div>
@@ -1552,7 +1552,7 @@ async function askAI(isHidden = false) {
               const chartMsg = document.createElement("div");
               chartMsg.className = "flex gap-2 mb-4 mt-2";
               chartMsg.innerHTML = `
-                                <div class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center shrink-0 mt-1 opacity-0"><i class="fas fa-robot text-[10px] text-white"></i></div>
+                                <div class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center shrink-0 mt-1 opacity-0"><i class="fas fa-brain text-[10px] text-white"></i></div>
                                 <div class="bg-gray-100 p-2 rounded-2xl shadow-inner border border-gray-200">
                                     <img src="${imgData}" class="w-full max-w-[250px] rounded-lg">
                                 </div>
