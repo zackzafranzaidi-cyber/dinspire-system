@@ -115,6 +115,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
     receipt_url,
   } = req.body;
   const customer_id = req.user.id;
+  let lockKey;
 
   try {
     const { data: cust, error: custError } = await supabase
@@ -162,7 +163,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
     }
 
     // [DIBAIKI] Race Condition Lock
-    const lockKey = `${staff_id}_${booking_date}_${booking_time}`;
+    lockKey = `${staff_id}_${booking_date}_${booking_time}`;
     if (bookingLocks.has(lockKey)) {
       return res.status(409).json({ status: "error", message: "Maaf, slot ini sedang diproses untuk pelanggan lain." });
     }
@@ -452,6 +453,7 @@ router.post(
   async (req, res) => {
     const { address, date, time, service_id, barber, receipt_url } = req.body;
     const customer_id = req.user.id;
+    let lockKey;
 
     try {
       const { data: cust, error: custError } = await supabase
@@ -471,7 +473,7 @@ router.post(
       }
 
       // [DIBAIKI] Race Condition Lock OnCall
-      const lockKey = `${barber}_${date}_${time}`;
+      lockKey = `${barber}_${date}_${time}`;
       if (oncallLocks.has(lockKey)) {
         return res.status(409).json({ status: "error", message: "Slot On-Call ini sedang diproses." });
       }
