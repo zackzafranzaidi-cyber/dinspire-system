@@ -122,7 +122,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       .from("customers")
       .select("name, phone")
       .eq("id", customer_id)
-      .single();
+      .maybeSingle();
     if (!cust)
       return res
         .status(401)
@@ -175,7 +175,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       .select("id")
       .eq("staff_id", staff_id)
       .eq("tarikh", booking_date)
-      .single();
+      .maybeSingle();
       
     if (cutiStaf) {
       if (bookingLocks.has(lockKey)) bookingLocks.delete(lockKey);
@@ -339,7 +339,7 @@ router.put(
 
       // [DIBAIKI] Time-Check: Selesai hanya boleh ditekan selepas masa berlalu
       if (tableName !== "oncall_records") { // walkin tiada masa depan, oncall bergantung
-        const { data: bData } = await supabase.from(tableName).select("tarikh, masa").eq("no_booking", orderNo).single();
+        const { data: bData } = await supabase.from(tableName).select("tarikh, masa").eq("no_booking", orderNo).maybeSingle();
         if (bData && bData.tarikh && bData.masa) {
           const bookingDateTime = new Date(`${bData.tarikh}T${bData.masa}`);
           if (bookingDateTime > new Date()) {
@@ -460,7 +460,7 @@ router.post(
         .from("customers")
         .select("name, phone")
         .eq("id", customer_id)
-        .single();
+        .maybeSingle();
       if (!cust)
         return res
           .status(401)
@@ -485,7 +485,7 @@ router.post(
         .select("id")
         .eq("staff_id", barber)
         .eq("tarikh", date)
-        .single();
+        .maybeSingle();
         
       if (cutiStaf) {
         if (oncallLocks.has(lockKey)) oncallLocks.delete(lockKey);
@@ -627,7 +627,7 @@ router.post(
         .from("customers")
         .select("name, phone")
         .eq("id", customer_id)
-        .single();
+        .maybeSingle();
       if (!cust)
         return res
           .status(401)
@@ -762,7 +762,7 @@ router.get(
         .from("customers")
         .select("id, name, phone")
         .eq("id", req.user.id)
-        .single();
+        .maybeSingle();
       if (!cust)
         return res.json({ status: "error", message: "Akaun tidak dijumpai" });
 
@@ -874,7 +874,7 @@ router.put(
     const safeTrackingNo = String(tracking_no || "Tiada").replace(/<[^>]*>?/gm, "").substring(0, 100);
 
     try {
-      const { data: order } = await supabase.from("product_orders").select("status").eq("id", req.params.id).single();
+      const { data: order } = await supabase.from("product_orders").select("status").eq("id", req.params.id).maybeSingle();
       if (!order) return res.status(404).json({ status: "error", message: "Pesanan tidak dijumpai." });
 
       const { error } = await supabase
@@ -924,7 +924,7 @@ router.post(
         .eq("no_booking", order_no)
         .eq("status", "Selesai")
         .eq("customer_id", req.user.id)
-        .single();
+        .maybeSingle();
         
       const { data: validTreatment } = await supabase
         .from("treatment_records")
@@ -932,14 +932,14 @@ router.post(
         .eq("no_booking", order_no)
         .eq("status", "Selesai")
         .eq("customer_id", req.user.id)
-        .single();
+        .maybeSingle();
 
       if (!validBooking && !validTreatment) {
         reviewLocks.delete(order_no);
         return res.status(403).json({ status: "error", message: "Akses ditolak. Tempahan tidak sah atau belum selesai." });
       }
 
-      const { data: existReview } = await supabase.from("reviews").select("id").eq("no_booking", order_no).single();
+      const { data: existReview } = await supabase.from("reviews").select("id").eq("no_booking", order_no).maybeSingle();
       if (existReview) {
         reviewLocks.delete(order_no);
         return res.status(400).json({ status: "error", message: "Anda telah memberikan ulasan untuk tempahan ini." });
