@@ -1376,20 +1376,27 @@ function renderNotifications() {
       data.orders.forEach((o) => {
         if (o.type === "product") {
           let badgeStyle =
-            o.status === "Preparing"
-              ? "background:#FFF3E0; color:#E65100;"
-              : o.status === "Shipped"
-                ? "background:#E3F2FD; color:#1565C0;"
-                : "background:#E8F5E9; color:#2E7D32;";
+            o.status === "Menunggu Pengesahan"
+              ? "background:#FFF3CD; color:#856404;"
+              : o.status === "Ditolak"
+                ? "background:#F8D7DA; color:#721C24;"
+                : o.status === "Preparing"
+                  ? "background:#FFF3E0; color:#E65100;"
+                  : o.status === "Shipped"
+                    ? "background:#E3F2FD; color:#1565C0;"
+                    : "background:#E8F5E9; color:#2E7D32;";
           let trackInfo =
-            (o.status === "Shipped" || o.status === "Delivered") &&
+            (o.status === "Shipped" || o.status === "Received" || o.status === "Delivered") &&
             o.tracking_no
               ? `<div style="font-size:13px; margin-top:8px; font-weight:700; color:var(--primary-blue); background:#F0F4FF; padding:8px 12px; border-radius:8px;">Tracking No: <span style="letter-spacing:1px; color:#1C1C1E;">${o.tracking_no}</span></div>`
               : "";
-          let actionBtn =
-            o.status === "Shipped"
-              ? `<button class="submit-btn" style="margin-top:12px; padding:12px; background:#34C759;" onclick="confirmOrderReceived('${o.id}')">Pesanan Diterima (Received)</button>`
-              : "";
+          let actionBtn = "";
+          if (o.status === "Shipped") {
+              actionBtn = `<button class="submit-btn" style="margin-top:12px; padding:12px; background:#34C759;" onclick="confirmOrderReceived('${o.id}')">Pesanan Diterima (Received)</button>`;
+          } else if (o.status === "Ditolak") {
+              actionBtn = `<a href="https://wa.me/60174836277?text=Sila hubungi pihak kedai kerana pesanan produk saya ditolak. ID: ${o.id}" target="_blank" class="submit-btn" style="display:block; text-align:center; text-decoration:none; margin-top:12px; padding:12px; background:#E53935; color:white;"><i class="fab fa-whatsapp mr-2"></i> Hubungi Kedai</a>`;
+          }
+          
           let itemsStr = "Pesanan Produk";
           try {
             let items =
@@ -1404,12 +1411,22 @@ function renderNotifications() {
           productsHtml += `<div style="background:var(--bg-surface); padding:18px; border-radius:16px; margin-bottom:15px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:12px; font-weight:800; color:var(--text-muted); font-family:monospace;">ID: ${o.id.substring(0, 8).toUpperCase()}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${o.status.toUpperCase()}</span></div><div style="font-size:14px; font-weight:700; margin-top:10px; color:var(--text-main); line-height:1.4;">${itemsStr}</div>${trackInfo}${actionBtn}</div>`;
         } else {
           let badgeStyle =
-            o.status === "Belum"
-              ? "background:#FFF3E0; color:#E65100;"
-              : "background:#E8F5E9; color:#2E7D32;";
+            o.status === "Menunggu Pengesahan"
+              ? "background:#FFF3CD; color:#856404;"
+              : o.status === "Ditolak"
+                ? "background:#F8D7DA; color:#721C24;"
+                : o.status === "Belum"
+                  ? "background:#FFF3E0; color:#E65100;"
+                  : "background:#E8F5E9; color:#2E7D32;";
           let displayStatus =
             o.status === "Belum" ? "AKTIF" : o.status.toUpperCase();
-          servicesHtml += `<div style="background:var(--bg-surface); padding:18px; border-radius:16px; margin-bottom:15px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:13px; font-weight:800; color:var(--primary-blue); font-family:monospace;">NO: ${o.id}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${displayStatus}</span></div><div style="font-size:14px; font-weight:700; margin-top:8px; color:var(--text-main);">${o.service_name}</div><div style="font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600;"><i class="fas fa-calendar-alt"></i> ${o.date} &nbsp; <i class="fas fa-clock"></i> ${o.time}</div></div>`;
+            
+          let actionBtnService = "";
+          if (o.status === "Ditolak") {
+              actionBtnService = `<a href="https://wa.me/60174836277?text=Sila hubungi pihak kedai kerana tempahan saya ditolak. NO: ${o.id}" target="_blank" class="submit-btn" style="display:block; text-align:center; text-decoration:none; margin-top:12px; padding:12px; background:#E53935; color:white;"><i class="fab fa-whatsapp mr-2"></i> Hubungi Kedai</a>`;
+          }
+          
+          servicesHtml += `<div style="background:var(--bg-surface); padding:18px; border-radius:16px; margin-bottom:15px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:13px; font-weight:800; color:var(--primary-blue); font-family:monospace;">NO: ${o.id}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${displayStatus}</span></div><div style="font-size:14px; font-weight:700; margin-top:8px; color:var(--text-main);">${o.service_name}</div><div style="font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600;"><i class="fas fa-calendar-alt"></i> ${o.date} &nbsp; <i class="fas fa-clock"></i> ${o.time}</div>${actionBtnService}</div>`;
         }
       });
       

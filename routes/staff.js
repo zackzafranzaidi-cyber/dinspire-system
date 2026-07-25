@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
+const schedule = require("node-schedule"); // [DIBAIKI] Ditambah untuk jadual SMS
 
 // ==========================================
 // 1. Papan Pemuka Tugasan Staf (Dashboard)
@@ -57,17 +58,20 @@ router.get(
 
       let allBookings = [];
 
+      const mapStatus = (s) => s === "Menunggu Pengesahan" ? "Menunggu Pengesahan" : (s === "Belum" ? "Aktif" : (s === "Ditolak" ? "Ditolak" : "Selesai"));
+
       (bookings || []).forEach((b) => {
         allBookings.push({
           order_no: b.no_booking,
-          customer: { name: b.nama_pelanggan },
+          customer: { name: b.nama_pelanggan, phone: b.no_phone }, // [DIBAIKI] Ditambah phone untuk whatsapp link
           service: {
             name: b.haircuts ? b.haircuts.nama_potongan : "Guntingan",
           },
           booking_date: b.tarikh,
           booking_time: b.masa,
           price: b.harga_rm,
-          status: b.status === "Belum" ? "Aktif" : "Selesai",
+          status: mapStatus(b.status),
+          resit: b.resit, // [DIBAIKI] Ditambah resit untuk view
           payment_method: "QR",
         });
       });
@@ -75,14 +79,15 @@ router.get(
       (treatments || []).forEach((t) => {
         allBookings.push({
           order_no: t.no_booking,
-          customer: { name: t.nama_pelanggan },
+          customer: { name: t.nama_pelanggan, phone: t.no_phone },
           service: {
             name: t.treatments ? t.treatments.nama_rawatan : "Rawatan",
           },
           booking_date: t.tarikh,
           booking_time: t.masa,
           price: t.harga_rm,
-          status: t.status === "Belum" ? "Aktif" : "Selesai",
+          status: mapStatus(t.status),
+          resit: t.resit,
           payment_method: "QR",
         });
       });
@@ -91,7 +96,7 @@ router.get(
         allBookings.push({
           order_no:
             "#WLK-" + (w.id ? w.id.substring(0, 4).toUpperCase() : "000"),
-          customer: { name: w.nama_pelanggan },
+          customer: { name: w.nama_pelanggan, phone: w.no_phone || "Tiada" },
           service: { name: w.haircuts ? w.haircuts.nama_potongan : "Walk-In" },
           booking_date: w.tarikh,
           booking_time: w.masa,
@@ -104,13 +109,14 @@ router.get(
       (oncalls || []).forEach((o) => {
         allBookings.push({
           order_no: o.no_booking,
-          customer: { name: o.nama_pelanggan },
+          customer: { name: o.nama_pelanggan, phone: o.no_phone },
           service: { name: o.haircuts ? o.haircuts.nama_potongan : "On-Call" },
           booking_date: o.tarikh,
           booking_time: o.masa,
           price: o.harga_rm,
-          status: o.status === "Belum" ? "Aktif" : "Selesai",
-          payment_method: "QR",
+          status: mapStatus(o.status),
+          resit: o.resit,
+          payment_method: o.jenis_bayaran || "QR",
         });
       });
 
@@ -447,5 +453,59 @@ router.post("/leaves", authenticate, requireRole(["staff"]), async (req, res) =>
     res.status(500).json({ status: "error", message: "Gagal menyimpan cuti." });
   }
 });
+
+// ==========================================
+// 8. Staf Pengesahan Bayaran Manual
+// ==========================================
+router.post(
+  "/verify-payment",
+  authenticate,
+  requireRole(["staff", "owner"]),
+  async (req, res) => {
+    const { order_no, action } = req.body;
+    
+    let tableName = "booking_records";
+    if (order_no.startsWith("TR")) tableName = "treatment_records";
+    else if (order_no.startsWith("DBC")) tableName = "oncall_records";
+
+    try {
+      if (action === "approve") {
+        const { data, error } = await supabase
+          .from(tableName)
+          .update({ status: "Belum" })
+          .eq("no_booking", order_no)
+          .select("tarikh, masa, no_phone, nama_pelanggan")
+          .single();
+          
+        if (error) throw error;
+
+        // Jadualkan SMS 2 Jam
+        if (data && data.tarikh && data.masa && data.no_phone) {
+          const bookingDateTime = new Date(`${data.tarikh}T${data.masa}`);
+          const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
+          if (reminderTime > new Date()) {
+            schedule.scheduleJob(reminderTime, function() {
+              console.log(`\n========================================`);
+              console.log(`[SIMULASI SMS - PERINGATAN 2 JAM] Hantar ke: ${data.no_phone}`);
+              console.log(`Mesej: Peringatan mesra! Tempahan anda (${order_no}) akan bermula pada ${data.masa}. Sila hadir awal.`);
+              console.log(`========================================\n`);
+            });
+          }
+        }
+        return res.json({ status: "success", message: "Bayaran diluluskan." });
+      } else if (action === "reject") {
+        const { error } = await supabase
+          .from(tableName)
+          .update({ status: "Ditolak" })
+          .eq("no_booking", order_no);
+        if (error) throw error;
+        return res.json({ status: "success", message: "Bayaran ditolak. Sila maklumkan kepada pelanggan." });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ status: "error", message: "Ralat pelayan." });
+    }
+  }
+);
 
 module.exports = router;

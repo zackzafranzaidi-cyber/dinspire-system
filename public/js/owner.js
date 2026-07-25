@@ -966,19 +966,28 @@ function renderTxProdukTable(orders) {
       let stat = o.Status || o.status || "Baru";
       let orderId = o.FullId || o.id;
       let badgeColor =
-        stat === "Preparing" || stat === "Baru" || stat === "Belum"
-          ? "bg-orange-100 text-orange-700"
-          : stat === "Shipped"
-            ? "bg-blue-100 text-blue-700"
-            : "bg-emerald-100 text-emerald-700";
+        stat === "Menunggu Pengesahan" 
+          ? "bg-yellow-100 text-yellow-800"
+          : stat === "Ditolak"
+            ? "bg-red-100 text-red-700"
+            : stat === "Preparing" || stat === "Baru" || stat === "Belum"
+              ? "bg-orange-100 text-orange-700"
+              : stat === "Shipped"
+                ? "bg-blue-100 text-blue-700"
+                : "bg-emerald-100 text-emerald-700";
 
-      let actionArea =
-        stat === "Preparing" || stat === "Baru" || stat === "Belum"
-          ? `<div class="mt-3 flex flex-wrap gap-2 items-center" onclick="event.stopPropagation()">
+      let actionArea = "";
+      if (stat === "Menunggu Pengesahan") {
+        actionArea = `<div class="mt-3 flex gap-2 w-full" onclick="event.stopPropagation()">
+            <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 shadow-sm whitespace-nowrap">Lulus</button>
+            <button onclick="verifyProductPayment('${orderId}', 'reject')" class="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 shadow-sm whitespace-nowrap">Tolak</button>
+        </div>`;
+      } else if (stat === "Preparing" || stat === "Baru" || stat === "Belum") {
+        actionArea = `<div class="mt-3 flex flex-wrap gap-2 items-center" onclick="event.stopPropagation()">
                  <input type="text" id="track-${orderId}" placeholder="No Tracking" class="flex-1 border border-gray-300 px-3 py-1.5 text-xs rounded-lg min-w-[120px] outline-none focus:border-blue-500 shadow-sm">
                  <button onclick="updateTracking('${orderId}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-blue-700 font-bold shadow-sm whitespace-nowrap">Kemas Kini</button>
-               </div>`
-          : "";
+               </div>`;
+      }
 
       return `
         <tr class="block w-full !bg-white border border-gray-100 rounded-lg mb-1.5 shadow-sm hover:shadow-md transition">
@@ -1041,6 +1050,39 @@ async function updateTracking(fullOrderId) {
     }
   } catch (e) {
     alert("Ralat pelayan. Sila cuba lagi.");
+  }
+}
+
+// ==========================================
+// [BAHARU] VERIFY PRODUCT PAYMENT
+// ==========================================
+async function verifyProductPayment(orderId, action) {
+  if (action === 'reject') {
+    if (!confirm("Pasti mahu menolak resit bayaran ini?")) return;
+  } else {
+    if (!confirm("Sahkan resit dan luluskan tempahan produk ini?")) return;
+  }
+
+  const token = localStorage.getItem("din_token_sys") || sessionStorage.getItem("din_token_sys");
+  try {
+    const res = await fetch(`${API_BASE_URL}/owner/verify-product-payment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ order_id: orderId, action: action }),
+    });
+
+    const data = await res.json();
+    if (data.status === "success") {
+      alert(data.message || "Berjaya dikemaskini.");
+      fetchOwnerDashboardData(); // Refresh UI
+    } else {
+      alert("Ralat: " + data.message);
+    }
+  } catch (err) {
+    alert("Ralat pelayan memproses pengesahan.");
   }
 }
 

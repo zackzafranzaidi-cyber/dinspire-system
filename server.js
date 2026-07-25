@@ -8,7 +8,7 @@ const rateLimit = require("express-rate-limit");
 const schedule = require("node-schedule");
 const supabase = require("./config/db");
 const logger = require("./utils/logger"); // Import Winston logger
-const { runAnnualArchive } = require("./utils/archiver");
+const { runAnnualArchive, runMonthlyArchive, runDailyCleanup } = require("./utils/archiver");
 const app = express();
 
 // ========================================================
@@ -86,6 +86,30 @@ schedule.scheduleJob("59 23 31 12 *", async () => {
     await runAnnualArchive(false); // Produksi (Gunakan emel .env jika ada)
   } catch (err) {
     console.error("CRON ERROR: Gagal menjalankan Pengarkiban Tahunan", err);
+  }
+});
+
+// ========================================================
+// [BAHARU] Cron Job: Laporan Bulanan (Setiap 1 haribulan, 2:00 Pagi)
+// ========================================================
+schedule.scheduleJob("0 2 1 * *", async () => {
+  try {
+    console.log("CRON: Memulakan rutin Laporan Bulanan...");
+    await runMonthlyArchive(false);
+  } catch (err) {
+    console.error("CRON ERROR: Gagal menjalankan Laporan Bulanan", err);
+  }
+});
+
+// ========================================================
+// [BAHARU] Cron Job: Pembersihan Harian (Setiap Hari, 3:00 Pagi)
+// ========================================================
+schedule.scheduleJob("0 3 * * *", async () => {
+  try {
+    console.log("CRON: Memulakan rutin Pembersihan Harian...");
+    await runDailyCleanup();
+  } catch (err) {
+    console.error("CRON ERROR: Gagal menjalankan Pembersihan Harian", err);
   }
 });
 
@@ -194,13 +218,26 @@ app.use("/api/admin", adminRoutes);
 // ========================================================
 app.get("/api/owner/trigger-annual-archive", async (req, res) => {
   try {
-    // Sesuai untuk testing: Guna Ethereal dan sasar ke zafran.zaidi@gmail.com
     const result = await runAnnualArchive(true, "zafran.zaidi@gmail.com");
-    res.json({
-      status: "success",
-      message: "Proses pengarkiban berjaya disimulasikan.",
-      etherealPreviewUrl: result.etherealUrl
-    });
+    res.json({ status: "success", message: "Proses pengarkiban berjaya disimulasikan.", data: result });
+  } catch (err) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+app.get("/api/owner/trigger-monthly-archive", async (req, res) => {
+  try {
+    const result = await runMonthlyArchive(true, "zafran.zaidi@gmail.com");
+    res.json({ status: "success", message: "Laporan bulanan berjaya disimulasikan.", data: result });
+  } catch (err) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+app.get("/api/owner/trigger-daily-cleanup", async (req, res) => {
+  try {
+    await runDailyCleanup();
+    res.json({ status: "success", message: "Pembersihan harian berjaya disimulasikan." });
   } catch (err) {
     res.status(500).json({ status: "error", message: err.message });
   }

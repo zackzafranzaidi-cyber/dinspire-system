@@ -212,11 +212,17 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
 
     const payment_method = req.body.payment_method || "fpx";
 
+    if (payment_method === "fpx") {
+      if (typeof lockKey !== 'undefined') bookingLocks.delete(lockKey);
+      return res.status(400).json({ status: "error", message: "Sistem FPX sedang diselenggarakan. Sila gunakan kaedah QR untuk sementara waktu." });
+    }
+
     let fpxResult;
     let finalReceiptUrl = "";
     
     if (payment_method === "qr") {
       if (!receipt_url) {
+        if (typeof lockKey !== 'undefined') bookingLocks.delete(lockKey);
         return res.status(400).json({ status: "error", message: "Resit pembayaran QR diperlukan." });
       }
       finalReceiptUrl = await uploadReceiptToStorage(receipt_url, order_no);
@@ -257,7 +263,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       harga_rm: harga_rm,
       service_fee: serviceFee,
       resit: payment_method === "qr" ? finalReceiptUrl : `FPX_PENDING:${fpxResult.transaction_id}`,
-      status: "Belum",
+      status: payment_method === "qr" ? "Menunggu Pengesahan" : "Belum", // [DIBAIKI] Status manual
     };
 
     if (booking_type === "treatment") {
@@ -272,24 +278,6 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
         .from("booking_records")
         .insert([basePayload]);
       if (error) throw error;
-    }
-
-
-
-    // PERINGATAN 2 JAM
-    try {
-      const bookingDateTime = new Date(`${booking_date}T${booking_time}`);
-      const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
-      if (reminderTime > new Date()) {
-        schedule.scheduleJob(reminderTime, function() {
-          console.log(`\n========================================`);
-          console.log(`[SIMULASI SMS - PERINGATAN 2 JAM] Hantar ke: ${cust.phone}`);
-          console.log(`Mesej: Peringatan mesra! Tempahan anda (${order_no}) akan bermula pada ${booking_time}. Sila hadir awal.`);
-          console.log(`========================================\n`);
-        });
-      }
-    } catch (e) {
-      console.error("Gagal menetapkan jadual peringatan SMS:", e);
     }
 
     bookingLocks.delete(lockKey); // [DIBAIKI] MEMORY LEAK FIX
@@ -347,6 +335,18 @@ router.put(
       let tableName = "booking_records";
       if (orderNo.startsWith("TR")) tableName = "treatment_records";
       else if (orderNo.startsWith("DBC")) tableName = "oncall_records";
+
+      // [DIBAIKI] Time-Check: Selesai hanya boleh ditekan selepas masa berlalu
+      if (tableName !== "oncall_records") { // walkin tiada masa depan, oncall bergantung
+        const { data: bData } = await supabase.from(tableName).select("tarikh, masa").eq("no_booking", orderNo).single();
+        if (bData && bData.tarikh && bData.masa) {
+          const bookingDateTime = new Date(`${bData.tarikh}T${bData.masa}`);
+          if (bookingDateTime > new Date()) {
+            completionLocks.delete(orderNo);
+            return res.status(400).json({ status: "error", message: "Servis belum tamat. Anda hanya boleh klik 'Selesai' selepas masa tempahan berlalu." });
+          }
+        }
+      }
 
       let query = supabase
         .from(tableName)
@@ -677,6 +677,10 @@ router.post(
       
       const payment_method = req.body.payment_method || "fpx";
 
+      if (payment_method === "fpx") {
+        return res.status(400).json({ status: "error", message: "Sistem FPX sedang diselenggarakan. Sila gunakan kaedah QR untuk sementara waktu." });
+      }
+
       let fpxResult;
       let finalReceiptUrl = "";
       
@@ -720,7 +724,7 @@ router.post(
           lokasi_penghantaran: address,
           resit: payment_method === "qr" ? finalReceiptUrl : `FPX_PENDING:${fpxResult.transaction_id}`,
           shipping_fee: shippingFee,
-          status: "Preparing",
+          status: payment_method === "qr" ? "Menunggu Pengesahan" : "Preparing", // [DIBAIKI] Status manual
         },
       ]);
 
@@ -846,7 +850,7 @@ router.put(
     try {
       const { error } = await supabase
         .from("product_orders")
-        .update({ status: "Delivered" })
+        .update({ status: "Received" }) // [DIBAIKI] Ditukar ke Received mengikut kehendak
         .eq("id", req.params.id)
         .eq("customer_id", req.user.id);
       if (error) throw error;

@@ -435,10 +435,10 @@ function calculateDashboardStats() {
 
 function renderBookingList() {
   const container = document.getElementById("booking-container");
-  const activeBookings = staffData.bookings.filter((b) => b.status === "Aktif");
+  const activeBookings = staffData.bookings.filter((b) => b.status === "Aktif" || b.status === "Menunggu Pengesahan");
 
   if (activeBookings.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted); font-size: 13px;">Tiada tempahan aktif buat masa ini.</div>`;
+    container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted); font-size: 13px;">Tiada tempahan aktif atau menunggu pengesahan buat masa ini.</div>`;
     return;
   }
 
@@ -464,11 +464,28 @@ function renderBookingList() {
       let serviceName = escapeHTML(
         b.service ? b.service.name : b.services ? b.services.name : "Servis",
       );
-      let btnAction = isEarly
-        ? `<button class="btn btn-disabled" onclick="showToast('Selesai dikunci.')"><i class="fas fa-lock mr-2"></i> Belum Tiba Waktu</button>`
-        : `<button class="btn btn-primary" onclick="processBookingSelesai('${escapeHTML(b.order_no)}', ${b.price})"><i class="fas fa-check-circle mr-2"></i> Selesai</button>`;
+      
+      let badgeHtml = b.status === "Menunggu Pengesahan" 
+        ? `<span class="badge" style="background:#fff3cd; color:#856404;">Menunggu Pengesahan</span>`
+        : `<span class="badge badge-pending">Booking Aktif</span>`;
+        
+      let btnAction = "";
+      let resitBtn = "";
+      
+      if (b.status === "Menunggu Pengesahan") {
+        if (b.resit) {
+            resitBtn = `<button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="window.open('${b.resit}', '_blank')"><i class="fas fa-file-invoice mr-2"></i> Lihat Resit</button>`;
+        }
+        btnAction = `<button class="btn btn-primary" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-check mr-2"></i> Lulus</button>
+                     <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'reject')"><i class="fas fa-times mr-2"></i> Tolak</button>`;
+      } else {
+        btnAction = isEarly
+          ? `<button class="btn btn-disabled" onclick="showToast('Selesai dikunci.')"><i class="fas fa-lock mr-2"></i> Belum Tiba Waktu</button>`
+          : `<button class="btn btn-primary" onclick="processBookingSelesai('${escapeHTML(b.order_no)}', ${b.price})"><i class="fas fa-check-circle mr-2"></i> Selesai</button>`;
+        btnAction += `<button class="btn btn-outline" style="width:30%; color:var(--danger);" onclick="cancelBooking('${escapeHTML(b.order_no)}')">Batal</button>`;
+      }
 
-      return `<div class="list-card"><div class="list-header"><span class="cust-name">${customerName}</span><span class="badge badge-pending">Booking Aktif</span></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <strong>Masa:</strong> ${b.booking_time} <br><strong>No. Order:</strong> <span style="font-family:monospace; color:var(--primary);">${escapeHTML(b.order_no)}</span></div><div class="btn-action-group">${btnAction}<button class="btn btn-outline" style="width:30%; color:var(--danger);" onclick="cancelBooking('${escapeHTML(b.order_no)}')">Batal</button></div></div>`;
+      return `<div class="list-card"><div class="list-header"><span class="cust-name">${customerName}</span>${badgeHtml}</div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <strong>Masa:</strong> ${b.booking_time} <br><strong>No. Order:</strong> <span style="font-family:monospace; color:var(--primary);">${escapeHTML(b.order_no)}</span>${resitBtn}</div><div class="btn-action-group">${btnAction}</div></div>`;
     })
     .join("");
 }
@@ -509,7 +526,42 @@ function renderHistoryList() {
     .join("");
 }
 
-function processBookingSelesai(orderNo, price) {
+// ==========================================
+// [BAHARU] VERIFY PAYMENT
+// ==========================================
+async function verifyPayment(orderNo, action) {
+  if (action === 'reject') {
+    if (!confirm("Pasti mahu menolak resit bayaran ini? Pelanggan akan diminta hubungi pihak kedai.")) return;
+  } else {
+    if (!confirm("Sahkan resit dan luluskan tempahan ini?")) return;
+  }
+
+  showToast("Memproses pengesahan...");
+  const token = localStorage.getItem("din_token_sys") || sessionStorage.getItem("din_token_sys");
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/staff/verify-payment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ order_no: orderNo, action: action }),
+    });
+
+    const data = await res.json();
+    if (data.status === "success") {
+      showToast(data.message || "Berjaya dikemaskini.");
+      loadDashboardData();
+    } else {
+      showToast(data.message || "Gagal mengemaskini status.");
+    }
+  } catch (err) {
+    showToast("Ralat pelayan memproses pengesahan.");
+  }
+}
+
+async function processBookingSelesai(orderNo, price) {
   if (confirm(`Sahkan pelanggan (${orderNo}) ini telah selesai?`)) {
     fetch(`${API_BASE_URL}/bookings/order/${orderNo}/complete`, {
       method: "PUT",

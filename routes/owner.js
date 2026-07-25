@@ -61,6 +61,7 @@ router.get(
         allTransactions.push({
           OrderNo: b.no_booking,
           Username: b.nama_pelanggan,
+          Phone: b.no_phone || "Tiada", // [DIBAIKI]
           Date: b.tarikh,
           Time: b.masa,
           ServiceName: b.haircuts ? b.haircuts.nama_potongan : "-",
@@ -79,6 +80,7 @@ router.get(
         allTransactions.push({
           OrderNo: t.no_booking,
           Username: t.nama_pelanggan,
+          Phone: t.no_phone || "Tiada", // [DIBAIKI]
           Date: t.tarikh,
           Time: t.masa,
           ServiceName: t.treatments ? t.treatments.nama_rawatan : "-",
@@ -99,6 +101,7 @@ router.get(
             "#WLK-" +
             (w.id ? String(w.id).substring(0, 4).toUpperCase() : "000"),
           Username: w.nama_pelanggan,
+          Phone: w.no_phone || "Tiada", // [DIBAIKI]
           Date: w.tarikh,
           Time: w.masa,
           ServiceName: w.haircuts ? w.haircuts.nama_potongan : "-",
@@ -117,6 +120,7 @@ router.get(
         allTransactions.push({
           OrderNo: o.no_booking,
           Username: o.nama_pelanggan,
+          Phone: o.no_phone || "Tiada", // [DIBAIKI]
           Date: o.tarikh,
           Time: o.masa,
           ServiceName: o.haircuts ? o.haircuts.nama_potongan : "-",
@@ -329,6 +333,38 @@ router.post(
         .json({ status: "error", message: "Gagal menjana analisis AI. Sila cuba lagi." });
     }
   },
+);
+
+// ==========================================
+// X. Pengesahan Bayaran Produk E-Commerce
+// ==========================================
+router.post(
+  "/verify-product-payment",
+  authenticate,
+  requireRole(["owner"]),
+  async (req, res) => {
+    const { order_id, action } = req.body;
+    try {
+      if (action === "approve") {
+        const { error } = await supabase
+          .from("product_orders")
+          .update({ status: "Preparing" })
+          .eq("id", order_id);
+        if (error) throw error;
+        return res.json({ status: "success", message: "Bayaran produk diluluskan. Sila proses tempahan." });
+      } else if (action === "reject") {
+        const { error } = await supabase
+          .from("product_orders")
+          .update({ status: "Ditolak" })
+          .eq("id", order_id);
+        if (error) throw error;
+        return res.json({ status: "success", message: "Bayaran ditolak. Resit dibatalkan." });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ status: "error", message: "Ralat pelayan memproses pengesahan produk." });
+    }
+  }
 );
 
 module.exports = router;
