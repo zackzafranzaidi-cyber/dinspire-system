@@ -253,13 +253,15 @@ router.post(
 
           // 4. KENDALIKAN PENYIMPANAN PINTAR (Insert vs Update)
           if (mappedItems.length > 0) {
-            const { data: existingData, error: fetchErr } = await supabase
-              .from(table)
-              .select("id")
-              .in("id", currentIds);
-            if (fetchErr) throw fetchErr;
-
-            const existingIds = existingData.map((d) => d.id);
+            let existingIds = [];
+            if (currentIds.length > 0) {
+              const { data: existingData, error: fetchErr } = await supabase
+                .from(table)
+                .select("id")
+                .in("id", currentIds);
+              if (fetchErr) throw fetchErr;
+              existingIds = existingData.map((d) => d.id);
+            }
             const itemsToUpdate = mappedItems.filter((item) => existingIds.includes(item.id));
             const itemsToInsert = mappedItems.filter((item) => !existingIds.includes(item.id));
 
@@ -469,17 +471,15 @@ router.post(
     } catch (error) {
       console.error("Ralat Menyimpan Admin CMS:", error);
       
-      let errorMsg = "Ralat menyimpan pangkalan data. Sila cuba sebentar lagi.";
-      if (error.message && (error.message.includes("Tidak boleh memadam data") || error.message.includes("format ID yang tidak sah"))) {
-        errorMsg = error.message;
-      }
+      let errorMsg = error.message || "Ralat menyimpan pangkalan data. Sila cuba sebentar lagi.";
       
-      // Menghantar mesej ralat yang tepat kepada UI Admin
+      // Menghantar mesej ralat yang tepat kepada UI Admin untuk memudahkan debug
       res
         .status(500)
         .json({
           status: "error",
           message: errorMsg,
+          details: error.details || error.hint || error.code || null
         });
     }
   },
