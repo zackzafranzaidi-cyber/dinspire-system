@@ -982,6 +982,10 @@ function renderTxProdukTable(orders) {
             <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 shadow-sm whitespace-nowrap">Lulus</button>
             <button onclick="verifyProductPayment('${orderId}', 'reject')" class="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 shadow-sm whitespace-nowrap">Tolak</button>
         </div>`;
+      } else if (stat === "Ditolak") {
+        actionArea = `<div class="mt-3 flex w-full" onclick="event.stopPropagation()">
+            <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm whitespace-nowrap">Luluskan Semula</button>
+        </div>`;
       } else if (stat === "Preparing" || stat === "Baru" || stat === "Belum") {
         actionArea = `<div class="mt-3 flex flex-wrap gap-2 items-center" onclick="event.stopPropagation()">
                  <input type="text" id="track-${orderId}" placeholder="No Tracking" class="flex-1 border border-gray-300 px-3 py-1.5 text-xs rounded-lg min-w-[120px] outline-none focus:border-blue-500 shadow-sm">

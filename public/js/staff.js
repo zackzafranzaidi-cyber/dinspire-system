@@ -493,7 +493,7 @@ function renderBookingList() {
 function renderHistoryList() {
   const container = document.getElementById("history-container");
   const historyData = staffData.bookings
-    .filter((b) => b.status === "Selesai" || b.status === "Batal")
+    .filter((b) => b.status === "Selesai" || b.status === "Batal" || b.status === "Ditolak")
     .sort((a, b) => new Date(b.booking_date) - new Date(a.booking_date));
 
   if (historyData.length === 0) {
@@ -514,14 +514,19 @@ function renderHistoryList() {
         b.service ? b.service.name : b.services ? b.services.name : "Servis",
       );
       let badgeClass =
-        b.status === "Batal"
+        b.status === "Batal" || b.status === "Ditolak"
           ? "badge-pending"
           : b.payment_method === "QR"
             ? "badge-qr"
             : "badge-cash";
-      let method = b.status === "Batal" ? "Dibatalkan" : b.payment_method;
+      let method = b.status === "Batal" ? "Dibatalkan" : b.status === "Ditolak" ? "Ditolak" : b.payment_method;
+      
+      let editBtn = "";
+      if (b.status === "Ditolak") {
+          editBtn = `<button class="btn btn-primary" style="margin-top:10px; width:100%; font-size:12px;" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-edit mr-2"></i> Luluskan Semula</button>`;
+      }
 
-      return `<div class="list-card" style="opacity: 0.85;"><div class="list-header"><span class="cust-name">${customerName}</span><span class="badge ${badgeClass}">${method}</span></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh Selesai:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <br><strong>Kutipan:</strong> RM ${b.final_price || b.price}</div></div>`;
+      return `<div class="list-card" style="opacity: 0.85;"><div class="list-header"><span class="cust-name">${customerName}</span><span class="badge ${badgeClass}">${method}</span></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh Selesai:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <br><strong>Kutipan:</strong> RM ${b.final_price || b.price}${editBtn}</div></div>`;
     })
     .join("");
 }
