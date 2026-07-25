@@ -537,15 +537,14 @@ async function verifyPayment(orderNo, action) {
   }
 
   showToast("Memproses pengesahan...");
-  const token = localStorage.getItem("din_token_sys") || sessionStorage.getItem("din_token_sys");
   
   try {
     const res = await fetch(`${API_BASE_URL}/staff/verify-payment`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       },
+      credentials: "include",
       body: JSON.stringify({ order_no: orderNo, action: action }),
     });
 

@@ -1063,14 +1063,13 @@ async function verifyProductPayment(orderId, action) {
     if (!confirm("Sahkan resit dan luluskan tempahan produk ini?")) return;
   }
 
-  const token = localStorage.getItem("din_token_sys") || sessionStorage.getItem("din_token_sys");
   try {
     const res = await fetch(`${API_BASE_URL}/owner/verify-product-payment`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       },
+      credentials: "include",
       body: JSON.stringify({ order_id: orderId, action: action }),
     });
 
