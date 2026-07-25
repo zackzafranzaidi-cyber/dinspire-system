@@ -297,6 +297,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       });
     }
   } catch (error) {
+    console.error("Ralat /bookings POST:", error);
     if (typeof lockKey !== 'undefined') bookingLocks.delete(lockKey); // [DIBAIKI] MEMORY LEAK FIX
     if (error.code === '23505') {
       return res.status(409).json({ status: "error", message: "Maaf, slot ini baru sahaja ditempah oleh pelanggan lain pada saat yang sama (Tindanan berlaku)." });
