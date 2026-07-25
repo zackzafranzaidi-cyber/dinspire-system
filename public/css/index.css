@@ -47,7 +47,7 @@ body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: calc(85px + env(safe-area-inset-bottom));
+  padding-bottom: calc(140px + env(safe-area-inset-bottom));
 }
 .view-content::-webkit-scrollbar {
   width: 0px;

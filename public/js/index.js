@@ -1198,6 +1198,12 @@ function closeSuccessScreen() {
   successScreen.classList.remove("active");
   setTimeout(() => {
     document.querySelectorAll("form").forEach((f) => f.reset());
+    
+    // Kosongkan troli
+    cartState = {};
+    updateCartUI();
+    document.querySelectorAll('[id^="temp-qty-"]').forEach(el => el.innerText = "1");
+    
     switchView("notifications");
   }, 500);
 }
