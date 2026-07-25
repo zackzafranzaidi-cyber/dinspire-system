@@ -966,9 +966,9 @@ function renderTxProdukTable(orders) {
       let stat = o.Status || o.status || "Baru";
       let orderId = o.FullId || o.id;
       let badgeColor =
-        stat === "Menunggu Pengesahan" 
+        stat === "Pending Verification" 
           ? "bg-yellow-100 text-yellow-800"
-          : stat === "Ditolak"
+          : stat === "Rejected"
             ? "bg-red-100 text-red-700"
             : stat === "Preparing" || stat === "Baru" || stat === "Belum"
               ? "bg-orange-100 text-orange-700"
@@ -977,14 +977,14 @@ function renderTxProdukTable(orders) {
                 : "bg-emerald-100 text-emerald-700";
 
       let actionArea = "";
-      if (stat === "Menunggu Pengesahan") {
+      if (stat === "Pending Verification") {
         actionArea = `<div class="mt-3 flex gap-2 w-full" onclick="event.stopPropagation()">
-            <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 shadow-sm whitespace-nowrap">Lulus</button>
-            <button onclick="verifyProductPayment('${orderId}', 'reject')" class="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 shadow-sm whitespace-nowrap">Tolak</button>
+            <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 shadow-sm whitespace-nowrap">Approve</button>
+            <button onclick="verifyProductPayment('${orderId}', 'reject')" class="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 shadow-sm whitespace-nowrap">Reject</button>
         </div>`;
-      } else if (stat === "Ditolak") {
+      } else if (stat === "Rejected") {
         actionArea = `<div class="mt-3 flex w-full" onclick="event.stopPropagation()">
-            <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm whitespace-nowrap">Luluskan Semula</button>
+            <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm whitespace-nowrap">Undo Reject</button>
         </div>`;
       } else if (stat === "Preparing" || stat === "Baru" || stat === "Belum") {
         actionArea = `<div class="mt-3 flex flex-wrap gap-2 items-center" onclick="event.stopPropagation()">

@@ -58,7 +58,7 @@ router.get(
 
       let allBookings = [];
 
-      const mapStatus = (s) => s === "Menunggu Pengesahan" ? "Menunggu Pengesahan" : (s === "Belum" ? "Aktif" : (s === "Ditolak" ? "Ditolak" : "Selesai"));
+      const mapStatus = (s) => s === "Pending Verification" ? "Pending Verification" : (s === "Belum" ? "Aktif" : (s === "Rejected" ? "Rejected" : "Selesai"));
 
       (bookings || []).forEach((b) => {
         allBookings.push({
@@ -496,7 +496,7 @@ router.post(
       } else if (action === "reject") {
         const { error } = await supabase
           .from(tableName)
-          .update({ status: "Ditolak" })
+          .update({ status: "Rejected" })
           .eq("no_booking", order_no);
         if (error) throw error;
         return res.json({ status: "success", message: "Bayaran ditolak. Sila maklumkan kepada pelanggan." });

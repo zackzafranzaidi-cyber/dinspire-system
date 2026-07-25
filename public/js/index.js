@@ -1382,9 +1382,9 @@ function renderNotifications() {
       data.orders.forEach((o) => {
         if (o.type === "product") {
           let badgeStyle =
-            o.status === "Menunggu Pengesahan"
+            o.status === "Pending Verification"
               ? "background:#FFF3CD; color:#856404;"
-              : o.status === "Ditolak"
+              : o.status === "Rejected"
                 ? "background:#F8D7DA; color:#721C24;"
                 : o.status === "Preparing"
                   ? "background:#FFF3E0; color:#E65100;"
@@ -1399,7 +1399,7 @@ function renderNotifications() {
           let actionBtn = "";
           if (o.status === "Shipped") {
               actionBtn = `<button class="submit-btn" style="margin-top:12px; padding:12px; background:#34C759;" onclick="confirmOrderReceived('${o.id}')">Pesanan Diterima (Received)</button>`;
-          } else if (o.status === "Ditolak") {
+          } else if (o.status === "Rejected") {
               actionBtn = `<a href="https://wa.me/60174836277?text=Sila hubungi pihak kedai kerana pesanan produk saya ditolak. ID: ${o.id}" target="_blank" class="submit-btn" style="display:block; text-align:center; text-decoration:none; margin-top:12px; padding:12px; background:#E53935; color:white;"><i class="fab fa-whatsapp mr-2"></i> Hubungi Kedai</a>`;
           }
           
@@ -1417,9 +1417,9 @@ function renderNotifications() {
           productsHtml += `<div style="background:var(--bg-surface); padding:18px; border-radius:16px; margin-bottom:15px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:12px; font-weight:800; color:var(--text-muted); font-family:monospace;">ID: ${o.id.substring(0, 8).toUpperCase()}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${o.status.toUpperCase()}</span></div><div style="font-size:14px; font-weight:700; margin-top:10px; color:var(--text-main); line-height:1.4;">${itemsStr}</div>${trackInfo}${actionBtn}</div>`;
         } else {
           let badgeStyle =
-            o.status === "Menunggu Pengesahan"
+            o.status === "Pending Verification"
               ? "background:#FFF3CD; color:#856404;"
-              : o.status === "Ditolak"
+              : o.status === "Rejected"
                 ? "background:#F8D7DA; color:#721C24;"
                 : o.status === "Belum"
                   ? "background:#FFF3E0; color:#E65100;"
@@ -1428,7 +1428,7 @@ function renderNotifications() {
             o.status === "Belum" ? "AKTIF" : o.status.toUpperCase();
             
           let actionBtnService = "";
-          if (o.status === "Ditolak") {
+          if (o.status === "Rejected") {
               actionBtnService = `<a href="https://wa.me/60174836277?text=Sila hubungi pihak kedai kerana tempahan saya ditolak. NO: ${o.id}" target="_blank" class="submit-btn" style="display:block; text-align:center; text-decoration:none; margin-top:12px; padding:12px; background:#E53935; color:white;"><i class="fab fa-whatsapp mr-2"></i> Hubungi Kedai</a>`;
           }
           

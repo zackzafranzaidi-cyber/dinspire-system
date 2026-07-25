@@ -264,7 +264,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       harga_rm: harga_rm,
       service_fee: serviceFee,
       resit: payment_method === "qr" ? finalReceiptUrl : `FPX_PENDING:${fpxResult.transaction_id}`,
-      status: payment_method === "qr" ? "Menunggu Pengesahan" : "Belum", // [DIBAIKI] Status manual
+      status: payment_method === "qr" ? "Pending Verification" : "Belum", // [DIBAIKI] Status manual
     };
 
     if (booking_type === "treatment") {
@@ -727,7 +727,7 @@ router.post(
           lokasi_penghantaran: address,
           resit: payment_method === "qr" ? finalReceiptUrl : `FPX_PENDING:${fpxResult.transaction_id}`,
           shipping_fee: shippingFee,
-          status: payment_method === "qr" ? "Menunggu Pengesahan" : "Preparing", // [DIBAIKI] Status manual
+          status: payment_method === "qr" ? "Pending Verification" : "Preparing", // [DIBAIKI] Status manual
         },
       ]);
 

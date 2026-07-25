@@ -435,7 +435,7 @@ function calculateDashboardStats() {
 
 function renderBookingList() {
   const container = document.getElementById("booking-container");
-  const activeBookings = staffData.bookings.filter((b) => b.status === "Aktif" || b.status === "Menunggu Pengesahan");
+  const activeBookings = staffData.bookings.filter((b) => b.status === "Aktif" || b.status === "Pending Verification");
 
   if (activeBookings.length === 0) {
     container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted); font-size: 13px;">Tiada tempahan aktif atau menunggu pengesahan buat masa ini.</div>`;
@@ -465,19 +465,19 @@ function renderBookingList() {
         b.service ? b.service.name : b.services ? b.services.name : "Servis",
       );
       
-      let badgeHtml = b.status === "Menunggu Pengesahan" 
-        ? `<span class="badge" style="background:#fff3cd; color:#856404;">Menunggu Pengesahan</span>`
+      let badgeHtml = b.status === "Pending Verification" 
+        ? `<span class="badge" style="background:#fff3cd; color:#856404;">Pending Verification</span>`
         : `<span class="badge badge-pending">Booking Aktif</span>`;
         
       let btnAction = "";
       let resitBtn = "";
       
-      if (b.status === "Menunggu Pengesahan") {
+      if (b.status === "Pending Verification") {
         if (b.resit) {
             resitBtn = `<button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="window.open('${b.resit}', '_blank')"><i class="fas fa-file-invoice mr-2"></i> Lihat Resit</button>`;
         }
-        btnAction = `<button class="btn btn-primary" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-check mr-2"></i> Lulus</button>
-                     <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'reject')"><i class="fas fa-times mr-2"></i> Tolak</button>`;
+        btnAction = `<button class="btn btn-primary" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-check mr-2"></i> Approve</button>
+                     <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'reject')"><i class="fas fa-times mr-2"></i> Reject</button>`;
       } else {
         btnAction = isEarly
           ? `<button class="btn btn-disabled" onclick="showToast('Selesai dikunci.')"><i class="fas fa-lock mr-2"></i> Belum Tiba Waktu</button>`
@@ -493,7 +493,7 @@ function renderBookingList() {
 function renderHistoryList() {
   const container = document.getElementById("history-container");
   const historyData = staffData.bookings
-    .filter((b) => b.status === "Selesai" || b.status === "Batal" || b.status === "Ditolak")
+    .filter((b) => b.status === "Selesai" || b.status === "Batal" || b.status === "Rejected")
     .sort((a, b) => new Date(b.booking_date) - new Date(a.booking_date));
 
   if (historyData.length === 0) {
@@ -514,16 +514,16 @@ function renderHistoryList() {
         b.service ? b.service.name : b.services ? b.services.name : "Servis",
       );
       let badgeClass =
-        b.status === "Batal" || b.status === "Ditolak"
+        b.status === "Batal" || b.status === "Rejected"
           ? "badge-pending"
           : b.payment_method === "QR"
             ? "badge-qr"
             : "badge-cash";
-      let method = b.status === "Batal" ? "Dibatalkan" : b.status === "Ditolak" ? "Ditolak" : b.payment_method;
+      let method = b.status === "Batal" ? "Dibatalkan" : b.status === "Rejected" ? "Rejected" : b.payment_method;
       
       let editBtn = "";
-      if (b.status === "Ditolak") {
-          editBtn = `<button class="btn btn-primary" style="margin-top:10px; width:100%; font-size:12px;" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-edit mr-2"></i> Luluskan Semula</button>`;
+      if (b.status === "Rejected") {
+          editBtn = `<button class="btn btn-primary" style="margin-top:10px; width:100%; font-size:12px;" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-edit mr-2"></i> Undo Reject</button>`;
       }
 
       return `<div class="list-card" style="opacity: 0.85;"><div class="list-header"><span class="cust-name">${customerName}</span><span class="badge ${badgeClass}">${method}</span></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh Selesai:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <br><strong>Kutipan:</strong> RM ${b.final_price || b.price}${editBtn}</div></div>`;

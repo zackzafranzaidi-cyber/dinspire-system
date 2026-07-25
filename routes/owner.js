@@ -355,7 +355,7 @@ router.post(
       } else if (action === "reject") {
         const { error } = await supabase
           .from("product_orders")
-          .update({ status: "Ditolak" })
+          .update({ status: "Rejected" })
           .eq("id", order_id);
         if (error) throw error;
         return res.json({ status: "success", message: "Bayaran ditolak. Resit dibatalkan." });

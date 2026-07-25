@@ -16,7 +16,7 @@ const extractFilename = (url) => {
 // =====================================
 async function runDailyCleanup() {
   try {
-    console.log("Memulakan Pembersihan Harian (Resit Ditolak > 1 Bulan)...");
+    console.log("Memulakan Pembersihan Harian (Resit Rejected > 1 Bulan)...");
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
     const dateStr = oneMonthAgo.toISOString();
@@ -27,7 +27,7 @@ async function runDailyCleanup() {
       const { data } = await supabase
         .from(table)
         .select("id, no_booking, resit")
-        .eq("status", "Ditolak")
+        .eq("status", "Rejected")
         .lt("created_at", dateStr);
         
       if (data && data.length > 0) {
@@ -81,7 +81,7 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
 
     const processData = async (records, category) => {
       for (let r of (records || [])) {
-        if (r.status === "Menunggu Pengesahan" || r.status === "Ditolak") continue;
+        if (r.status === "Pending Verification" || r.status === "Rejected") continue;
 
         let price = parseFloat(r.harga_rm) || 0;
         let fee = parseFloat(r.service_fee || r.shipping_fee) || 0;
