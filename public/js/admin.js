@@ -23,7 +23,7 @@ function escapeHTML(str) {
 const SCHEMAS = {
   Haircuts: ["id", "name", "desc", "price"],
   Treatments: ["id", "name", "desc", "price"],
-  Branches: ["id", "name", "location"],
+  Branches: ["id", "name", "location", "lat", "lng"],
   Barbers: ["id", "name", "branch_id"],
   OnCall: ["id", "name", "price"],
   OnCallBarbers: ["id", "name"],

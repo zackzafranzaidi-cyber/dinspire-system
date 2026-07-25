@@ -333,7 +333,9 @@ router.post(
       await syncData("branches", data.Branches, (i) => ({
         id: i.id,
         nama_cawangan: i.name,
-        lokasi: i.location
+        lokasi: i.location,
+        lat: parseFloat(i.lat) || null,
+        lng: parseFloat(i.lng) || null
       }));
       await syncData("general_staff", data.GeneralStaff, (i) => ({
         id: i.id,
