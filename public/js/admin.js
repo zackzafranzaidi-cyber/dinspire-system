@@ -209,12 +209,17 @@ function renderTable(tabName) {
   let cols = SCHEMAS[tabName];
 
   let html = `<table class="data-table"><thead><tr>`;
-  cols.forEach((c) => (html += `<th>${c.toUpperCase()}</th>`));
+  cols.forEach((c) => {
+    if (tabName === "Branches" && (c === "lat" || c === "lng")) return;
+    html += `<th>${c.toUpperCase()}</th>`;
+  });
   html += `<th style="width: 60px;">TINDAKAN</th></tr></thead><tbody>`;
 
   dataArr.forEach((row, index) => {
     html += `<tr>`;
     cols.forEach((c) => {
+      if (tabName === "Branches" && (c === "lat" || c === "lng")) return;
+      
       if (c === "imageUrl") {
         let currentImg = row[c] || "https://via.placeholder.com/40?text=IMG";
         html += `<td><div style="display:flex; align-items:center; gap:10px;"><img src="${currentImg}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid #ccc;"><input type="file" accept="image/*" onchange="handleAdminImageUpload(this, '${tabName}', ${index}, '${c}')" style="font-size: 11px; width: 160px;"></div></td>`;
