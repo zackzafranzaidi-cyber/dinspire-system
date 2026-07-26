@@ -769,7 +769,7 @@ function submitPunch(type) {
     (position) => {
       const pLat = position.coords.latitude;
       const pLon = position.coords.longitude;
-      const locLink = `https://www.google.com/maps/search/?api=1&query=$${pLat},${pLon}`;
+      const locLink = `https://www.google.com/maps/search/?api=1&query=${pLat},${pLon}`;
       // Hantar bersama nombor koordinat sebenar
       hantarDataKePelayan(locLink, pLat, pLon);
     },
