@@ -338,8 +338,7 @@ router.post(
         const { error } = await supabase
           .from("punch_cards")
           .update({
-            clock_out: masa,
-            lokasi: location,
+            waktu_out: masa
           })
           .eq("id", existPunch.id);
 
