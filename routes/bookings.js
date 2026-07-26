@@ -72,7 +72,7 @@ async function uploadReceiptToStorage(base64Image, orderNo) {
   }
 }
 
-const fpx = require("../utils/fpx");
+const toyyibpay = require("../utils/toyyibpay");
 
 // ==========================================
 // Pangkalan In-Memory Mutex Lock (Anti Race Condition / TOCTOU)
@@ -213,10 +213,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
 
     const payment_method = req.body.payment_method || "fpx";
 
-    if (payment_method === "fpx") {
-      if (typeof lockKey !== 'undefined') bookingLocks.delete(lockKey);
-      return res.status(400).json({ status: "error", message: "Sistem FPX sedang diselenggarakan. Sila gunakan kaedah QR untuk sementara waktu." });
-    }
+
 
     let fpxResult;
     let finalReceiptUrl = "";
@@ -236,7 +233,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
       
       try {
-      fpxResult = await fpx.createPayment(
+      fpxResult = await toyyibpay.createPayment(
         total_amount,
         order_no,
         `Bayaran Servis Dinspire: ${order_no}`,
@@ -562,7 +559,7 @@ router.post(
         const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
         
         try {
-        fpxResult = await fpx.createPayment(
+        fpxResult = await toyyibpay.createPayment(
           total_amount,
           order_no,
           `Bayaran On-Call: ${order_no}`,
@@ -713,9 +710,7 @@ router.post(
       
       const payment_method = req.body.payment_method || "fpx";
 
-      if (payment_method === "fpx") {
-        return res.status(400).json({ status: "error", message: "Sistem FPX sedang diselenggarakan. Sila gunakan kaedah QR untuk sementara waktu." });
-      }
+
 
       let fpxResult;
       let finalReceiptUrl = "";
@@ -734,7 +729,7 @@ router.post(
         const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
         
         try {
-        fpxResult = await fpx.createPayment(
+        fpxResult = await toyyibpay.createPayment(
           total_amount,
           receipt_name,
           `Pembelian Produk: ${receipt_name}`,
@@ -1015,8 +1010,8 @@ router.post("/webhook/fpx", async (req, res) => {
   const signature = req.headers["x-fpx-signature"] || req.headers["signature"] || req.query.signature;
   
   try {
-    // 1. KESELAMATAN: Parse dan sahkan tandatangan menggunakan modul utilities fpx yang selamat
-    const paymentData = fpx.parseWebhook(req.body, signature);
+    // 1. KESELAMATAN: Parse dan sahkan tandatangan menggunakan modul toyyibpay
+    const paymentData = toyyibpay.parseWebhook(req.body);
     const { reference, status, transaction_id } = paymentData;
     
     // FPX_PAID atau FPX_FAILED
