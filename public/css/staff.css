@@ -23,7 +23,7 @@
 
 /* DIBUANG HAD KELUASAN (MAX-WIDTH) UNTUK PENUHKAN SKRIN */
 body {
-  background-color: var(--bg-main);
+  background-color: #e2e8f0; /* Latar belakang untuk luar container */
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -34,14 +34,14 @@ body {
 }
 .mobile-container {
   width: 100%;
-  max-width: 100%;
+  max-width: 480px; /* Limit lebar seperti telefon */
   height: 100%;
   background-color: var(--bg-main);
   position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* HEADER */
@@ -323,7 +323,7 @@ select.input-field {
 
 /* BOTTOM NAV */
 .bottom-nav {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
