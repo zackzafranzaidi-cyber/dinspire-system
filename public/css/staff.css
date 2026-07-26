@@ -112,24 +112,7 @@ body {
   display: grid;
   gap: 15px;
 }
-/* Jika di skrin besar, paparkan kad secara grid 2 column supaya tak terlalu panjang */
-@media (min-width: 768px) {
-  .dash-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .card-form {
-    max-width: 600px;
-    margin: 20px auto !important;
-  }
-  .list-container {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  .profile-box {
-    max-width: 500px;
-    margin: 0 auto;
-  }
-}
+
 
 .dash-card {
   background: var(--bg-surface);
