@@ -99,6 +99,11 @@ body {
   flex: 1;
   overflow-y: auto;
   padding-bottom: 90px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.view-content::-webkit-scrollbar {
+  display: none;
 }
 .view-section {
   display: none;
