@@ -332,19 +332,6 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
       }
     }
 
-    // 4. Cari dalam jadual 'general_staff'
-    if (!user) {
-      let { data: genStaff } = await supabase
-        .from("general_staff")
-        .select("*")
-        .eq("username", safeUsername)
-        .single();
-      if (genStaff) {
-        // [PENTING] general_staff dipinjamkan role 'staff' supaya dibenarkan masuk ke Staff Portal
-        user = { ...genStaff, jenis_staf: "General", is_general: true };
-        roleFound = "staff";
-      }
-    }
 
     // Jika tiada rekod dalam mana-mana jadual
     if (!user) {
@@ -416,8 +403,9 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     };
     if (roleFound === "staff") {
       jwtPayload.jenis_staf = user.jenis_staf;
-      if (user.is_general) {
+      if (user.jenis_staf === "General") {
         jwtPayload.is_general = true;
+        user.is_general = true; // Supaya ia dihantar ke frontend
       }
     }
 
@@ -491,7 +479,7 @@ router.post("/staff/change-password", verifyLimiter, async (req, res) => {
     if (!new_password || new_password.length < 6) return res.status(400).json({ status: "error", message: "Kata laluan terlalu pendek." });
 
     const password_hash = await bcrypt.hash(new_password, 10);
-    const table = decoded.is_general ? "general_staff" : "staff";
+    const table = "staff";
     
     const { error } = await supabase
       .from(table)
@@ -512,8 +500,6 @@ router.post("/staff/request-reset", verifyLimiter, async (req, res) => {
 
   // Update in both tables (only the one with matching username will be affected)
   await supabase.from("staff").update({ reset_requested: true }).eq("username", username);
-  await supabase.from("general_staff").update({ reset_requested: true }).eq("username", username);
-  
   // Sentiasa kembalikan success untuk mengelakkan Enumeration (Timing Attack)
   res.json({ status: "success", message: "Permohonan reset dihantar. Sila hubungi Admin untuk kelulusan." });
 });
