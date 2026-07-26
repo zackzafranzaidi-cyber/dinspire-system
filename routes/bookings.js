@@ -229,7 +229,8 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       const total_amount = harga_rm + serviceFee;
       const protocol = req.protocol === 'http' ? 'https' : req.protocol; // enforce https for production callback
       const host = req.get('host');
-      const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
+      const originUrl = req.headers.origin || `${protocol}://${host}`;
+      const returnUrl = `${originUrl}/dashboard.html?fpx=return`;
       const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
       
       try {
@@ -555,7 +556,8 @@ router.post(
         const total_amount = harga_rm + serviceFee;
         const protocol = req.protocol === 'http' ? 'https' : req.protocol;
         const host = req.get('host');
-        const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
+        const originUrl = req.headers.origin || `${protocol}://${host}`;
+        const returnUrl = `${originUrl}/dashboard.html?fpx=return`;
         const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
         
         try {
@@ -725,7 +727,8 @@ router.post(
         const total_amount = totalProductsPrice + shippingFee;
         const protocol = req.protocol === 'http' ? 'https' : req.protocol;
         const host = req.get('host');
-        const returnUrl = `${protocol}://${host}/dashboard.html?fpx=return`;
+        const originUrl = req.headers.origin || `${protocol}://${host}`;
+        const returnUrl = `${originUrl}/dashboard.html?fpx=return`;
         const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
         
         try {
