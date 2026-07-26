@@ -66,7 +66,7 @@ class ToyyibPaySystem {
         billPhone: phoneNumber,
         billSplitPayment: 0,
         billPaymentChannel: "0", // 0 = FPX Only, 2 = FPX & CC
-        billChargeToCustomer: 1, // "charge on bill owner, if parameter enableFPXB2B is set to 1". Wait, standard is 1 for billChargeToCustomer or leave blank. We leave it as is or omit it. Let's omit billChargeToCustomer so the default is used. Actually, setting it to 1 sets it to owner.
+        billChargeToCustomer: 0, // 0 = Caj RM1 FPX ditanggung oleh pelanggan. Kosong = ditanggung oleh pemilik
       });
 
       // KESELAMATAN: Tiada log data sensitif seperti kad kredit dsb.
