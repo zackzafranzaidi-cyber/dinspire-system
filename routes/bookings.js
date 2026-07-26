@@ -949,26 +949,40 @@ router.post(
         }
         reviewLocks.add(order_no);
 
-        // [DIBAIKI] Semakan Pemilikan Tempahan untuk mengelakkan Spam
-        const { data: validBooking } = await supabase
-        .from("booking_records")
-        .select("id")
-        .eq("no_booking", order_no)
-        .eq("status", "Selesai")
-        .eq("customer_id", req.user.id)
-        .maybeSingle();
-        
-      const { data: validTreatment } = await supabase
-        .from("treatment_records")
-        .select("id")
-        .eq("no_booking", order_no)
-        .eq("status", "Selesai")
-        .eq("customer_id", req.user.id)
-        .maybeSingle();
+      // [DIBAIKI] Semakan Pemilikan Tempahan yang lebih terperinci
+      let targetOrder = null;
 
-      if (!validBooking && !validTreatment) {
+      const { data: booking } = await supabase
+        .from("booking_records")
+        .select("id, status, customer_id")
+        .eq("no_booking", order_no)
+        .maybeSingle();
+      
+      if (booking) {
+        targetOrder = booking;
+      } else {
+        const { data: treatment } = await supabase
+          .from("treatment_records")
+          .select("id, status, customer_id")
+          .eq("no_booking", order_no)
+          .maybeSingle();
+        if (treatment) targetOrder = treatment;
+      }
+
+      if (!targetOrder) {
         reviewLocks.delete(order_no);
-        return res.status(400).json({ status: "error", message: "Akses ditolak. Tempahan tidak sah atau belum selesai." });
+        return res.status(400).json({ status: "error", message: `Tempahan ${order_no} tidak wujud dalam sistem.` });
+      }
+
+      if (targetOrder.customer_id !== req.user.id) {
+        reviewLocks.delete(order_no);
+        return res.status(403).json({ status: "error", message: "Akses ditolak. Ini bukan tempahan anda." });
+      }
+
+      // Supabase is case-sensitive, so we use toLowerCase() just in case the db has 'selesai' or 'SELESAI'
+      if (String(targetOrder.status).toLowerCase() !== "selesai") {
+        reviewLocks.delete(order_no);
+        return res.status(400).json({ status: "error", message: `Tempahan ini berstatus '${targetOrder.status}'. Ia mesti 'Selesai' sebelum ulasan boleh dibuat.` });
       }
 
       const { data: existReview } = await supabase.from("reviews").select("id").eq("no_booking", order_no).maybeSingle();
