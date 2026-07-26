@@ -19,7 +19,7 @@ CREATE TABLE public.staff (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   username character varying NOT NULL UNIQUE,
   password_hash text NOT NULL,
-  jenis_staf character varying CHECK (jenis_staf::text = ANY (ARRAY['In-Branch'::character varying, 'On-Call'::character varying]::text[])),
+  jenis_staf character varying CHECK (jenis_staf::text = ANY (ARRAY['In-Branch'::character varying, 'On-Call'::character varying, 'General'::character varying]::text[])),
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
   branch_id character varying,
   must_change_password boolean DEFAULT true,
@@ -197,12 +197,3 @@ CREATE TABLE public.treatment_records (
   CONSTRAINT treatment_records_staff_id_fkey FOREIGN KEY (staff_id) REFERENCES public.staff(id)
 );
 
-CREATE TABLE public.general_staff (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  username character varying NOT NULL UNIQUE,
-  password_hash text NOT NULL,
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
-  must_change_password boolean DEFAULT true,
-  reset_requested boolean DEFAULT false,
-  CONSTRAINT general_staff_pkey PRIMARY KEY (id)
-);
