@@ -378,6 +378,39 @@ router.put(
 );
 
 // ==========================================
+// 2.5. Staf Batal Tempahan
+// ==========================================
+router.put(
+  "/order/:orderNo/cancel",
+  authenticate,
+  requireRole(["staff", "owner", "admin"]),
+  async (req, res) => {
+    const { orderNo } = req.params;
+    try {
+      let tableName = "booking_records";
+      if (orderNo.startsWith("TR")) tableName = "treatment_records";
+      else if (orderNo.startsWith("DBC")) tableName = "oncall_records";
+
+      let query = supabase
+        .from(tableName)
+        .update({ status: "Batal" })
+        .eq("no_booking", orderNo);
+      
+      // Staff hanya boleh batal tempahan mereka sendiri
+      if (req.user.role === "staff") query = query.eq("staff_id", req.user.id);
+
+      const { error } = await query;
+      if (error) throw error;
+
+      res.json({ status: "success", message: "Tempahan telah dibatalkan." });
+    } catch (error) {
+      console.error("Cancel Error:", error);
+      res.status(500).json({ status: "error", message: "Ralat pelayan." });
+    }
+  }
+);
+
+// ==========================================
 // 3. Staf Daftar Walk-in
 // ==========================================
 router.post(

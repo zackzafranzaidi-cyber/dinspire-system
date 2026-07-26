@@ -585,7 +585,19 @@ async function processBookingSelesai(orderNo, price) {
 
 function cancelBooking(orderNo) {
   if (confirm(`Pasti mahu BATALKAN tempahan ini?`)) {
-    showToast("Sistem Batal sedang diselenggara.");
+    fetch(`${API_BASE_URL}/bookings/order/${orderNo}/cancel`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          showToast("Tempahan berjaya dibatalkan.");
+          loadDashboardData();
+        } else alert("Ralat: " + data.message);
+      })
+      .catch((err) => alert("Ralat pelayan memproses pembatalan."));
   }
 }
 
