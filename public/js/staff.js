@@ -731,7 +731,14 @@ function submitPunch(type) {
       credentials: "include",
       body: JSON.stringify(reqBody),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.status === 401 || res.status === 403) {
+           alert("Sesi anda telah tamat atau terbatal. Sila log masuk semula.");
+           logoutStaff();
+           throw new Error("Sesi tamat");
+        }
+        return res.json();
+      })
       .then((data) => {
         if (data.status === "success") {
           statusText.innerHTML = `<span style="color:var(--success);">Berjaya ${type}</span>`;
@@ -741,8 +748,10 @@ function submitPunch(type) {
         }
       })
       .catch((e) => {
-        OfflineSyncManager.saveToQueue(`${API_BASE_URL}/staff/punch`, "POST", reqBody, `Berjaya ${type}`);
-        statusText.innerHTML = `<span style="color:var(--success);">Tersimpan Offline (${type})</span>`;
+        if (e.message !== "Sesi tamat") {
+          OfflineSyncManager.saveToQueue(`${API_BASE_URL}/staff/punch`, "POST", reqBody, `Berjaya ${type}`);
+          statusText.innerHTML = `<span style="color:var(--success);">Tersimpan Offline (${type})</span>`;
+        }
       });
   };
 
@@ -815,6 +824,12 @@ async function initLeaveSystem() {
         fetch(`${API_BASE_URL}/staff/leaves`, { credentials: "include" }),
         fetch(`${API_BASE_URL}/staff/my-leaves`, { credentials: "include" })
      ]);
+     
+     if (resMine.status === 401 || resMine.status === 403) {
+        logoutStaff();
+        return;
+     }
+     
      const othersData = await resOthers.json();
      const myData = await resMine.json();
      
