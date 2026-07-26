@@ -1486,7 +1486,7 @@ function submitCustomerReview(event) {
         event.target.reset();
         fetchShopData().then(() => renderHomeReviews());
       } else {
-        alert("Ralat");
+        alert(data && data.message ? data.message : "Ralat ketika menghantar ulasan.");
       }
       btn.innerText = "Hantar Ulasan";
       btn.disabled = false;
