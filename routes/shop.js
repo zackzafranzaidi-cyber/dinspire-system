@@ -137,7 +137,7 @@ router.get("/", async (req, res) => {
         location: b.lokasi,
       })),
       Barbers: (stData || [])
-        .filter((s) => s.jenis_staf === "In-Branch")
+        .filter((s) => s.jenis_staf === "In-Branch" && s.branch_id !== "GENERAL")
         .map((s) => ({ id: s.id, name: s.username, branch_id: s.branch_id })),
       OnCallBarbers: (stData || [])
         .filter((s) => s.jenis_staf === "On-Call")
