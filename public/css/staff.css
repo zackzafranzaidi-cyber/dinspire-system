@@ -34,7 +34,7 @@ body {
 }
 .mobile-container {
   width: 100%;
-  max-width: 480px; /* Limit lebar seperti telefon */
+  max-width: 100%; /* Default untuk skrin telefon */
   height: 100%;
   background-color: var(--bg-main);
   position: relative;
@@ -42,6 +42,18 @@ body {
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsiveness: Tablet (Widen) & Desktop (Slimmer Phone Look) */
+@media (min-width: 481px) and (max-width: 1024px) {
+  .mobile-container {
+    max-width: 768px; /* Tambah keluasan untuk tablet */
+  }
+}
+@media (min-width: 1025px) {
+  .mobile-container {
+    max-width: 400px; /* Kurangkan lebar screen phone di laptop/desktop */
+  }
 }
 
 /* HEADER */
