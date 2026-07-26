@@ -163,7 +163,7 @@ router.get(
             lng: b.lng,
           })),
           Barbers: (stData || [])
-            .filter((s) => s.jenis_staf === "In-Branch" && s.branch_id !== "GENERAL")
+            .filter((s) => s.jenis_staf === "In-Branch")
             .map((s) => ({
               id: s.id,
               name: s.username,
@@ -173,7 +173,7 @@ router.get(
             .filter((s) => s.jenis_staf === "On-Call")
             .map((s) => ({ id: s.id, name: s.username })),
           GeneralStaff: (stData || [])
-            .filter((s) => s.jenis_staf === "In-Branch" && s.branch_id === "GENERAL")
+            .filter((s) => s.jenis_staf === "General")
             .map((s) => ({ id: s.id, name: s.username })),
           Products: (prData || []).map((p) => ({
             id: p.id,
@@ -347,8 +347,7 @@ router.post(
           })),
           ...(data.GeneralStaff || []).map((x) => ({
             ...x,
-            jenis_staf: "In-Branch",
-            branch_id: "GENERAL",
+            jenis_staf: "General",
           })),
         ],
         (i) => ({

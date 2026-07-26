@@ -1,15 +1,27 @@
-require('dotenv').config();
-const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+require("dotenv").config();
+const { createClient } = require("@supabase/supabase-js");
+const { Client } = require("pg");
 
-async function alterTable() {
-  // Try inserting a dummy user with password_hash
-  const { data, error } = await supabase.from('customers').insert([{ name: 'Test', phone: '0100000000', password_hash: '123' }]).select();
-  if (error) {
-    console.error("Error inserting password_hash:", error.message);
-  } else {
-    console.log("Success! Column password_hash is accepted.", data);
-    await supabase.from('customers').delete().eq('phone', '0100000000');
+// We can use pg client to execute ALTER TABLE on the local Supabase instance
+const pgClient = new Client({
+  connectionString: "postgresql://postgres:postgres@127.0.0.1:54322/postgres" // default local supabase connection
+});
+
+async function run() {
+  try {
+    await pgClient.connect();
+    
+    // Add customer_id to tables
+    await pgClient.query("ALTER TABLE booking_records ADD COLUMN IF NOT EXISTS customer_id uuid;");
+    await pgClient.query("ALTER TABLE treatment_records ADD COLUMN IF NOT EXISTS customer_id uuid;");
+    await pgClient.query("ALTER TABLE oncall_records ADD COLUMN IF NOT EXISTS customer_id uuid;");
+    await pgClient.query("ALTER TABLE product_orders ADD COLUMN IF NOT EXISTS customer_id uuid;");
+    
+    console.log("SUCCESS");
+  } catch (err) {
+    console.error("ERROR:", err.message);
+  } finally {
+    await pgClient.end();
   }
 }
-alterTable();
+run();

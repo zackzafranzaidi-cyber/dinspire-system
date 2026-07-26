@@ -1,0 +1,28 @@
+const http = require('http');
+
+const data = JSON.stringify({
+  phone: "01122334455",
+  password: "password123",
+  remember: true
+});
+
+const options = {
+  hostname: 'localhost',
+  port: 3000,
+  path: '/api/auth/login',
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(data)
+  }
+};
+
+const req = http.request(options, res => {
+  console.log(`STATUS: ${res.statusCode}`);
+  console.log(`HEADERS: ${JSON.stringify(res.headers, null, 2)}`);
+  res.on('data', d => process.stdout.write(d));
+});
+
+req.on('error', error => console.error(error));
+req.write(data);
+req.end();

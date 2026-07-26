@@ -403,10 +403,9 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     };
     if (roleFound === "staff") {
       jwtPayload.jenis_staf = user.jenis_staf;
-      if (user.jenis_staf === "In-Branch" && user.branch_id === "GENERAL") {
+      if (user.jenis_staf === "General") {
         jwtPayload.is_general = true;
         user.is_general = true; // Supaya ia dihantar ke frontend
-        user.jenis_staf = "General"; // Tukar balik ke General untuk frontend
       }
     }
 
