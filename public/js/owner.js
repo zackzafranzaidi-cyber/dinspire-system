@@ -1165,7 +1165,7 @@ function renderPunchTable(punchData) {
 
     // Header Cawangan
     html += `<tr class="bg-gray-100 border-y border-gray-200">
-        <td colspan="4" class="py-2 px-3 text-xs font-bold text-gray-800 uppercase tracking-wider text-left">
+        <td colspan="6" class="py-2 px-3 text-xs font-bold text-gray-800 uppercase tracking-wider text-left">
             <i class="fas fa-map-marker-alt text-red-500 mr-1"></i> ${escapeHTML(br)}
         </td>
     </tr>`;
@@ -1184,14 +1184,27 @@ function renderPunchTable(punchData) {
       let timestampVal = p.Timestamp || p.created_at || p.tarikh;
       let d = new Date(timestampVal);
       let dateFmt = isNaN(d) ? (p.Tarikh || p.tarikh || "-") : d.toLocaleDateString("ms-MY");
-      let masaFmt = p.Masa || p.waktu_out || p.waktu_in || "-";
-      let act = p.Aktiviti || (p.waktu_out ? "PUNCH OUT" : "PUNCH IN");
-      let badgeClass = act.includes("IN") ? "badge-in" : "badge-out";
+      
+      let waktuIn = p.waktu_in || "-";
+      let waktuOut = p.waktu_out || "-";
+      let tempoh = "-";
+      if (p.waktu_in && p.waktu_out) {
+         let tIn = new Date(`1970-01-01T${p.waktu_in}Z`);
+         let tOut = new Date(`1970-01-01T${p.waktu_out}Z`);
+         let diff = (tOut - tIn) / 1000;
+         if (diff > 0) {
+            let h = Math.floor(diff / 3600);
+            let m = Math.floor((diff % 3600) / 60);
+            tempoh = `${h}j ${m}m`;
+         }
+      }
 
       html += `<tr class="hover:bg-gray-50 border-b border-gray-50">
-            <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-600 whitespace-nowrap text-center">${escapeHTML(dateFmt)} <span class="text-gray-400 ml-1 font-bold block md:inline">${escapeHTML(masaFmt)}</span></td>
+            <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-600 whitespace-nowrap text-center">${escapeHTML(dateFmt)}</td>
             <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-gray-900 whitespace-nowrap text-center">${escapeHTML(staffName)}</td>
-            <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out ${badgeClass}">${escapeHTML(act)}</span></td>
+            <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-bold text-green-600 whitespace-nowrap text-center">${escapeHTML(waktuIn)}</td>
+            <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-bold text-red-600 whitespace-nowrap text-center">${escapeHTML(waktuOut)}</td>
+            <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-bold text-blue-600 whitespace-nowrap text-center">${escapeHTML(tempoh)}</td>
             <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap">${gpsBtn}</td>
         </tr>`;
     });
@@ -1201,14 +1214,14 @@ function renderPunchTable(punchData) {
       html += `<tr class="bg-red-50/30 hover:bg-red-50 border-b border-red-100">
             <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-400 whitespace-nowrap text-center">-</td>
             <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-red-600 whitespace-nowrap text-center">${escapeHTML(staffName)}</td>
-            <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out bg-red-100 text-red-700 border border-red-200">Tidak Hadir / Tiada Rekod</span></td>
-            <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap">-</td>
+            <td colspan="3" class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out bg-red-100 text-red-700 border border-red-200">Tidak Hadir / Tiada Rekod</span></td>
+            <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap text-gray-400 font-bold">-</td>
         </tr>`;
     });
   });
 
   if (!hasAnyRecord) {
-    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang] && i18n[currentLang]["table-no-record"] ? i18n[currentLang]["table-no-record"] : "Tiada Rekod"}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang] && i18n[currentLang]["table-no-record"] ? i18n[currentLang]["table-no-record"] : "Tiada Rekod"}</td></tr>`;
   } else {
     tbody.innerHTML = html;
   }
