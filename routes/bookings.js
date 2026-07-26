@@ -968,7 +968,7 @@ router.post(
 
       if (!validBooking && !validTreatment) {
         reviewLocks.delete(order_no);
-        return res.status(403).json({ status: "error", message: "Akses ditolak. Tempahan tidak sah atau belum selesai." });
+        return res.status(400).json({ status: "error", message: "Akses ditolak. Tempahan tidak sah atau belum selesai." });
       }
 
       const { data: existReview } = await supabase.from("reviews").select("id").eq("no_booking", order_no).maybeSingle();

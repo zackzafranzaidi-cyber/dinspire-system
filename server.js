@@ -189,6 +189,8 @@ app.use(cookieParser());
 // - /api/bookings: Pelanggan/Staf muat naik gambar resit transaksi
 // - /api/admin: Pentadbir muat naik gambar poster promosi atau produk
 app.use("/api/bookings", express.json({ limit: "10mb" }));
+// [DIBAIKI] Benarkan parser form-data urlencoded untuk menerima Webhook dari toyyibPay
+app.use("/api/bookings/webhook/fpx", express.urlencoded({ extended: true, limit: "100kb" }));
 app.use("/api/admin", express.json({ limit: "10mb" }));
 
 // B. Had 100KB (Saiz sangat kecil) untuk SEMUA laluan API yang lain

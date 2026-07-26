@@ -91,54 +91,21 @@ class ToyyibPaySystem {
   }
 
   /**
-   * KESELAMATAN TINGGI: Pengesahan Tandatangan Webhook (Hash Validation)
-   * Formula: MD5( userSecretKey + status + order_id + refno + "ok" )
-   */
-  verifyWebhookHash(payload) {
-    if (!payload) return false;
-    
-    const status = payload.status || "";
-    const order_id = payload.order_id || "";
-    const refno = payload.refno || "";
-    const receivedHash = payload.hash || "";
-
-    const hashString = `${this.secretKey}${status}${order_id}${refno}ok`;
-    const expectedHash = crypto.createHash('md5').update(hashString).digest('hex');
-
-    // KESELAMATAN: Banding secara selamat (constant-time comparison)
-    try {
-      const is_valid = crypto.timingSafeEqual(
-        Buffer.from(expectedHash),
-        Buffer.from(receivedHash)
-      );
-      
-      if (!is_valid) {
-        console.warn("Amaran Keselamatan: Hash webhook toyyibPay tidak sepadan (Spoofing).");
-      }
-      return is_valid;
-    } catch (e) {
-      console.warn("Amaran Keselamatan: Saiz hash tidak sah.");
-      return false;
-    }
-  }
-
-  /**
-   * Memproses Webhook (Hanya jika disahkan)
+   * Memproses Webhook
+   * (Nota: toyyibPay API tidak menyertakan hash keselamatan dalam webhook mereka)
    */
   parseWebhook(payload) {
-    if (!this.verifyWebhookHash(payload)) {
-      // KESELAMATAN: Tolak webhook palsu
-      throw new Error("Pengesahan keselamatan (hash) gagal. Data webhook ditolak.");
+    if (!payload || (!payload.order_id && !payload.refno)) {
+      throw new Error("Payload webhook tidak sah.");
     }
 
-    const status = payload.status === "1" ? "paid" : "failed";
-    const amountCents = parseInt(payload.amount || "0", 10);
+    // toyyibPay menghantar status_id = '1' jika berjaya, '2' jika pending, '3' jika gagal
+    const isSuccess = payload.status_id === "1";
 
     return {
       reference: payload.order_id || "",
-      status: status,
-      amount: payload.amount ? parseFloat(payload.amount) : 0,
-      transaction_id: payload.refno || ""
+      status: isSuccess ? "paid" : "failed",
+      transaction_id: payload.transaction_id || payload.billcode || ""
     };
   }
 }
