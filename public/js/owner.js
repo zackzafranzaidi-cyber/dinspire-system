@@ -1214,7 +1214,7 @@ function renderPunchTable(punchData) {
       html += `<tr class="bg-red-50/30 hover:bg-red-50 border-b border-red-100">
             <td class="py-3 px-2 md:px-4 text-[10px] md:text-xs font-semibold text-gray-400 whitespace-nowrap text-center">-</td>
             <td class="py-3 px-2 md:px-4 text-xs md:text-sm font-bold text-red-600 whitespace-nowrap text-center">${escapeHTML(staffName)}</td>
-            <td colspan="3" class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out bg-red-100 text-red-700 border border-red-200">Tidak Hadir / Tiada Rekod</span></td>
+            <td colspan="3" class="py-3 px-2 md:px-4 text-center whitespace-nowrap"><span class="badge-in-out bg-red-100 text-red-700 border border-red-200">TIDAK HADIR</span></td>
             <td class="py-3 px-2 md:px-4 text-center whitespace-nowrap text-gray-400 font-bold">-</td>
         </tr>`;
     });

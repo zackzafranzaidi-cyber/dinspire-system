@@ -23,7 +23,7 @@ body {
 
 /* MEMBUANG SCROLLBAR TETAPI KEKALKAN FUNGSI SKROL */
 .table-container {
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
   overflow-y: auto !important;
   -ms-overflow-style: none; /* IE and Edge */
 }
@@ -252,13 +252,13 @@ body {
    [DIBAIKI] BADGE IN/OUT LEBIH MODEN (TIDAK TERPUTUS DUA)
    ======================================================== */
 .badge-in-out {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 6px;
   text-transform: uppercase;
   display: inline-block;
-  white-space: nowrap; /* Mencegah perkataan 'CLOCK IN' daripada terbelah dua */
+  white-space: nowrap;
 }
 .badge-in {
   background: #d1fae5;
