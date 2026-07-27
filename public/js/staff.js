@@ -502,7 +502,20 @@ function renderBookingList() {
         btnAction += `<button class="btn btn-outline" style="width:30%; color:var(--danger);" onclick="cancelBooking('${escapeHTML(b.order_no)}')">Batal</button>`;
       }
 
-      return `<div class="list-card"><div class="list-header"><span class="cust-name">${customerName}</span>${badgeHtml}</div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <strong>Masa:</strong> ${b.booking_time} <br><strong>No. Order:</strong> <span style="font-family:monospace; color:var(--primary);">${escapeHTML(b.order_no)}</span>${resitBtn}</div><div class="btn-action-group">${btnAction}</div></div>`;
+      let phone = b.customer && b.customer.phone ? String(b.customer.phone).trim() : (b.customers && b.customers.phone ? String(b.customers.phone).trim() : "");
+      let callLink = "";
+      let waLink = "";
+      if (phone && phone !== "Tiada" && phone !== "null") {
+        if (!phone.startsWith("60") && phone.startsWith("0")) phone = "60" + phone.substring(1);
+        let staffName = loggedInStaff ? (loggedInStaff.nama_penuh || loggedInStaff.username) : "Staf";
+        let bDate = new Date(b.booking_date).toLocaleDateString("ms-MY");
+        let msg = encodeURIComponent(`Hi ${customerName}, saya ${staffName} dari Dinspire Barbershop. adakah tuan pemilik booking ini:\nno booking: ${escapeHTML(b.order_no)}\nservis: ${serviceName}\ntarikh: ${bDate}\nmasa: ${b.booking_time}\nSila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.`);
+        callLink = `<button class="btn btn-outline" style="flex:1; margin-right:5px; font-size:12px; padding:8px; border-color:var(--primary-blue); color:var(--primary-blue);" onclick="window.location.href='tel:+${phone}'"><i class="fas fa-phone mr-1"></i> Call</button>`;
+        waLink = `<button class="btn btn-outline" style="flex:1; margin-left:5px; font-size:12px; padding:8px; border-color:#25D366; color:#25D366;" onclick="window.open('https://wa.me/${phone}?text=${msg}', '_blank')"><i class="fab fa-whatsapp mr-1"></i> WhatsApp</button>`;
+      }
+      let contactBtns = callLink || waLink ? `<div style="display:flex; margin-bottom:12px; margin-top:5px;">${callLink}${waLink}</div>` : "";
+
+      return `<div class="list-card"><div class="list-header"><span class="cust-name">${customerName}</span>${badgeHtml}</div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <strong>Masa:</strong> ${b.booking_time} <br><strong>No. Order:</strong> <span style="font-family:monospace; color:var(--primary);">${escapeHTML(b.order_no)}</span>${resitBtn}</div>${contactBtns}<div class="btn-action-group">${btnAction}</div></div>`;
     })
     .join("");
 }
@@ -542,8 +555,21 @@ function renderHistoryList() {
       if (b.status === "Rejected") {
           editBtn = `<button class="btn btn-primary" style="margin-top:10px; width:100%; font-size:12px;" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-edit mr-2"></i> Undo Reject</button>`;
       }
+      
+      let phone = b.customer && b.customer.phone ? String(b.customer.phone).trim() : (b.customers && b.customers.phone ? String(b.customers.phone).trim() : "");
+      let callLink = "";
+      let waLink = "";
+      if (phone && phone !== "Tiada" && phone !== "null") {
+        if (!phone.startsWith("60") && phone.startsWith("0")) phone = "60" + phone.substring(1);
+        let staffName = loggedInStaff ? (loggedInStaff.nama_penuh || loggedInStaff.username) : "Staf";
+        let bDate = new Date(b.booking_date).toLocaleDateString("ms-MY");
+        let msg = encodeURIComponent(`Hi ${customerName}, saya ${staffName} dari Dinspire Barbershop. adakah tuan pemilik booking ini:\nno booking: ${escapeHTML(b.order_no)}\nservis: ${serviceName}\ntarikh: ${bDate}\nmasa: ${b.booking_time || "Tiada"}\nSila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.`);
+        callLink = `<button class="btn btn-outline" style="flex:1; margin-right:5px; font-size:12px; padding:8px; border-color:var(--primary-blue); color:var(--primary-blue);" onclick="window.location.href='tel:+${phone}'"><i class="fas fa-phone mr-1"></i> Call</button>`;
+        waLink = `<button class="btn btn-outline" style="flex:1; margin-left:5px; font-size:12px; padding:8px; border-color:#25D366; color:#25D366;" onclick="window.open('https://wa.me/${phone}?text=${msg}', '_blank')"><i class="fab fa-whatsapp mr-1"></i> WhatsApp</button>`;
+      }
+      let contactBtns = callLink || waLink ? `<div style="display:flex; margin-top:10px;">${callLink}${waLink}</div>` : "";
 
-      return `<div class="list-card" style="opacity: 0.85;"><div class="list-header"><span class="cust-name">${customerName}</span><span class="badge ${badgeClass}">${method}</span></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh Selesai:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <br><strong>Kutipan:</strong> RM ${b.final_price || b.price}${editBtn}</div></div>`;
+      return `<div class="list-card" style="opacity: 0.85;"><div class="list-header"><span class="cust-name">${customerName}</span><span class="badge ${badgeClass}">${method}</span></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh Selesai:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <br><strong>Kutipan:</strong> RM ${b.final_price || b.price}${editBtn}</div>${contactBtns}</div>`;
     })
     .join("");
 }
