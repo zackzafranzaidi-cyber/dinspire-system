@@ -481,7 +481,7 @@ function processData() {
   let countHcWalkin = 0;
   let countTreatments = 0;
   let countOnCall = 0;
-  let payData = { cash: 0, qr: 0, lain: 0 };
+  let payData = { cash: 0, qr: 0, fpx: 0, lain: 0 };
   let totalServiceFees = 0;
 
   filteredBookings.forEach((b) => {
@@ -500,6 +500,8 @@ function processData() {
       payData.cash += price;
     } else if (bType.includes("qr") || bType.includes("duitnow")) {
       payData.qr += price;
+    } else if (bType.includes("fpx")) {
+      payData.fpx += price;
     } else {
       payData.lain += price;
     }
@@ -533,6 +535,15 @@ function processData() {
       o._calculatedTotal = cost;
       productRev += cost;
       totalShippingFees += parseFloat(o.shipping_fee) || 0;
+      
+      let resit = (o.resit || "").toLowerCase();
+      if (resit.includes("fpx")) {
+        payData.fpx += cost;
+      } else if (resit.includes("http")) {
+        payData.qr += cost;
+      } else {
+        payData.lain += cost;
+      }
     } catch (e) {
       o._calculatedTotal = 0;
     }
@@ -596,19 +607,26 @@ function processData() {
   }
 
   if (payChartObj) {
-    let totalPay = payData.cash + payData.qr + payData.lain;
+    let totalPay = payData.cash + payData.qr + payData.fpx + payData.lain;
     if (totalPay > 0) {
-      payChartObj.data.labels = ["Tunai (Cash)", "QR/Online", "Lain"];
-      payChartObj.data.datasets[0].data = [
-        payData.cash,
-        payData.qr,
-        payData.lain,
-      ];
-      payChartObj.data.datasets[0].backgroundColor = [
-        "#111827",
-        "#6b7280",
-        "#d1d5db",
-      ];
+      payChartObj.data.labels = ["Tunai (Cash)", "DuitNow QR", "FPX"];
+      if (payData.lain > 0) {
+        payChartObj.data.labels.push("Lain");
+      }
+      
+      let chartData = [payData.cash, payData.qr, payData.fpx];
+      if (payData.lain > 0) {
+        chartData.push(payData.lain);
+      }
+      
+      payChartObj.data.datasets[0].data = chartData;
+      
+      let chartColors = ["#111827", "#6b7280", "#3b82f6"];
+      if (payData.lain > 0) {
+        chartColors.push("#d1d5db");
+      }
+      
+      payChartObj.data.datasets[0].backgroundColor = chartColors;
     } else {
       payChartObj.data.labels = ["Tiada Data"];
       payChartObj.data.datasets[0].data = [1];
