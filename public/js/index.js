@@ -1508,12 +1508,26 @@ function renderHomeReviews() {
     return;
   }
 
-  let html1 = "";
-  let html2 = "";
-  reviews.forEach((r, i) => {
-    let starsHtml = "★".repeat(r.stars || 5) + "☆".repeat(5 - (r.stars || 5));
+  // Pastikan ada sekurang-kurangnya 4 ulasan untuk paparan berterusan
+  let extendedReviews = [...reviews];
+  while (extendedReviews.length < 4 && extendedReviews.length > 0) {
+    extendedReviews = extendedReviews.concat(reviews);
+  }
 
-    let card = `<div class="review-card">
+  let track1Reviews = [...extendedReviews];
+  let track2Reviews = [...extendedReviews];
+  // Alihkan susunan untuk track 2 supaya tak nampak sama
+  if (track2Reviews.length > 1) {
+    track2Reviews.push(track2Reviews.shift());
+  }
+
+  // Gandakan sekali lagi untuk efek marquee CSS
+  track1Reviews = track1Reviews.concat(track1Reviews);
+  track2Reviews = track2Reviews.concat(track2Reviews);
+
+  const renderCard = (r) => {
+    let starsHtml = "★".repeat(r.stars || 5) + "☆".repeat(5 - (r.stars || 5));
+    return `<div class="review-card">
                         <div class="review-header">
                             <div class="avatar-circle">
                                 <img src="${r.avatar || "./Profile/1.png"}" onerror="this.src='./Profile/1.png'">
@@ -1526,15 +1540,10 @@ function renderHomeReviews() {
                         <div class="review-text">"${escapeHTML(r.text)}"</div>
                         <div class="service-tag">${escapeHTML(r.service)}</div>
                     </div>`;
+  };
 
-    if (i % 2 === 0) html1 += card;
-    else html2 += card;
-  });
-
-  if (reviews.length > 0) {
-    html1 += html1;
-    html2 += html2;
-  }
+  let html1 = track1Reviews.map(renderCard).join("");
+  let html2 = track2Reviews.map(renderCard).join("");
   container.innerHTML = `<div class="marquee-track track-left">${html1}</div><div class="marquee-track track-right" style="margin-top:10px;">${html2}</div>`;
 }
 
