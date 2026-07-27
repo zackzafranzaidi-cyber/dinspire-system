@@ -1,11 +1,9 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
   "rewrites": [
     {
       "source": "/",
       "has": [{ "type": "host", "value": "customer.dinspirebarbershop.com" }],
-      "destination": "/customer/index.html"
+      "destination": "/customer/"
     },
     {
       "source": "/manifest.json",
@@ -20,7 +18,7 @@
     {
       "source": "/",
       "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
-      "destination": "/staff/index.html"
+      "destination": "/staff/"
     },
     {
       "source": "/manifest.json",
@@ -35,7 +33,7 @@
     {
       "source": "/",
       "has": [{ "type": "host", "value": "owner.dinspirebarbershop.com" }],
-      "destination": "/owner/index.html"
+      "destination": "/owner/"
     },
     {
       "source": "/manifest.json",
@@ -49,4 +47,3 @@
     }
   ]
 }
-
