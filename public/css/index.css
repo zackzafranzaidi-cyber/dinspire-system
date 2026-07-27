@@ -1002,6 +1002,13 @@ select.input-field {
   cursor: not-allowed;
   font-weight: 800;
 }
+.cal-date-dark.fully-booked {
+    background-color: #ffe5e5 !important;
+    color: #d32f2f !important;
+    border: 1px solid #ffcccc;
+    cursor: not-allowed;
+    font-weight: bold;
+}
 
 .time-grid-light {
   display: grid;

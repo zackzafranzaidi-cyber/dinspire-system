@@ -83,21 +83,40 @@ const reviewLocks = new Set(); // [DIBAIKI] Mengelak klon Ulasan 1 Bintang (Revi
 const completionLocks = new Set(); // [DIBAIKI] Mengelak Race Condition semasa penyiapan pesanan
 
 // ==========================================
-// [FUNGSI BAHARU] Semak Cuti Staf (Untuk Sekatan Kalendar Pelanggan)
+// [FUNGSI BAHARU] Semak Ketersediaan Staf (Cuti & Tempahan Aktif)
 // ==========================================
-router.get("/staff-leaves", async (req, res) => {
+router.get("/staff-availability", async (req, res) => {
   const { staff_id } = req.query;
-  if (!staff_id) return res.json({ status: "success", leaves: [] });
+  if (!staff_id) return res.json({ status: "success", leaves: [], bookings: [] });
 
   try {
-    const { data } = await supabase
+    // 1. Dapatkan tarikh cuti
+    const { data: leaveData } = await supabase
       .from("staff_leaves")
       .select("tarikh")
       .eq("staff_id", staff_id);
-    res.json({ status: "success", leaves: data ? data.map((d) => d.tarikh) : [] });
+      
+    const leaves = leaveData ? leaveData.map(d => d.tarikh) : [];
+
+    // 2. Dapatkan tempahan aktif dari ketiga-tiga jadual
+    const [bReq, tReq, oReq] = await Promise.all([
+      supabase.from("booking_records").select("tarikh, masa").eq("staff_id", staff_id).in("status", ["Belum", "Selesai"]),
+      supabase.from("treatment_records").select("tarikh, masa").eq("staff_id", staff_id).in("status", ["Belum", "Selesai"]),
+      supabase.from("oncall_records").select("tarikh, masa").eq("barber", staff_id).in("status", ["Belum", "Selesai"])
+    ]);
+
+    const activeBookings = [];
+    if (bReq.data) activeBookings.push(...bReq.data);
+    if (tReq.data) activeBookings.push(...tReq.data);
+    if (oReq.data) activeBookings.push(...oReq.data);
+    
+    // Tapis tempahan yang valid sahaja
+    const bookings = activeBookings.filter(b => b.tarikh && b.masa);
+
+    res.json({ status: "success", leaves, bookings });
   } catch (err) {
-    console.error("Ralat /staff-leaves:", err);
-    res.json({ status: "error", leaves: [] });
+    console.error("Ralat /staff-availability:", err);
+    res.json({ status: "error", leaves: [], bookings: [] });
   }
 });
 

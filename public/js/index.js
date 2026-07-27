@@ -577,6 +577,7 @@ let scheduleSelectedDate = null;
 let scheduleSelectedTime = null;
 
 let currentBarberLeaves = [];
+let currentBarberBookings = [];
 
 async function openScheduleModal(formId) {
   const barberSelect = document.getElementById(`barber-${formId}`);
@@ -606,11 +607,13 @@ async function openScheduleModal(formId) {
   document.getElementById("schedule-modal").style.display = "flex";
   
   try {
-     const res = await fetch(`${API_BASE_URL}/bookings/staff-leaves?staff_id=${barberId}`);
+     const res = await fetch(`${API_BASE_URL}/bookings/staff-availability?staff_id=${barberId}`);
      const data = await res.json();
      currentBarberLeaves = data.leaves || [];
+     currentBarberBookings = data.bookings || [];
   } catch (err) {
      currentBarberLeaves = [];
+     currentBarberBookings = [];
   }
 
   setTimeout(() => {
@@ -713,6 +716,8 @@ function renderScheduleDate() {
     let dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     let isPastOrToday = cellDate <= today;
     let isLeave = currentBarberLeaves.includes(dateString);
+    let bookedCount = currentBarberBookings.filter(b => b.tarikh === dateString).length;
+    let isFullyBooked = bookedCount >= 7;
     let isSelected = cellDate.getTime() === scheduleSelectedDate.getTime();
 
     let classes = ["cal-date-dark"];
@@ -720,11 +725,15 @@ function renderScheduleDate() {
        classes.push("disabled");
     } else if (isLeave) {
        classes.push("disabled");
-       // Boleh tambah styling khas untuk cuti jika perlu
+    } else if (isFullyBooked) {
+       classes.push("fully-booked");
     }
-    if (isSelected && !isPastOrToday && !isLeave) classes.push("selected");
+    
+    if (isSelected && !isPastOrToday && !isLeave && !isFullyBooked) classes.push("selected");
 
-    html += `<div class="${classes.join(" ")}" onclick="selectScheduleDate('${dateString}'); event.stopPropagation();">${d}</div>`;
+    let onclickAttr = (isPastOrToday || isLeave || isFullyBooked) ? "" : `onclick="selectScheduleDate('${dateString}'); event.stopPropagation();"`;
+
+    html += `<div class="${classes.join(" ")}" ${onclickAttr}>${d}</div>`;
   }
   html += `</div>`;
   container.innerHTML = html;
@@ -742,7 +751,12 @@ function renderScheduleTime() {
     "23:00",
   ];
 
-  let bookedTimes = [];
+  let selectedDateStr = `${scheduleSelectedDate.getFullYear()}-${String(scheduleSelectedDate.getMonth() + 1).padStart(2, "0")}-${String(scheduleSelectedDate.getDate()).padStart(2, "0")}`;
+  
+  let bookedTimes = currentBarberBookings
+    .filter(b => b.tarikh === selectedDateStr)
+    .map(b => b.masa.substring(0, 5));
+
   let html = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 style="font-size:16px; font-weight:700; color:#111827;">Pilih Masa</h3>
@@ -760,7 +774,12 @@ function renderScheduleTime() {
     h = h % 12 || 12;
     let format12 = `${h}:${m} ${ampm}`;
 
-    html += `<button type="button" class="time-slot-light ${isSel} ${isDisabled ? "disabled" : ""}" onclick="selectScheduleTime('${t}'); event.stopPropagation();">${format12}</button>`;
+    if (isDisabled) {
+        // [DIBAIKI] Tunjuk secara visual bahawa waktu sudah ditempah
+        html += `<button type="button" class="time-slot-light disabled" style="opacity: 0.5; background: #f3f4f6; color: #9ca3af; cursor: not-allowed; border-color: #e5e7eb; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;" onclick="event.stopPropagation();">${format12} <span style="font-size:10px; color:#ef4444; font-weight:bold; margin-top:2px;">Penuh</span></button>`;
+    } else {
+        html += `<button type="button" class="time-slot-light ${isSel}" onclick="selectScheduleTime('${t}'); event.stopPropagation();">${format12}</button>`;
+    }
   });
 
   html += `</div>`;
