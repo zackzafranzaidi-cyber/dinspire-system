@@ -952,21 +952,25 @@ router.post(
       // [DIBAIKI] Semakan Pemilikan Tempahan yang lebih terperinci
       let targetOrder = null;
 
-      const { data: booking } = await supabase
+      const { data: booking, error: errBooking } = await supabase
         .from("booking_records")
-        .select("id, status, customer_id")
+        .select("no_booking, status, customer_id")
         .eq("no_booking", order_no)
         .maybeSingle();
       
       if (booking) {
         targetOrder = booking;
       } else {
-        const { data: treatment } = await supabase
+        const { data: treatment, error: errTreatment } = await supabase
           .from("treatment_records")
-          .select("id, status, customer_id")
+          .select("no_booking, status, customer_id")
           .eq("no_booking", order_no)
           .maybeSingle();
         if (treatment) targetOrder = treatment;
+        
+        if (!booking && !treatment && (errBooking || errTreatment)) {
+           console.error("DB Error:", errBooking, errTreatment);
+        }
       }
 
       if (!targetOrder) {
