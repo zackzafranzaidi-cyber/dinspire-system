@@ -123,7 +123,7 @@ router.get(
       // KIRA CASH ON HAND BULANAN SECARA TEPAT (AUTO-RESET)
       const now = new Date();
       const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000); // Waktu Malaysia
-      const firstDayOfMonth = new Date(myTime.getFullYear(), myTime.getMonth(), 1).toISOString().split("T")[0];
+      const firstDayOfMonth = myTime.toISOString().substring(0, 8) + "01";
       
       const { data: monthlyCashData } = await supabase
         .from("walkin_records")

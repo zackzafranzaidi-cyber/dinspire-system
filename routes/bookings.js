@@ -369,14 +369,13 @@ router.put(
 
       let query = supabase
         .from(tableName)
-        .update({ status: "Selesai", harga_rm: parsedPrice })
+        .update({ status: "Selesai" })
         .eq("no_booking", orderNo);
       if (finalReceiptUrl)
         query = supabase
           .from(tableName)
           .update({
             status: "Selesai",
-            harga_rm: parsedPrice,
             resit: finalReceiptUrl,
           })
           .eq("no_booking", orderNo);
@@ -447,9 +446,11 @@ router.post(
     } = req.body;
       const staff_id = req.user.id;
       
-      // [DIBAIKI] Lompang Rentas Masa Walk-in
-      const walkinDateTime = new Date(`${booking_date}T${booking_time}`);
-      if (walkinDateTime < new Date(new Date().setHours(0,0,0,0))) {
+      // [DIBAIKI] Lompang Rentas Masa Walk-in (Zon Masa Malaysia)
+      const now = new Date();
+      const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+      const todayStr = myTime.toISOString().split("T")[0];
+      if (booking_date < todayStr) {
         return res.status(400).json({ status: "error", message: "Tarikh Walk-in tidak boleh menggunakan tarikh semalam." });
       }
 
