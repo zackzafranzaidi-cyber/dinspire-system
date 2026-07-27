@@ -727,7 +727,7 @@ router.post(
       }
 
       const order_uuid = crypto.randomUUID();
-      const receipt_name = "PRD" + crypto.randomUUID().split("-")[0].toUpperCase();
+      const receipt_name = "PRD-" + order_uuid;
       
       const payment_method = req.body.payment_method || "fpx";
 
@@ -1070,7 +1070,7 @@ router.post("/webhook/fpx", async (req, res) => {
     const { error } = await supabase
       .from(tableName)
       .update({ resit: receiptValue })
-      .eq(tableName === "product_orders" ? "id" : "no_booking", reference);
+      .eq(tableName === "product_orders" ? "id" : "no_booking", tableName === "product_orders" ? reference.replace("PRD-", "") : reference);
       
     if (error) {
       console.error("Gagal mengemaskini status webhook:", error);
@@ -1108,7 +1108,7 @@ router.get("/fpx/verify", async (req, res) => {
     const { data: existingData } = await supabase
       .from(tableName)
       .select("resit")
-      .eq(tableName === "product_orders" ? "id" : "no_booking", order_id)
+      .eq(tableName === "product_orders" ? "id" : "no_booking", tableName === "product_orders" ? order_id.replace("PRD-", "") : order_id)
       .single();
 
     if (existingData && existingData.resit && existingData.resit.startsWith("FPX_PENDING:")) {
@@ -1116,7 +1116,7 @@ router.get("/fpx/verify", async (req, res) => {
       const { error } = await supabase
         .from(tableName)
         .update({ resit: receiptValue })
-        .eq(tableName === "product_orders" ? "id" : "no_booking", order_id);
+        .eq(tableName === "product_orders" ? "id" : "no_booking", tableName === "product_orders" ? order_id.replace("PRD-", "") : order_id);
 
       if (error) {
         console.error("Gagal mengemaskini status verify FPX:", error);
