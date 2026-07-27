@@ -80,6 +80,13 @@ function escapeHTML(str) {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  if (window.location.search.includes("fpx=return")) {
+    const swooshLoader = document.querySelector(".preloader");
+    const clipperLoader = document.getElementById("preloader");
+    if (swooshLoader) swooshLoader.style.display = "none";
+    if (clipperLoader) clipperLoader.style.display = "none";
+  }
+
   initAppDb();
   checkLoginState();
   if (window.location.search.includes("fpx=return")) {
