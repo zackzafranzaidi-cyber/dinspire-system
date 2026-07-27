@@ -82,7 +82,15 @@ function escapeHTML(str) {
 window.addEventListener("DOMContentLoaded", async () => {
   initAppDb();
   checkLoginState();
-  switchView("home");
+  if (window.location.search.includes("fpx=return")) {
+    switchView("notifications");
+    setTimeout(() => {
+        showToast("Bayaran anda sedang diproses. Sila semak status pesanan anda.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }, 1000);
+  } else {
+    switchView("home");
+  }
   setupOtpInputs("log-otp-inputs", "log-otp");
   setupOtpInputs("reg-otp-inputs", "reg-otp");
   setupStarRating();
