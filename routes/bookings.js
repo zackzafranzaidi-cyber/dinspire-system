@@ -163,7 +163,8 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
         .select("harga")
         .eq("id", service_id)
         .maybeSingle();
-      if (svc) harga_rm = parseFloat(svc.harga);
+      if (!svc) return res.status(400).json({ status: "error", message: "Servis tidak dijumpai." });
+      harga_rm = parseFloat(svc.harga);
       order_no = "TR" + crypto.randomUUID().split("-")[0].toUpperCase();
     } else {
       const { data: svc } = await supabase
@@ -171,12 +172,13 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
         .select("harga")
         .eq("id", service_id)
         .maybeSingle();
-      if (svc) harga_rm = parseFloat(svc.harga);
+      if (!svc) return res.status(400).json({ status: "error", message: "Servis tidak dijumpai." });
+      harga_rm = parseFloat(svc.harga);
       order_no = "DB" + crypto.randomUUID().split("-")[0].toUpperCase();
     }
 
     // [DIBAIKI] Halang Time-Machine (Tempahan masa lepas)
-    const bookingDateTime = new Date(`${booking_date}T${booking_time}`);
+    const bookingDateTime = new Date(`${booking_date}T${booking_time}+08:00`);
     if (bookingDateTime < new Date()) {
       return res.status(400).json({ status: "error", message: "Tarikh atau masa tempahan telah berlalu." });
     }
@@ -359,7 +361,7 @@ router.put(
       if (tableName !== "oncall_records") { // walkin tiada masa depan, oncall bergantung
         const { data: bData } = await supabase.from(tableName).select("tarikh, masa").eq("no_booking", orderNo).maybeSingle();
         if (bData && bData.tarikh && bData.masa) {
-          const bookingDateTime = new Date(`${bData.tarikh}T${bData.masa}`);
+          const bookingDateTime = new Date(`${bData.tarikh}T${bData.masa}+08:00`);
           if (bookingDateTime > new Date()) {
             completionLocks.delete(orderNo);
             return res.status(400).json({ status: "error", message: "Servis belum tamat. Anda hanya boleh klik 'Selesai' selepas masa tempahan berlalu." });
@@ -518,8 +520,8 @@ router.post(
           .status(401)
           .json({ status: "error", message: "ONCALL_NO_CUST: Pelanggan tidak dijumpai." });
 
-      // [DIBAIKI] Halang Time-Machine On-Call
-      const bookingDateTime = new Date(`${date}T${time}`);
+      // [DIBAIKI] Halang Time-Travel
+      const bookingDateTime = new Date(`${date}T${time}+08:00`);
       if (bookingDateTime < new Date()) {
         return res.status(400).json({ status: "error", message: "Tarikh atau masa tempahan telah berlalu." });
       }
@@ -552,12 +554,13 @@ router.post(
       let serviceFee = setSvc ? parseFloat(setSvc.setting_value) : 0;
 
       let harga_rm = 0.0;
-      const { data: svcHaircut } = await supabase
+      const { data: svc } = await supabase
         .from("haircuts")
         .select("harga")
         .eq("id", service_id)
         .maybeSingle();
-      if (svcHaircut) harga_rm = parseFloat(svcHaircut.harga);
+      if (!svc) return res.status(400).json({ status: "error", message: "Servis tidak dijumpai." });
+      harga_rm = parseFloat(svc.harga);
 
       const order_no = "DBC" + crypto.randomUUID().split("-")[0].toUpperCase();
       
@@ -620,7 +623,8 @@ router.post(
 
 
       try {
-        const bookingDateTime = new Date(`${date}T${time}`);
+        // [DIBAIKI] Zon Masa Peringatan
+        const bookingDateTime = new Date(`${date}T${time}+08:00`);
         const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
         if (reminderTime > new Date()) {
           schedule.scheduleJob(reminderTime, function() {
@@ -1055,8 +1059,12 @@ router.post("/webhook/fpx", async (req, res) => {
     const paymentData = toyyibpay.parseWebhook(req.body);
     const { reference, status, transaction_id } = paymentData;
     
-    // FPX_PAID atau FPX_FAILED
-    const receiptValue = status === "paid" ? `FPX_PAID:${transaction_id}` : `FPX_FAILED:${transaction_id}`;
+    // [DIBAIKI] Semakan Berkembar Server-to-Server
+    let receiptValue = `FPX_FAILED:${transaction_id}`;
+    if (status === "paid") {
+      const isValid = await toyyibpay.verifyTransaction(transaction_id, reference);
+      if (isValid) receiptValue = `FPX_PAID:${transaction_id}`;
+    }
     
     // Tentukan table mana nak di-update (Guntingan, Rawatan, Oncall, Produk)
     let tableName = "booking_records";
@@ -1097,8 +1105,13 @@ router.get("/fpx/verify", async (req, res) => {
   }
 
   try {
+    // [DIBAIKI] Semakan Berkembar Server-to-Server (Bukan sekadar query parameters)
     const isSuccess = status_id === "1";
-    const receiptValue = isSuccess ? `FPX_PAID:${transaction_id}` : `FPX_FAILED:${transaction_id}`;
+    let receiptValue = `FPX_FAILED:${transaction_id}`;
+    if (isSuccess) {
+      const isValid = await toyyibpay.verifyTransaction(transaction_id, order_id);
+      if (isValid) receiptValue = `FPX_PAID:${transaction_id}`;
+    }
 
     let tableName = "booking_records";
     if (order_id.startsWith("TR")) tableName = "treatment_records";

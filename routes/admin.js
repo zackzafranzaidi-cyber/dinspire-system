@@ -110,7 +110,7 @@ router.get(
         supabase.from("haircuts").select("*"),
         supabase.from("treatments").select("*"),
         supabase.from("branches").select("*"),
-        supabase.from("staff").select("*"),
+        supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment, must_change_password"),
         supabase.from("products").select("*"),
         supabase.from("settings").select("*"),
       ]);

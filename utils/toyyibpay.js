@@ -108,6 +108,32 @@ class ToyyibPaySystem {
       transaction_id: payload.transaction_id || payload.billcode || ""
     };
   }
+  /**
+   * [DIBAIKI] Pengesahan Server-to-Server
+   * Memastikan resit pembayaran benar-benar ujud di pangkalan data Toyyibpay
+   */
+  async verifyTransaction(billCode, expectedOrderNo) {
+    if (!billCode) return false;
+    try {
+      const payload = new URLSearchParams({
+        billCode: billCode,
+        billpaymentStatus: 1
+      });
+      const response = await this.client.post("/index.php/api/getBillTransactions", payload.toString());
+      
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        // Semak jika nombor rujukan sepadan (mengelakkan eksploitasi guna resit orang lain)
+        const txn = response.data[0];
+        if (txn.billExternalReferenceNo === expectedOrderNo && String(txn.billpaymentStatus) === "1") {
+          return true;
+        }
+      }
+      return false;
+    } catch (err) {
+      console.error("Ralat getBillTransactions:", err.message);
+      return false;
+    }
+  }
 }
 
 module.exports = new ToyyibPaySystem();
