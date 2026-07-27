@@ -621,9 +621,9 @@ function processData() {
       
       payChartObj.data.datasets[0].data = chartData;
       
-      let chartColors = ["#111827", "#6b7280", "#3b82f6"];
+      let chartColors = ["#111827", "#6b7280", "#d1d5db"];
       if (payData.lain > 0) {
-        chartColors.push("#d1d5db");
+        chartColors.push("#f3f4f6");
       }
       
       payChartObj.data.datasets[0].backgroundColor = chartColors;
@@ -858,6 +858,8 @@ function renderCashTable(stats) {
     tbody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang]["table-no-record"] || "Tiada Rekod"}</td></tr>`;
     return;
   }
+  
+  tbody.innerHTML = "";
   sortedStaff.forEach((name) => {
     let initial = name.charAt(0).toUpperCase();
     let html = `

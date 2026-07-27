@@ -11,11 +11,8 @@ async function run() {
   try {
     await pgClient.connect();
     
-    // Add customer_id to tables
-    await pgClient.query("ALTER TABLE booking_records ADD COLUMN IF NOT EXISTS customer_id uuid;");
-    await pgClient.query("ALTER TABLE treatment_records ADD COLUMN IF NOT EXISTS customer_id uuid;");
-    await pgClient.query("ALTER TABLE oncall_records ADD COLUMN IF NOT EXISTS customer_id uuid;");
-    await pgClient.query("ALTER TABLE product_orders ADD COLUMN IF NOT EXISTS customer_id uuid;");
+    // Add no_booking to product_orders
+    await pgClient.query("ALTER TABLE product_orders ADD COLUMN IF NOT EXISTS no_booking TEXT;");
     
     console.log("SUCCESS");
   } catch (err) {
