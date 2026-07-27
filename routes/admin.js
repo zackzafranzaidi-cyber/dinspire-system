@@ -357,6 +357,8 @@ router.post(
           username: i.name,
           jenis_staf: i.jenis_staf,
           branch_id: i.branch_id || null,
+          can_haircut: i.can_haircut !== false,
+          can_treatment: i.can_treatment !== false,
         }),
       );
 

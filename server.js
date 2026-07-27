@@ -296,7 +296,7 @@ async function recoverSMSReminders() {
     if (bookings) {
       bookings.forEach((b) => {
         if (!b.tarikh || !b.masa) return;
-        const bDate = new Date(`${b.tarikh}T${b.masa}`);
+        const bDate = new Date(`${b.tarikh}T${b.masa}+08:00`);
         const reminderTime = new Date(bDate.getTime() - 2 * 60 * 60 * 1000);
         
         if (reminderTime > new Date()) {
@@ -317,7 +317,7 @@ async function recoverSMSReminders() {
     if (oncalls) {
       oncalls.forEach((o) => {
         if (!o.tarikh || !o.masa) return;
-        const oDate = new Date(`${o.tarikh}T${o.masa}`);
+        const oDate = new Date(`${o.tarikh}T${o.masa}+08:00`);
         const reminderTime = new Date(oDate.getTime() - 2 * 60 * 60 * 1000);
         
         if (reminderTime > new Date()) {

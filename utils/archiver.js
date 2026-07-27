@@ -58,8 +58,12 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
     const targetMonth = now.getDate() <= 5 ? now.getMonth() : now.getMonth() + 1; // 1-indexed
     const targetYear = now.getDate() <= 5 && now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
     
-    const startDate = new Date(targetYear, targetMonth - 1, 1).toISOString();
-    const endDate = new Date(targetYear, targetMonth, 1).toISOString();
+    let startM = targetMonth - 1;
+    let startY = targetYear;
+    if (startM === 0) { startM = 12; startY -= 1; }
+    
+    const startDate = new Date(`${startY}-${String(startM).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
+    const endDate = new Date(`${targetYear}-${String(targetMonth).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
 
     const [
       { data: bookings },
@@ -180,7 +184,9 @@ async function runAnnualArchive(isTest = false, targetEmail = "") {
     const processService = (records, type) => {
       (records || []).forEach((r) => {
         if (r.status && r.status !== "Selesai" && type !== "Walk-In") return;
-        let d = new Date(r.created_at || r.tarikh);
+        // Gunakan tarikh sebenar jika ada, jika tidak guna created_at (ditukar ke zon masa MY)
+        let localISO = (r.created_at ? new Date(r.created_at).toLocaleString("en-US", { timeZone: "Asia/Kuala_Lumpur" }) : null);
+        let d = new Date(r.tarikh || localISO);
         let month = d.getMonth() + 1;
         if (!monthlyData[month]) return;
         let price = parseFloat(r.harga_rm) || 0;
@@ -200,7 +206,8 @@ async function runAnnualArchive(isTest = false, targetEmail = "") {
     processService(treatments, "Treatment");
 
     (products || []).forEach((p) => {
-      let d = new Date(p.created_at || p.tarikh);
+      let localISO = (p.created_at ? new Date(p.created_at).toLocaleString("en-US", { timeZone: "Asia/Kuala_Lumpur" }) : null);
+      let d = new Date(p.tarikh || localISO);
       let month = d.getMonth() + 1;
       if (!monthlyData[month]) return;
       let price = parseFloat(p.harga_rm) || 0;
