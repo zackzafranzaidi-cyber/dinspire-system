@@ -72,7 +72,7 @@ router.get(
           price: b.harga_rm,
           status: mapStatus(b.status),
           resit: b.resit, // [DIBAIKI] Ditambah resit untuk view
-          payment_method: "QR",
+          payment_method: (b.resit && b.resit.toUpperCase().includes("FPX")) ? "FPX" : (b.jenis_bayaran || "QR"),
         });
       });
 
@@ -88,7 +88,7 @@ router.get(
           price: t.harga_rm,
           status: mapStatus(t.status),
           resit: t.resit,
-          payment_method: "QR",
+          payment_method: (t.resit && t.resit.toUpperCase().includes("FPX")) ? "FPX" : (t.jenis_bayaran || "QR"),
         });
       });
 

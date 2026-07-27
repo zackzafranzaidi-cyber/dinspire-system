@@ -168,6 +168,8 @@ router.get(
               id: s.id,
               name: s.username,
               branch_id: s.branch_id,
+              can_haircut: s.can_haircut !== false, // Fallback true if null/undefined
+              can_treatment: s.can_treatment !== false,
             })),
           OnCallBarbers: (stData || [])
             .filter((s) => s.jenis_staf === "On-Call")
@@ -518,5 +520,39 @@ router.put("/staff/:id/approve-reset", authenticate, requireRole(["admin", "owne
     res.status(500).json({ status: "error", message: "Ralat sistem kelulusan reset." });
   }
 });
+
+// ==========================================
+// KEMASKINI KEMAHIRAN STAF (CHECKBOX)
+// ==========================================
+router.put(
+  "/staff/:id/capabilities",
+  authenticate,
+  requireRole(["admin", "owner"]),
+  async (req, res) => {
+    const { id } = req.params;
+    const { field, value } = req.body;
+    
+    if (field !== "can_haircut" && field !== "can_treatment") {
+       return res.status(400).json({ status: "error", message: "Field tidak sah." });
+    }
+
+    try {
+      const { error } = await supabase
+        .from("staff")
+        .update({ [field]: value })
+        .eq("id", id);
+        
+      if (error) throw error;
+      
+      // Kosongkan cache admin supaya perubahan dikemas kini
+      cache.del("admin_data");
+      
+      res.json({ status: "success", message: "Kemahiran dikemaskini" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ status: "error", message: "Ralat menyimpan kemahiran." });
+    }
+  }
+);
 
 module.exports = router;

@@ -24,7 +24,7 @@ const SCHEMAS = {
   Haircuts: ["id", "name", "desc", "price"],
   Treatments: ["id", "name", "desc", "price"],
   Branches: ["id", "name", "location", "lat", "lng"],
-  Barbers: ["id", "name", "branch_id"],
+  Barbers: ["id", "name", "branch_id", "kemahiran"],
   OnCall: ["id", "name", "price"],
   OnCallBarbers: ["id", "name"],
   WalkInServices: ["id", "name", "price"],
@@ -230,6 +230,19 @@ function renderTable(tabName) {
           opts += `<option value="${b.id}" ${sel}>${escapeHTML(b.name)}</option>`;
         });
         html += `<td><select onchange="updateData('${tabName}', ${index}, '${c}', this.value)" style="padding:10px; border-radius:8px; border:1px solid #E5E5EA; width:100%; outline:none; font-weight:600; font-family:inherit; background:#F4F5F8;">${opts}</select></td>`;
+      } else if (c === "kemahiran" && tabName === "Barbers") {
+        let chkH = row.can_haircut !== false ? "checked" : "";
+        let chkT = row.can_treatment !== false ? "checked" : "";
+        html += `<td>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text-main);">
+              <input type="checkbox" ${chkH} onchange="updateCapabilities(${index}, 'can_haircut', this.checked)" style="width:16px; height:16px; accent-color:var(--primary-blue);"> Guntingan
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text-main);">
+              <input type="checkbox" ${chkT} onchange="updateCapabilities(${index}, 'can_treatment', this.checked)" style="width:16px; height:16px; accent-color:#FF9500;"> Rawatan
+            </label>
+          </div>
+        </td>`;
       } else if (tabName === "Branches" && c === "location") {
         html += `<td>
           <div class="input-row" style="display:flex; gap:10px;">
@@ -503,6 +516,33 @@ async function approveReset(staffId, staffName) {
     }
   } catch (err) {
     Swal.fire({ icon: "error", title: "Ralat Sistem", text: "Gagal menghubungi pelayan." });
+  }
+}
+
+async function updateCapabilities(index, fieldName, isChecked) {
+  const staff = appData.Barbers[index];
+  staff[fieldName] = isChecked;
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/staff/${staff.id}/capabilities`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ field: fieldName, value: isChecked })
+    });
+    const result = await res.json();
+    if (result.status === "success") {
+      // Optional: show a small toast, but it's instant so maybe not needed
+    } else {
+      Swal.fire({ icon: "error", title: "Ralat", text: result.message });
+      // Revert the checkbox if failed
+      staff[fieldName] = !isChecked;
+      renderTable('Barbers');
+    }
+  } catch (err) {
+    Swal.fire({ icon: "error", title: "Ralat Sistem", text: "Gagal menyimpan." });
+    staff[fieldName] = !isChecked;
+    renderTable('Barbers');
   }
 }
 

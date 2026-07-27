@@ -22,7 +22,7 @@ router.get("/", async (req, res) => {
       supabase.from("haircuts").select("*").limit(200),
       supabase.from("treatments").select("*").limit(200),
       supabase.from("branches").select("*").limit(50),
-      supabase.from("staff").select("id, username, jenis_staf, branch_id").limit(100),
+      supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment").limit(100),
       supabase.from("products").select("*").limit(200),
       // [DIBAIKI] Ketirisan Rahsia Syarikat: Jangan fetch peratus_komisen
       supabase.from("settings").select("setting_key, setting_value").in("setting_key", ["posters", "shipping_fee", "service_fee"]).limit(50),
@@ -138,7 +138,7 @@ router.get("/", async (req, res) => {
       })),
       Barbers: (stData || [])
         .filter((s) => s.jenis_staf === "In-Branch")
-        .map((s) => ({ id: s.id, name: s.username, branch_id: s.branch_id })),
+        .map((s) => ({ id: s.id, name: s.username, branch_id: s.branch_id, can_haircut: s.can_haircut !== false, can_treatment: s.can_treatment !== false })),
       OnCallBarbers: (stData || [])
         .filter((s) => s.jenis_staf === "On-Call")
         .map((s) => ({ id: s.id, name: s.username })),

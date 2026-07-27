@@ -932,7 +932,12 @@ function updBarber(sel, id) {
   let bSelect = document.getElementById("barber-" + id);
   let selectedBranch = String(sel.value).trim();
   let arr = (shopData.Barbers || []).filter(
-    (b) => String(b.branch_id).trim() === selectedBranch,
+    (b) => {
+      if (String(b.branch_id).trim() !== selectedBranch) return false;
+      if (id.startsWith("hc") && b.can_haircut === false) return false;
+      if (id.startsWith("tr") && b.can_treatment === false) return false;
+      return true;
+    }
   );
   bSelect.innerHTML =
     arr.length > 0
