@@ -776,7 +776,7 @@ function renderScheduleTime() {
 
     if (isDisabled) {
         // [DIBAIKI] Tunjuk secara visual bahawa waktu sudah ditempah
-        html += `<button type="button" class="time-slot-light disabled" style="opacity: 0.5; background: #f3f4f6; color: #9ca3af; cursor: not-allowed; border-color: #e5e7eb; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;" onclick="event.stopPropagation();">${format12} <span style="font-size:10px; color:#ef4444; font-weight:bold; margin-top:2px;">Penuh</span></button>`;
+        html += `<button type="button" class="time-slot-light disabled" style="opacity: 0.5; background: #f3f4f6; color: #9ca3af; cursor: not-allowed; border-color: #e5e7eb; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;" onclick="event.stopPropagation();">${format12}</button>`;
     } else {
         html += `<button type="button" class="time-slot-light ${isSel}" onclick="selectScheduleTime('${t}'); event.stopPropagation();">${format12}</button>`;
     }

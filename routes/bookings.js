@@ -1111,7 +1111,7 @@ router.get("/fpx/verify", async (req, res) => {
       .eq(tableName === "product_orders" ? "id" : "no_booking", order_id)
       .single();
 
-    if (existingData && existingData.resit === `FPX_PENDING:${transaction_id}`) {
+    if (existingData && existingData.resit && existingData.resit.startsWith("FPX_PENDING:")) {
       // Hanya kemaskini jika ia masih PENDING
       const { error } = await supabase
         .from(tableName)
