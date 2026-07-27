@@ -83,9 +83,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   initAppDb();
   checkLoginState();
   if (window.location.search.includes("fpx=return")) {
-    switchView("notifications");
-    
-    // Fallback: Verify payment if webhook was delayed
     const urlParams = new URLSearchParams(window.location.search);
     const orderId = urlParams.get("order_id");
     const statusId = urlParams.get("status_id");
@@ -96,10 +93,19 @@ window.addEventListener("DOMContentLoaded", async () => {
         .catch(err => console.error("FPX Verify fallback failed:", err));
     }
 
+    if (statusId === "1") {
+      switchView("home");
+      showSuccessScreen();
+    } else {
+      switchView("notifications");
+      setTimeout(() => {
+          showToast("Bayaran anda sedang diproses atau tidak berjaya. Sila semak status pesanan anda.");
+      }, 1000);
+    }
+    
     setTimeout(() => {
-        showToast("Bayaran anda sedang diproses. Sila semak status pesanan anda.");
         window.history.replaceState({}, document.title, window.location.pathname);
-    }, 1000);
+    }, 1500);
   } else {
     switchView("home");
   }
