@@ -1067,4 +1067,48 @@ router.post("/webhook/fpx", async (req, res) => {
     }
   });
 
+// ========================================================
+// [BAHARU] Pengesahan FPX Secara Langsung dari Pelanggan (Fallback jika Webhook Gagal)
+// ========================================================
+router.get("/fpx/verify", async (req, res) => {
+  const { order_id, status_id, transaction_id } = req.query;
+  if (!order_id || !status_id || !transaction_id) {
+    return res.status(400).json({ status: "error", message: "Parameter tidak lengkap" });
+  }
+
+  try {
+    const isSuccess = status_id === "1";
+    const receiptValue = isSuccess ? `FPX_PAID:${transaction_id}` : `FPX_FAILED:${transaction_id}`;
+
+    let tableName = "booking_records";
+    if (order_id.startsWith("TR")) tableName = "treatment_records";
+    else if (order_id.startsWith("DBC")) tableName = "oncall_records";
+    else if (order_id.startsWith("PRD")) tableName = "product_orders";
+
+    // Semak status semasa
+    const { data: existingData } = await supabase
+      .from(tableName)
+      .select("resit")
+      .eq(tableName === "product_orders" ? "id" : "no_booking", order_id)
+      .single();
+
+    if (existingData && existingData.resit === `FPX_PENDING:${transaction_id}`) {
+      // Hanya kemaskini jika ia masih PENDING
+      const { error } = await supabase
+        .from(tableName)
+        .update({ resit: receiptValue })
+        .eq(tableName === "product_orders" ? "id" : "no_booking", order_id);
+
+      if (error) {
+        console.error("Gagal mengemaskini status verify FPX:", error);
+      }
+    }
+
+    res.status(200).json({ status: "success", message: "Verification processed" });
+  } catch (error) {
+    console.error("Ralat FPX Verify:", error);
+    res.status(500).json({ status: "error", message: "Ralat pelayan" });
+  }
+});
+
 module.exports = router;

@@ -84,6 +84,18 @@ window.addEventListener("DOMContentLoaded", async () => {
   checkLoginState();
   if (window.location.search.includes("fpx=return")) {
     switchView("notifications");
+    
+    // Fallback: Verify payment if webhook was delayed
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get("order_id");
+    const statusId = urlParams.get("status_id");
+    const transactionId = urlParams.get("transaction_id") || urlParams.get("billcode");
+    
+    if (orderId && statusId) {
+      fetch(`${API_BASE_URL}/bookings/fpx/verify?order_id=${orderId}&status_id=${statusId}&transaction_id=${transactionId}`)
+        .catch(err => console.error("FPX Verify fallback failed:", err));
+    }
+
     setTimeout(() => {
         showToast("Bayaran anda sedang diproses. Sila semak status pesanan anda.");
         window.history.replaceState({}, document.title, window.location.pathname);

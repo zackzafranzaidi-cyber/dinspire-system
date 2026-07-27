@@ -99,11 +99,11 @@ class ToyyibPaySystem {
       throw new Error("Payload webhook tidak sah.");
     }
 
-    // toyyibPay menghantar status_id = '1' jika berjaya, '2' jika pending, '3' jika gagal
-    const isSuccess = payload.status_id === "1";
+    // toyyibPay menghantar status = '1' dalam POST webhook, dan status_id = '1' dalam GET redirect
+    const isSuccess = payload.status === "1" || payload.status_id === "1" || payload.status === 1 || payload.status_id === 1;
 
     return {
-      reference: payload.order_id || "",
+      reference: payload.order_id || payload.refno || "",
       status: isSuccess ? "paid" : "failed",
       transaction_id: payload.transaction_id || payload.billcode || ""
     };
