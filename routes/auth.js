@@ -192,13 +192,14 @@ router.post("/login", verifyLimiter, async (req, res) => {
     const token = jwt.sign(
       { id: user.id, role: "customer", iss: "dinspire-sys" },
       process.env.JWT_SECRET_CLIENT,
-      { expiresIn: "1h" }, // [DIBAIKI] Zero-Trust Boundary & JWT Expiry
+      { expiresIn: remember ? "30d" : "1h" }, // [DIBAIKI] Zero-Trust Boundary & JWT Expiry (Support Remember Me)
     );
 
     const cookieOptions = {
       httpOnly: true,
       secure: true,
       sameSite: "None", // [DIBAIKI] Benarkan Live Server
+      domain: process.env.NODE_ENV === "production" ? ".dinspirebarbershop.com" : undefined // [DIBAIKI] Tembus ITP Safari (First-Party)
     };
 
     if (remember) {
@@ -418,6 +419,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "None", // [DIBAIKI] Benarkan Live Server
+      domain: process.env.NODE_ENV === "production" ? ".dinspirebarbershop.com" : undefined // [DIBAIKI] Tembus ITP Safari (First-Party)
     };
     
     if (remember) {

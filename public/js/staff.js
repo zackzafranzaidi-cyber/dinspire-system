@@ -359,6 +359,22 @@ function toggleReceiptUpload() {
 
 async function loadDashboardData() {
   if (!loggedInStaff) return;
+  
+  // [DIBAIKI] Caching Tempatan (Optimistic Load)
+  const cachedData = localStorage.getItem("din_staff_dashboard");
+  if (cachedData) {
+      try {
+         const data = JSON.parse(cachedData);
+         staffData.bookings = Array.isArray(data) ? data : data.bookings || [];
+         staffData.reviews = data.reviews || [];
+         staffData.commissionPercent = data.commissionPercent || 50;
+         staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
+         calculateDashboardStats();
+         renderBookingList();
+         renderHistoryList();
+      } catch (e) {}
+  }
+
   try {
     const res = await fetch(`${API_BASE_URL}/staff/dashboard`, {
       credentials: "include",
@@ -373,6 +389,7 @@ async function loadDashboardData() {
     const data = await res.json();
 
     if (res.ok) {
+      localStorage.setItem("din_staff_dashboard", JSON.stringify(data)); // Simpan data terkini ke dalam cache
       staffData.bookings = Array.isArray(data) ? data : data.bookings || [];
       staffData.reviews = data.reviews || [];
       staffData.commissionPercent = data.commissionPercent || 50;
@@ -567,6 +584,21 @@ async function verifyPayment(orderNo, action) {
 
 async function processBookingSelesai(orderNo, price) {
   if (confirm(`Sahkan pelanggan (${orderNo}) ini telah selesai?`)) {
+    // [DIBAIKI] Optimistic UI: Kemaskini skrin serta-merta
+    const bookingIndex = staffData.bookings.findIndex(b => (b.order_no || b.no_booking) === orderNo);
+    let originalBooking = null;
+    
+    if (bookingIndex > -1) {
+       originalBooking = {...staffData.bookings[bookingIndex]};
+       staffData.bookings[bookingIndex].status = "Selesai";
+       staffData.bookings[bookingIndex].final_price = price;
+       
+       calculateDashboardStats();
+       renderBookingList();
+       renderHistoryList();
+       showToast("Memproses di latar belakang...");
+    }
+
     fetch(`${API_BASE_URL}/bookings/order/${orderNo}/complete`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -576,9 +608,19 @@ async function processBookingSelesai(orderNo, price) {
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") {
-          showToast("Tempahan Selesai!");
+          showToast("Tempahan berjaya diselesaikan!");
           loadDashboardData();
-        } else alert("Ralat: " + data.message);
+        } else {
+          alert("Ralat: " + data.message);
+          if (originalBooking) {
+             staffData.bookings[bookingIndex] = originalBooking;
+             renderBookingList();
+             renderHistoryList();
+          }
+        }
+      })
+      .catch((err) => {
+         showToast("Sistem berada di luar talian. Data akan disegerakkan nanti.");
       });
   }
 }

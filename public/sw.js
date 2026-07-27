@@ -1,9 +1,15 @@
 const CACHE_NAME = 'dinspire-pwa-v6';
 const urlsToCache = [
-  './',
-  './index.html',
-  './css/index.css',
-  './js/index.js'
+  '/',
+  '/index.html',
+  '/css/index.css',
+  '/js/index.js',
+  '/staff/index.html',
+  '/css/staff.css',
+  '/js/staff.js',
+  '/owner/index.html',
+  '/css/owner.css',
+  '/js/owner.js'
 ];
 
 self.addEventListener('install', event => {

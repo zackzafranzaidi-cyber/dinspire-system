@@ -363,6 +363,19 @@ async function fetchOwnerDashboardData() {
   document.getElementById("loading-overlay").classList.add("flex");
   document.getElementById("loading-overlay").classList.remove("hidden");
 
+  // [DIBAIKI] Caching Tempatan (Optimistic Load) untuk PWA
+  const cachedData = localStorage.getItem("din_owner_dashboard");
+  if (cachedData) {
+      try {
+          const data = JSON.parse(cachedData);
+          masterData = data.masterData || {};
+          mapBarberBranch = data.mapBarberBranch || {};
+          if (!masterData.orders) masterData.orders = [];
+          if (!masterData.bookings) masterData.bookings = [];
+          processData();
+      } catch (e) {}
+  }
+
   try {
     const res = await fetch(`${API_BASE_URL}/owner/dashboard`, {
       method: "GET",
@@ -379,6 +392,7 @@ async function fetchOwnerDashboardData() {
     const data = await res.json();
 
     if (data.status === "success") {
+      localStorage.setItem("din_owner_dashboard", JSON.stringify(data)); // Simpan ke cache tempatan
       masterData = data.masterData;
       mapBarberBranch = data.mapBarberBranch || {};
       if (!masterData.orders) masterData.orders = [];
