@@ -4,6 +4,21 @@
   "rewrites": [
     {
       "source": "/",
+      "has": [{ "type": "host", "value": "customer.dinspirebarbershop.com" }],
+      "destination": "/customer/index.html"
+    },
+    {
+      "source": "/manifest.json",
+      "has": [{ "type": "host", "value": "customer.dinspirebarbershop.com" }],
+      "destination": "/customer/manifest_customer.json"
+    },
+    {
+      "source": "/sw.js",
+      "has": [{ "type": "host", "value": "customer.dinspirebarbershop.com" }],
+      "destination": "/customer/sw.js"
+    },
+    {
+      "source": "/",
       "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
       "destination": "/staff/index.html"
     },

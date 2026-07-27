@@ -126,7 +126,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   
   // Load bank info
   try {
-    const bRes = await fetch("./bank-info.json");
+    const bRes = await fetch("/bank-info.json");
     if (bRes.ok) {
       bankInfo = await bRes.json();
       const bInfoEl = document.getElementById("checkout-bank-info");
@@ -1731,7 +1731,7 @@ window.copyAccNum = function(acc) {
 };
 
 // Fetch bank info
-fetch('bank-info.json')
+fetch('/bank-info.json')
   .then(res => res.json())
   .then(data => {
     const container = document.getElementById('bank-info-container');
