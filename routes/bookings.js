@@ -251,7 +251,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       const protocol = req.protocol === 'http' ? 'https' : req.protocol; // enforce https for production callback
       const host = req.get('host');
       const originUrl = req.headers.origin || `${protocol}://${host}`;
-      const returnUrl = `${originUrl}/index.html?fpx=return`;
+      const returnUrl = `${originUrl}/?fpx=return`;
       const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
       
       try {
@@ -639,7 +639,7 @@ router.post(
         const protocol = req.protocol === 'http' ? 'https' : req.protocol;
         const host = req.get('host');
         const originUrl = req.headers.origin || `${protocol}://${host}`;
-        const returnUrl = `${originUrl}/index.html?fpx=return`;
+        const returnUrl = `${originUrl}/?fpx=return`;
         const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
         
         try {
@@ -811,7 +811,7 @@ router.post(
         const protocol = req.protocol === 'http' ? 'https' : req.protocol;
         const host = req.get('host');
         const originUrl = req.headers.origin || `${protocol}://${host}`;
-        const returnUrl = `${originUrl}/index.html?fpx=return`;
+        const returnUrl = `${originUrl}/?fpx=return`;
         const callbackUrl = `${protocol}://${host}/api/bookings/webhook/fpx`;
         
         try {
