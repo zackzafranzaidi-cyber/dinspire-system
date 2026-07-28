@@ -100,9 +100,9 @@ router.get("/staff-availability", async (req, res) => {
 
     // 2. Dapatkan tempahan aktif dari ketiga-tiga jadual
     const [bReq, tReq, oReq] = await Promise.all([
-      supabase.from("booking_records").select("tarikh, masa").eq("staff_id", staff_id).in("status", ["Belum", "Selesai"]),
-      supabase.from("treatment_records").select("tarikh, masa").eq("staff_id", staff_id).in("status", ["Belum", "Selesai"]),
-      supabase.from("oncall_records").select("tarikh, masa").eq("barber", staff_id).in("status", ["Belum", "Selesai"])
+      supabase.from("booking_records").select("tarikh, masa").eq("staff_id", staff_id).in("status", ["Belum", "Selesai", "Pending Verification"]),
+      supabase.from("treatment_records").select("tarikh, masa").eq("staff_id", staff_id).in("status", ["Belum", "Selesai", "Pending Verification"]),
+      supabase.from("oncall_records").select("tarikh, masa").eq("barber", staff_id).in("status", ["Belum", "Selesai", "Pending Verification"])
     ]);
 
     const activeBookings = [];
