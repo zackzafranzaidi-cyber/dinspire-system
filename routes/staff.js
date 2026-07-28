@@ -394,6 +394,50 @@ router.get("/my-leaves", authenticate, requireRole(["staff"]), async (req, res) 
   }
 });
 
+router.get("/leave-balance", authenticate, requireRole(["staff"]), async (req, res) => {
+  try {
+    const today = new Date();
+    // Gunakan waktu Malaysia (UTC+8)
+    const myTime = new Date(today.getTime() + 8 * 60 * 60 * 1000);
+    const year = myTime.getFullYear();
+    const month = myTime.getMonth(); // 0-11
+    
+    // First day of current month
+    const firstDay = new Date(year, month, 1).toISOString().split('T')[0];
+    
+    // Today's date (local string YYYY-MM-DD)
+    const todayStr = myTime.toISOString().split('T')[0];
+
+    // Ambil semua cuti 'Biasa' atau 'Kecemasan' yang 'Approved' atau 'Pending' pada bulan semasa
+    const { data: currentMonthLeaves } = await supabase
+      .from("staff_leaves")
+      .select("tarikh, status, jenis_cuti")
+      .eq("staff_id", req.user.id)
+      .gte("tarikh", firstDay)
+      .lt("tarikh", new Date(year, month + 1, 1).toISOString().split('T')[0]);
+
+    let pastTakenLeavesCount = 0;
+    
+    if (currentMonthLeaves && currentMonthLeaves.length > 0) {
+       currentMonthLeaves.forEach(l => {
+          // Kira cuti yang TELAH LEPAS (termasuk kelmarin) atau cuti kecemasan yang telah diluluskan
+          if (l.tarikh < todayStr && l.status === "Approved") {
+              pastTakenLeavesCount++;
+          }
+       });
+    }
+
+    // Baki cuti bulan semasa
+    let balance = 4 - pastTakenLeavesCount;
+    if (balance < 0) balance = 0;
+
+    res.json({ status: "success", balance: balance, pastLeaves: pastTakenLeavesCount });
+  } catch (err) {
+    console.error("Ralat /leave-balance:", err);
+    res.status(500).json({ status: "error", message: "Gagal mengira baki cuti." });
+  }
+});
+
 router.post("/leaves", authenticate, requireRole(["staff"]), async (req, res) => {
   const staff_id = req.user.id;
   const { dates } = req.body; 
@@ -458,9 +502,9 @@ router.post("/leaves", authenticate, requireRole(["staff"]), async (req, res) =>
 // ==========================================
 router.post("/emergency-leaves", authenticate, requireRole(["staff"]), async (req, res) => {
   const staff_id = req.user.id;
-  const { date, reason } = req.body; 
+  const { dates, reason } = req.body; 
   
-  if (!date || !reason) {
+  if (!Array.isArray(dates) || dates.length === 0 || !reason) {
     return res.status(400).json({ status: "error", message: "Tarikh dan sebab cuti diperlukan." });
   }
 
@@ -473,26 +517,44 @@ router.post("/emergency-leaves", authenticate, requireRole(["staff"]), async (re
         .from("staff_leaves")
         .select("tarikh")
         .eq("branch_id", branch_id)
-        .eq("tarikh", date)
+        .in("tarikh", dates)
         .eq("status", "Approved");
         
        if (taken && taken.length > 0) {
-         return res.status(400).json({ status: "error", message: `Tarikh ${date} telah diluluskan cuti untuk staf lain di cawangan anda.` });
+         return res.status(400).json({ status: "error", message: `Tarikh ${taken[0].tarikh} telah diluluskan cuti untuk staf lain di cawangan anda.` });
        }
     }
 
-    const { error } = await supabase.from("staff_leaves").insert([{
+    // Padam sebarang cuti kecemasan 'Pending' yang pernah dipohon oleh staf pada bulan semasa
+    const today = new Date();
+    const myTime = new Date(today.getTime() + 8 * 60 * 60 * 1000);
+    const year = myTime.getFullYear();
+    const month = myTime.getMonth(); 
+    const firstDay = new Date(year, month, 1).toISOString().split('T')[0];
+    const firstDayNextMonth = new Date(year, month + 1, 1).toISOString().split('T')[0];
+
+    await supabase.from("staff_leaves")
+      .delete()
+      .eq("staff_id", staff_id)
+      .eq("jenis_cuti", "Kecemasan")
+      .eq("status", "Pending")
+      .gte("tarikh", firstDay)
+      .lt("tarikh", firstDayNextMonth);
+
+    const inserts = dates.map(d => ({
       staff_id: staff_id,
       branch_id: branch_id,
-      tarikh: date,
+      tarikh: d,
       sebab: reason,
       status: 'Pending',
       jenis_cuti: 'Kecemasan'
-    }]);
+    }));
+
+    const { error } = await supabase.from("staff_leaves").insert(inserts);
 
     if (error) {
       if (error.code === '23505') { 
-        return res.status(400).json({ status: "error", message: "Cuti pada tarikh ini telah pun dipohon." });
+        return res.status(400).json({ status: "error", message: "Terdapat pertindihan dengan rekod cuti sedia ada." });
       }
       throw error;
     }

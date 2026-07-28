@@ -936,6 +936,36 @@ async function initLeaveSystem() {
              }
           }
        });
+       
+       // Init Emergency Leave
+       try {
+           const resBalance = await fetch(`${API_BASE_URL}/staff/leave-balance`, { credentials: "include" });
+           const balData = await resBalance.json();
+           const maxDays = balData.balance !== undefined ? balData.balance : 4;
+           window.emergencyLeaveMaxDays = maxDays;
+           
+           const today = new Date();
+           const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0); // hujung bulan semasa
+           
+           window.emergencyLeavePicker = flatpickr("#emergency-leave-date", {
+               mode: "multiple",
+               minDate: "today",
+               maxDate: lastDay,
+               disable: mySelectedLeaves, // Jangan benarkan pilih hari yang dah lulus
+               dateFormat: "Y-m-d",
+               onChange: function(selectedDates, dateStr, instance) {
+                   if (selectedDates.length > maxDays) {
+                       selectedDates.pop();
+                       instance.setDate(selectedDates);
+                       if (typeof Swal !== "undefined") {
+                           Swal.fire('Had Maksimum', `Baki cuti anda bulan ini hanya tinggal ${maxDays} hari.`, 'warning');
+                       }
+                   }
+               }
+           });
+       } catch(e) {
+           console.error("Gagal memuatkan baki cuti", e);
+       }
      }
   } catch (err) {
      console.error("Gagal memuatkan sistem cuti", err);
@@ -979,13 +1009,23 @@ async function submitLeaves() {
 }
 
 async function submitEmergencyLeaves() {
-   const dateInput = document.getElementById("emergency-leave-date").value;
+   if (!window.emergencyLeavePicker) return;
+   
+   const selectedDates = window.emergencyLeavePicker.selectedDates.map(d => {
+       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+   });
    const reasonInput = document.getElementById("emergency-leave-reason").value;
 
-   if (!dateInput || !reasonInput.trim()) {
+   if (selectedDates.length === 0 || !reasonInput.trim()) {
       if (typeof Swal !== "undefined") Swal.fire('Ralat', 'Sila isi tarikh dan sebab kecemasan.', 'error');
       else alert('Sila isi tarikh dan sebab kecemasan.');
       return;
+   }
+   
+   if (selectedDates.length !== window.emergencyLeaveMaxDays) {
+       if (typeof Swal !== "undefined") Swal.fire('Ralat', `Anda perlu memilih tepat ${window.emergencyLeaveMaxDays} hari cuti.`, 'error');
+       else alert(`Anda perlu memilih tepat ${window.emergencyLeaveMaxDays} hari cuti.`);
+       return;
    }
    
    const btn = document.getElementById("btn-save-emergency-leave");
@@ -997,13 +1037,13 @@ async function submitEmergencyLeaves() {
          method: "POST",
          headers: { "Content-Type": "application/json" },
          credentials: "include",
-         body: JSON.stringify({ date: dateInput, reason: reasonInput.trim() })
+         body: JSON.stringify({ dates: selectedDates, reason: reasonInput.trim() })
       });
       const data = await res.json();
       if (data.status === "success") {
          if (typeof Swal !== "undefined") Swal.fire('Berjaya', data.message, 'success');
          else alert(data.message);
-         document.getElementById("emergency-leave-date").value = "";
+         window.emergencyLeavePicker.clear();
          document.getElementById("emergency-leave-reason").value = "";
       } else {
          if (typeof Swal !== "undefined") Swal.fire('Gagal', data.message, 'error');

@@ -240,7 +240,23 @@ router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "adm
 
     // Tiada konflik, terus Approve
     await supabase.from("staff_leaves").update({ status: 'Approved' }).eq("id", leave_id);
-    res.json({ status: "success", message: "Cuti Kecemasan Berjaya Diluluskan!" });
+    
+    // Padam kesemua cuti 'Biasa' yang berbaki pada bulan semasa untuk staf ini
+    const today = new Date();
+    const myTime = new Date(today.getTime() + 8 * 60 * 60 * 1000);
+    const todayStr = myTime.toISOString().split('T')[0];
+    const year = myTime.getFullYear();
+    const month = myTime.getMonth(); 
+    const firstDayNextMonth = new Date(year, month + 1, 1).toISOString().split('T')[0];
+    
+    await supabase.from("staff_leaves")
+       .delete()
+       .eq("staff_id", leave.staff_id)
+       .eq("jenis_cuti", "Biasa")
+       .gte("tarikh", todayStr)
+       .lt("tarikh", firstDayNextMonth);
+       
+    res.json({ status: "success", message: "Cuti Kecemasan Berjaya Diluluskan! Baki cuti asal bulan ini telah ditukar." });
   } catch (error) {
     console.error("Ralat kelulusan cuti:", error);
     res.status(500).json({ status: "error", message: "Ralat pelayan." });
