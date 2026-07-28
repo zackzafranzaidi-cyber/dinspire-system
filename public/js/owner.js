@@ -1766,9 +1766,9 @@ async function approveEmergencyLeave(id) {
     const res = await fetch(`${API_BASE_URL}/owner/approve-emergency-leave`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("din_token_sys"),
+        "Content-Type": "application/json"
       },
+      credentials: "include",
       body: JSON.stringify({ leave_id: id, action: 'Approve' }),
     });
     
@@ -1777,67 +1777,57 @@ async function approveEmergencyLeave(id) {
       // ADA KONFLIK BOOKING
       handleBookingConflict(data.conflicts);
     } else if (data.status === "success") {
-      Swal.fire("Berjaya!", data.message, "success").then(() => fetchOwnerDashboardData());
+      alert("Berjaya! " + data.message);
+      fetchOwnerDashboardData();
     } else {
-      Swal.fire("Ralat!", data.message, "error");
+      alert("Ralat! " + data.message);
     }
   } catch (err) {
     console.error(err);
-    Swal.fire("Ralat!", "Gagal menghubungi pelayan.", "error");
+    alert("Ralat! Gagal menghubungi pelayan.");
   }
 }
 
 async function rejectEmergencyLeave(id) {
+  if (!confirm("Adakah anda pasti untuk TOLAK cuti kecemasan ini?")) return;
+
   try {
     const res = await fetch(`${API_BASE_URL}/owner/approve-emergency-leave`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("din_token_sys"),
+        "Content-Type": "application/json"
       },
+      credentials: "include",
       body: JSON.stringify({ leave_id: id, action: 'Reject' }),
     });
+    
     const data = await res.json();
     if (data.status === "success") {
-      Swal.fire("Ditolak!", data.message, "success").then(() => fetchOwnerDashboardData());
+      alert("Ditolak! " + data.message);
+      fetchOwnerDashboardData();
     } else {
-      Swal.fire("Ralat!", data.message, "error");
+      alert("Ralat! " + data.message);
     }
   } catch (err) {
-    Swal.fire("Ralat!", "Gagal menghubungi pelayan.", "error");
+    console.error(err);
+    alert("Ralat! Gagal menghubungi pelayan.");
   }
 }
 
 function handleBookingConflict(conflicts) {
-  let conflictHtml = `<div style="text-align:left; max-height:200px; overflow-y:auto; margin-bottom:15px; border:1px solid #ddd; padding:10px; border-radius:8px;">`;
+  let msg = "Terdapat tempahan yang bertembung jika cuti ini diluluskan:\n\n";
   conflicts.forEach(c => {
-    conflictHtml += `<div style="padding-bottom:5px; margin-bottom:5px; border-bottom:1px solid #eee;">
-      <strong>${c.no_booking}</strong> - ${c.masa} <br/>
-      <small style="color:gray;">${c.jenis_haircut ? c.jenis_haircut.nama_potongan : (c.jenis_rawatan ? c.jenis_rawatan.nama_rawatan : 'Servis')}</small>
-    </div>`;
+    let servis = c.jenis_haircut ? c.jenis_haircut.nama_potongan : (c.jenis_rawatan ? c.jenis_rawatan.nama_rawatan : 'Servis');
+    msg += `- ${c.no_booking} : ${c.masa} (${servis})\n`;
   });
-  conflictHtml += `</div>`;
-
-  Swal.fire({
-    title: '⚠️ Amaran Pertembungan!',
-    html: `<p style="margin-bottom:15px; color:red; font-weight:bold;">Terdapat tempahan yang bertembung jika cuti ini diluluskan.</p>
-           ${conflictHtml}
-           <p style="font-size:13px;">Sila selesaikan tempahan ini terlebih dahulu. Pilih sama ada untuk menukar staf atau batalkan tempahan.</p>`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Tukar Staf (Reassign)',
-    cancelButtonText: 'Batal Tempahan (Cancel)',
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // Reassign logic (simplified to manual for now)
-      Swal.fire('Arahan', 'Sila hubungi staf lain dan maklumkan pertukaran. Kemudian anda boleh set manual dalam DB buat masa ini (atau tambah fungsi reassign di masa depan).', 'info');
-    } else if (result.dismiss === Swal.DismissReason.cancel) {
-      // Trigger Cancel Booking with WhatsApp
-      cancelBookingAdminPrompt(conflicts[0].no_booking, conflicts[0].table);
-    }
-  });
+  msg += "\nSila selesaikan tempahan ini terlebih dahulu. Tekan OK untuk BATALKAN tempahan dan maklumkan kepada pelanggan (WhatsApp). Tekan Cancel jika anda mahu mengekalkan tempahan dan menukar staf secara manual.";
+  
+  if (confirm(msg)) {
+    // Trigger Cancel Booking with WhatsApp
+    cancelBookingAdminPrompt(conflicts[0].no_booking, conflicts[0].table);
+  } else {
+    alert("Arahan: Sila hubungi staf lain dan maklumkan pertukaran. Kemudian anda boleh set manual dalam pangkalan data buat masa ini (atau tambah fungsi reassign di masa depan).");
+  }
 }
 
 async function cancelBookingAdminPrompt(no_booking, table_name) {
@@ -1845,9 +1835,9 @@ async function cancelBookingAdminPrompt(no_booking, table_name) {
     const res = await fetch(`${API_BASE_URL}/owner/cancel-booking-admin`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("din_token_sys"),
+        "Content-Type": "application/json"
       },
+      credentials: "include",
       body: JSON.stringify({ no_booking, table_name }),
     });
     const data = await res.json();
@@ -1871,20 +1861,14 @@ async function cancelBookingAdminPrompt(no_booking, table_name) {
       let phone = b.no_phone || "";
       if (phone.startsWith("0")) phone = "6" + phone;
       
-      Swal.fire({
-        title: "Dibatalkan!",
-        text: "Tempahan dibatalkan. Anda akan dibawa ke WhatsApp.",
-        icon: "success",
-        confirmButtonText: "Teruskan ke WhatsApp"
-      }).then(() => {
-        window.open(`https://wa.me/${phone}?text=${encodedText}`, "_blank");
-        fetchOwnerDashboardData();
-      });
+      alert("Tempahan dibatalkan. Anda akan dibawa ke WhatsApp.");
+      window.open(`https://wa.me/${phone}?text=${encodedText}`, "_blank");
+      fetchOwnerDashboardData();
     } else {
-      Swal.fire("Ralat", data.message, "error");
+      alert("Ralat: " + data.message);
     }
   } catch(err) {
-    Swal.fire("Ralat", "Gagal menghubungi pelayan", "error");
+    alert("Ralat: Gagal menghubungi pelayan");
   }
 }
 
