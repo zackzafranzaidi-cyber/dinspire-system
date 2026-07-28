@@ -209,7 +209,7 @@ router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "adm
 
   try {
     // Dapatkan butiran cuti
-    const { data: leave } = await supabase.from("staff_leaves").select("*").eq("id", leave_id).single();
+    const { data: leave } = await supabase.from("staff_leaves").select("*, staff(branch_id)").eq("id", leave_id).single();
     if (!leave) return res.status(404).json({ status: "error", message: "Cuti tidak dijumpai." });
 
     if (action === 'Reject') {
@@ -217,19 +217,69 @@ router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "adm
       return res.json({ status: "success", message: "Cuti Kecemasan telah Ditolak." });
     }
 
+    const branch_id = leave.staff ? leave.staff.branch_id : null;
+
     // Jika Approve, semak pertembungan booking pada tarikh tersebut
     const [bReq, tReq, oReq] = await Promise.all([
-      supabase.from("booking_records").select("no_booking, masa, jenis_haircut(nama_potongan)").eq("staff_id", leave.staff_id).eq("tarikh", leave.tarikh).eq("status", "Belum"),
-      supabase.from("treatment_records").select("no_booking, masa, jenis_rawatan(nama_rawatan)").eq("staff_id", leave.staff_id).eq("tarikh", leave.tarikh).eq("status", "Belum"),
-      supabase.from("oncall_records").select("no_booking, masa, jenis_haircut(nama_potongan)").eq("staff_id", leave.staff_id).eq("tarikh", leave.tarikh).eq("status", "Belum")
+      supabase.from("booking_records").select("no_booking, masa, tarikh, haircuts(nama_potongan)").eq("staff_id", leave.staff_id).eq("tarikh", leave.tarikh).eq("status", "Belum"),
+      supabase.from("treatment_records").select("no_booking, masa, tarikh, treatments(nama_rawatan)").eq("staff_id", leave.staff_id).eq("tarikh", leave.tarikh).eq("status", "Belum"),
+      supabase.from("oncall_records").select("no_booking, masa, tarikh, haircuts(nama_potongan)").eq("staff_id", leave.staff_id).eq("tarikh", leave.tarikh).eq("status", "Belum")
     ]);
 
     let conflicts = [];
-    if (bReq.data) conflicts = conflicts.concat(bReq.data.map(b => ({ ...b, table: 'booking_records' })));
-    if (tReq.data) conflicts = conflicts.concat(tReq.data.map(b => ({ ...b, table: 'treatment_records' })));
-    if (oReq.data) conflicts = conflicts.concat(oReq.data.map(b => ({ ...b, table: 'oncall_records' })));
+    if (bReq.data) conflicts = conflicts.concat(bReq.data.map(b => ({ ...b, table: 'booking_records', type: 'Booking', service: b.haircuts ? b.haircuts.nama_potongan : 'Servis' })));
+    if (tReq.data) conflicts = conflicts.concat(tReq.data.map(b => ({ ...b, table: 'treatment_records', type: 'Treatment', service: b.treatments ? b.treatments.nama_rawatan : 'Rawatan' })));
+    if (oReq.data) conflicts = conflicts.concat(oReq.data.map(b => ({ ...b, table: 'oncall_records', type: 'On-Call', service: b.haircuts ? b.haircuts.nama_potongan : 'On-Call' })));
 
     if (conflicts.length > 0) {
+      // Dapatkan senarai staf lain di cawangan yang sama
+      let otherStaff = [];
+      if (branch_id) {
+        const { data } = await supabase.from("staff")
+          .select("id, username")
+          .eq("branch_id", branch_id)
+          .neq("id", leave.staff_id);
+        otherStaff = data || [];
+      }
+        
+      const otherStaffIds = otherStaff.map(s => s.id);
+      
+      let allOtherStaffBookings = [];
+      let allOtherStaffTreatments = [];
+      let allOtherStaffOncalls = [];
+      let allOtherStaffLeaves = [];
+      
+      if (otherStaffIds.length > 0) {
+        const [oBReq, oTReq, oOReq, oLReq] = await Promise.all([
+          supabase.from("booking_records").select("staff_id, masa").in("staff_id", otherStaffIds).eq("tarikh", leave.tarikh).eq("status", "Belum"),
+          supabase.from("treatment_records").select("staff_id, masa").in("staff_id", otherStaffIds).eq("tarikh", leave.tarikh).eq("status", "Belum"),
+          supabase.from("oncall_records").select("staff_id, masa").in("staff_id", otherStaffIds).eq("tarikh", leave.tarikh).eq("status", "Belum"),
+          supabase.from("staff_leaves").select("staff_id").in("staff_id", otherStaffIds).eq("tarikh", leave.tarikh).not("status", "eq", "Rejected")
+        ]);
+        allOtherStaffBookings = oBReq.data || [];
+        allOtherStaffTreatments = oTReq.data || [];
+        allOtherStaffOncalls = oOReq.data || [];
+        allOtherStaffLeaves = oLReq.data || [];
+      }
+      
+      // Untuk setiap konflik, cari staf yang tiada tempahan pada masa tersebut dan tiada cuti pada hari tersebut
+      conflicts = conflicts.map(c => {
+        let available_staff = otherStaff.filter(s => {
+          // Jika staf cuti pada hari tersebut, dia tidak available
+          const hasLeave = allOtherStaffLeaves.find(l => l.staff_id === s.id);
+          if (hasLeave) return false;
+          
+          // Periksa jika staf ada tempahan pada masa 'c.masa'
+          const hasBooking = allOtherStaffBookings.find(b => b.staff_id === s.id && b.masa === c.masa);
+          const hasTreatment = allOtherStaffTreatments.find(t => t.staff_id === s.id && t.masa === c.masa);
+          const hasOncall = allOtherStaffOncalls.find(o => o.staff_id === s.id && o.masa === c.masa);
+          
+          if (hasBooking || hasTreatment || hasOncall) return false;
+          return true;
+        });
+        return { ...c, available_staff };
+      });
+
       // Return amaran konflik berserta data untuk reassignment
       return res.status(409).json({
         status: "conflict",

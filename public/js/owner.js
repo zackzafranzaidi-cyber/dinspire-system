@@ -1775,7 +1775,7 @@ async function approveEmergencyLeave(id) {
     const data = await res.json();
     if (res.status === 409) {
       // ADA KONFLIK BOOKING
-      handleBookingConflict(data.conflicts);
+      handleBookingConflict(data.conflicts, id);
     } else if (data.status === "success") {
       alert("Berjaya! " + data.message);
       fetchOwnerDashboardData();
@@ -1814,62 +1814,158 @@ async function rejectEmergencyLeave(id) {
   }
 }
 
-function handleBookingConflict(conflicts) {
-  let msg = "Terdapat tempahan yang bertembung jika cuti ini diluluskan:\n\n";
-  conflicts.forEach(c => {
-    let servis = c.jenis_haircut ? c.jenis_haircut.nama_potongan : (c.jenis_rawatan ? c.jenis_rawatan.nama_rawatan : 'Servis');
-    msg += `- ${c.no_booking} : ${c.masa} (${servis})\n`;
-  });
-  msg += "\nSila selesaikan tempahan ini terlebih dahulu. Tekan OK untuk BATALKAN tempahan dan maklumkan kepada pelanggan (WhatsApp). Tekan Cancel jika anda mahu mengekalkan tempahan dan menukar staf secara manual.";
+let currentConflicts = [];
+let currentLeaveId = null;
+let currentConflictIndex = 0;
+
+function handleBookingConflict(conflicts, leave_id) {
+  currentConflicts = conflicts;
+  currentLeaveId = leave_id;
+  currentConflictIndex = 0;
+  showReassignModal();
+}
+
+function showReassignModal() {
+  if (currentConflictIndex >= currentConflicts.length) {
+    // All conflicts resolved! Force approve the leave.
+    closeReassignModal();
+    forceApproveLeave();
+    return;
+  }
   
-  if (confirm(msg)) {
-    // Trigger Cancel Booking with WhatsApp
-    cancelBookingAdminPrompt(conflicts[0].no_booking, conflicts[0].table);
+  const c = currentConflicts[currentConflictIndex];
+  let servis = c.type + " - " + c.service;
+  
+  let modalHtml = `
+  <div id="reassignModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; justify-content:center; align-items:center;">
+    <div style="background:white; padding:20px; border-radius:10px; width:90%; max-width:400px; text-align:left; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+      <h3 style="margin-top:0; color:#d32f2f; font-family:sans-serif;">⚠️ Pertembungan Tempahan (${currentConflictIndex + 1}/${currentConflicts.length})</h3>
+      <p style="font-size:14px; color:#555; font-family:sans-serif;">Terdapat pertembungan jika cuti diluluskan.</p>
+      
+      <div style="background:#f9f9f9; padding:10px; border-radius:5px; margin-bottom:15px; border:1px solid #ddd; font-family:sans-serif;">
+        <strong>No Tempahan:</strong> ${c.no_booking} <br/>
+        <strong>Masa:</strong> ${c.masa} <br/>
+        <strong>Servis:</strong> ${servis}
+      </div>
+      
+      <label style="font-size:14px; font-weight:bold; font-family:sans-serif;">Pilih Staf Ganti:</label>
+      <select id="reassignStaffSelect" style="width:100%; padding:10px; margin-top:5px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; font-family:sans-serif;">
+  `;
+  
+  if (c.available_staff && c.available_staff.length > 0) {
+    c.available_staff.forEach(s => {
+      modalHtml += `<option value="${s.id}">${s.username}</option>`;
+    });
+    modalHtml += `
+      </select>
+      <div style="display:flex; justify-content:space-between; gap:10px; font-family:sans-serif;">
+        <button onclick="closeReassignModal()" style="flex:1; padding:10px; background:#ccc; border:none; border-radius:5px; cursor:pointer;">Batal Kelulusan</button>
+        <button onclick="submitReassign('${c.no_booking}', '${c.table}')" style="flex:1; padding:10px; background:#4CAF50; color:white; border:none; border-radius:5px; cursor:pointer;">Tukar Staf</button>
+      </div>
+    `;
   } else {
-    alert("Arahan: Sila hubungi staf lain dan maklumkan pertukaran. Kemudian anda boleh set manual dalam pangkalan data buat masa ini (atau tambah fungsi reassign di masa depan).");
+    modalHtml += `
+        <option value="">-- Tiada Staf Lapang --</option>
+      </select>
+      <p style="font-size:13px; color:red; font-family:sans-serif; margin-top:0;">Tiada staf lain yang lapang pada masa ini. Sila batalkan tempahan untuk pelanggan ini.</p>
+      <div style="display:flex; justify-content:space-between; gap:10px; font-family:sans-serif;">
+        <button onclick="closeReassignModal()" style="flex:1; padding:10px; background:#ccc; border:none; border-radius:5px; cursor:pointer;">Batal Kelulusan</button>
+        <button onclick="submitCancelAndWhatsApp('${c.no_booking}', '${c.table}')" style="flex:1; padding:10px; background:#d32f2f; color:white; border:none; border-radius:5px; cursor:pointer;">Batal Tempahan (WhatsApp)</button>
+      </div>
+    `;
+  }
+  
+  modalHtml += `</div></div>`;
+  
+  let oldModal = document.getElementById('reassignModal');
+  if (oldModal) oldModal.remove();
+  
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeReassignModal() {
+  let oldModal = document.getElementById('reassignModal');
+  if (oldModal) oldModal.remove();
+}
+
+async function submitReassign(no_booking, table_name) {
+  const new_staff_id = document.getElementById('reassignStaffSelect').value;
+  if (!new_staff_id) return alert("Sila pilih staf ganti.");
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/owner/reassign-booking`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ no_booking, new_staff_id, table_name }),
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      currentConflictIndex++;
+      showReassignModal();
+    } else {
+      alert("Ralat: " + data.message);
+    }
+  } catch(err) {
+    alert("Gagal menghubungi pelayan.");
   }
 }
 
-async function cancelBookingAdminPrompt(no_booking, table_name) {
+async function submitCancelAndWhatsApp(no_booking, table_name) {
   try {
     const res = await fetch(`${API_BASE_URL}/owner/cancel-booking-admin`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ no_booking, table_name }),
     });
     const data = await res.json();
-    
     if (data.status === "success") {
       let b = data.bookingDetails;
-      // FORMAT WHATSAPP
-      let text = `Hi ${b.customer_name || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\n`;
-      text += `no booking: ${b.no_booking}\n`;
-      text += `tarikh: ${b.tarikh}\n`;
-      text += `masa: ${b.masa}\n\n`;
-      text += `Sila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.\n\n`;
-      text += `Pelanggan yang dihormati, booking anda telah *dibatalkan* kerana masalah teknikal. Mohon pelanggan untuk menetapkan semula booking anda mengikut langkah-langkah di bawah:\n`;
-      text += `1. Masuk semula ke link customer.dinspirebarbershop.com\n`;
-      text += `2. Pergi ke bahagian notifikasi\n`;
-      text += `3. Tekan butang Reset Booking\n`;
-      text += `4. Tetapkan semula detail booking anda\n\n`;
-      text += `Sila tetapkan semula booking anda dengan kadar segera, Terima Kasih.`;
+      let text = \`Hi \${b.customer_name || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\\n\`;
+      text += \`no booking: \${b.no_booking}\\n\`;
+      text += \`tarikh: \${b.tarikh}\\n\`;
+      text += \`masa: \${b.masa}\\n\\n\`;
+      text += \`Sila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.\\n\\n\`;
+      text += \`Pelanggan yang dihormati, booking anda telah *dibatalkan* kerana masalah teknikal (tiada staf ganti). Mohon pelanggan untuk menetapkan semula booking anda mengikut langkah-langkah di bawah:\\n\`;
+      text += \`1. Masuk semula ke link customer.dinspirebarbershop.com\\n\`;
+      text += \`2. Pergi ke bahagian notifikasi\\n\`;
+      text += \`3. Tekan butang Reset Booking\\n\`;
+      text += \`4. Tetapkan semula detail booking anda\\n\\n\`;
+      text += \`Sila tetapkan semula booking anda dengan kadar segera, Terima Kasih.\`;
 
       let encodedText = encodeURIComponent(text);
       let phone = b.no_phone || "";
       if (phone.startsWith("0")) phone = "6" + phone;
       
-      alert("Tempahan dibatalkan. Anda akan dibawa ke WhatsApp.");
-      window.open(`https://wa.me/${phone}?text=${encodedText}`, "_blank");
-      fetchOwnerDashboardData();
+      window.open(\`https://wa.me/\${phone}?text=\${encodedText}\`, "_blank");
+      
+      currentConflictIndex++;
+      showReassignModal();
     } else {
       alert("Ralat: " + data.message);
     }
   } catch(err) {
-    alert("Ralat: Gagal menghubungi pelayan");
+    alert("Gagal membatalkan tempahan.");
   }
 }
 
-
+async function forceApproveLeave() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/owner/approve-emergency-leave`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ leave_id: currentLeaveId, action: 'Approve' }),
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      alert("Selesai! " + data.message);
+      fetchOwnerDashboardData();
+    } else {
+      alert("Ralat! " + data.message);
+    }
+  } catch(err) {
+    alert("Ralat kelulusan akhir.");
+  }
+}
