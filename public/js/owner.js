@@ -1922,23 +1922,23 @@ async function submitCancelAndWhatsApp(no_booking, table_name) {
     const data = await res.json();
     if (data.status === "success") {
       let b = data.bookingDetails;
-      let text = \`Hi \${b.customer_name || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\\n\`;
-      text += \`no booking: \${b.no_booking}\\n\`;
-      text += \`tarikh: \${b.tarikh}\\n\`;
-      text += \`masa: \${b.masa}\\n\\n\`;
-      text += \`Sila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.\\n\\n\`;
-      text += \`Pelanggan yang dihormati, booking anda telah *dibatalkan* kerana masalah teknikal (tiada staf ganti). Mohon pelanggan untuk menetapkan semula booking anda mengikut langkah-langkah di bawah:\\n\`;
-      text += \`1. Masuk semula ke link customer.dinspirebarbershop.com\\n\`;
-      text += \`2. Pergi ke bahagian notifikasi\\n\`;
-      text += \`3. Tekan butang Reset Booking\\n\`;
-      text += \`4. Tetapkan semula detail booking anda\\n\\n\`;
-      text += \`Sila tetapkan semula booking anda dengan kadar segera, Terima Kasih.\`;
+      let text = `Hi ${b.customer_name || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\n`;
+      text += `no booking: ${b.no_booking}\n`;
+      text += `tarikh: ${b.tarikh}\n`;
+      text += `masa: ${b.masa}\n\n`;
+      text += `Sila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.\n\n`;
+      text += `Pelanggan yang dihormati, booking anda telah *dibatalkan* kerana masalah teknikal (tiada staf ganti). Mohon pelanggan untuk menetapkan semula booking anda mengikut langkah-langkah di bawah:\n`;
+      text += `1. Masuk semula ke link customer.dinspirebarbershop.com\n`;
+      text += `2. Pergi ke bahagian notifikasi\n`;
+      text += `3. Tekan butang Reset Booking\n`;
+      text += `4. Tetapkan semula detail booking anda\n\n`;
+      text += `Sila tetapkan semula booking anda dengan kadar segera, Terima Kasih.`;
 
       let encodedText = encodeURIComponent(text);
       let phone = b.no_phone || "";
       if (phone.startsWith("0")) phone = "6" + phone;
       
-      window.open(\`https://wa.me/\${phone}?text=\${encodedText}\`, "_blank");
+      window.open(`https://wa.me/${phone}?text=${encodedText}`, "_blank");
       
       currentConflictIndex++;
       showReassignModal();
