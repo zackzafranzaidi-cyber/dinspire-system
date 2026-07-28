@@ -1738,8 +1738,9 @@ function renderEmergencyLeavesTable(leavesData) {
   if (emergencyLeaves.length === 0) {
     html = `<tr><td colspan="5" class="text-center py-6 text-gray-400 italic">Tiada permohonan Cuti Kecemasan baharu</td></tr>`;
   } else {
+    const monthNames = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
     emergencyLeaves.forEach(l => {
-      let staffName = l.staff ? l.staff.username : "-";
+      let staffName = l.staff ? l.staff.name || l.staff.username : "-";
       let dateObj = parseGSDate(l.tarikh);
       let dFmt = `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
       
