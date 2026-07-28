@@ -288,12 +288,16 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
 
     if (booking_type === "treatment") {
       basePayload.jenis_rawatan = service_id;
+      // [DIBAIKI] Buang rekod 'Batal' yang lama pada slot ini untuk elak 409 Unique Constraint DB
+      await supabase.from("treatment_records").delete().match({ staff_id, tarikh: booking_date, masa: booking_time, status: 'Batal' });
       const { error } = await supabase
         .from("treatment_records")
         .insert([basePayload]);
       if (error) throw error;
     } else {
       basePayload.jenis_haircut = service_id;
+      // [DIBAIKI] Buang rekod 'Batal' yang lama pada slot ini untuk elak 409 Unique Constraint DB
+      await supabase.from("booking_records").delete().match({ staff_id, tarikh: booking_date, masa: booking_time, status: 'Batal' });
       const { error } = await supabase
         .from("booking_records")
         .insert([basePayload]);
@@ -660,6 +664,8 @@ router.post(
       }
       }
 
+      // [DIBAIKI] Buang rekod 'Batal' yang lama pada slot ini untuk elak 409 Unique Constraint DB
+      await supabase.from("oncall_records").delete().match({ staff_id: barber, tarikh: date, masa: time, status: 'Batal' });
       const { error } = await supabase.from("oncall_records").insert([
         {
           no_booking: order_no,
