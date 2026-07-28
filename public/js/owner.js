@@ -1839,7 +1839,7 @@ function handleBookingConflict(conflicts) {
 
 async function cancelBookingAdminPrompt(no_booking, table_name) {
   try {
-    const res = await fetch(\`\${API_BASE_URL}/owner/cancel-booking-admin\`, {
+    const res = await fetch(`${API_BASE_URL}/owner/cancel-booking-admin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1852,17 +1852,17 @@ async function cancelBookingAdminPrompt(no_booking, table_name) {
     if (data.status === "success") {
       let b = data.bookingDetails;
       // FORMAT WHATSAPP
-      let text = \`Hi \${b.customer_name || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\\n\`;
-      text += \`no booking: \${b.no_booking}\\n\`;
-      text += \`tarikh: \${b.tarikh}\\n\`;
-      text += \`masa: \${b.masa}\\n\\n\`;
-      text += \`Sila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.\\n\\n\`;
-      text += \`Pelanggan yang dihormati, booking anda telah *dibatalkan* kerana masalah teknikal. Mohon pelanggan untuk menetapkan semula booking anda mengikut langkah-langkah di bawah:\\n\`;
-      text += \`1. Masuk semula ke link customer.dinspirebarbershop.com\\n\`;
-      text += \`2. Pergi ke bahagian notifikasi\\n\`;
-      text += \`3. Tekan butang Reset Booking\\n\`;
-      text += \`4. Tetapkan semula detail booking anda\\n\\n\`;
-      text += \`Sila tetapkan semula booking anda dengan kadar segera, Terima Kasih.\`;
+      let text = `Hi ${b.customer_name || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\n`;
+      text += `no booking: ${b.no_booking}\n`;
+      text += `tarikh: ${b.tarikh}\n`;
+      text += `masa: ${b.masa}\n\n`;
+      text += `Sila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.\n\n`;
+      text += `Pelanggan yang dihormati, booking anda telah *dibatalkan* kerana masalah teknikal. Mohon pelanggan untuk menetapkan semula booking anda mengikut langkah-langkah di bawah:\n`;
+      text += `1. Masuk semula ke link customer.dinspirebarbershop.com\n`;
+      text += `2. Pergi ke bahagian notifikasi\n`;
+      text += `3. Tekan butang Reset Booking\n`;
+      text += `4. Tetapkan semula detail booking anda\n\n`;
+      text += `Sila tetapkan semula booking anda dengan kadar segera, Terima Kasih.`;
 
       let encodedText = encodeURIComponent(text);
       let phone = b.no_phone || "";
@@ -1874,7 +1874,7 @@ async function cancelBookingAdminPrompt(no_booking, table_name) {
         icon: "success",
         confirmButtonText: "Teruskan ke WhatsApp"
       }).then(() => {
-        window.open(\`https://wa.me/\${phone}?text=\${encodedText}\`, "_blank");
+        window.open(`https://wa.me/${phone}?text=${encodedText}`, "_blank");
         fetchOwnerDashboardData();
       });
     } else {
