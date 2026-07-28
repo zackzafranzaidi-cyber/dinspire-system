@@ -571,7 +571,7 @@ router.post("/emergency-leaves", authenticate, requireRole(["staff"]), async (re
     res.json({ status: "success", message: "Permohonan Cuti Kecemasan dihantar." });
   } catch (err) {
     console.error("Ralat post /emergency-leaves:", err);
-    res.status(500).json({ status: "error", message: "Gagal menghantar permohonan." });
+    res.status(500).json({ status: "error", message: "Gagal menghantar permohonan. DB Error: " + (err.message || JSON.stringify(err)) });
   }
 });
 
