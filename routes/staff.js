@@ -465,20 +465,25 @@ router.post("/leaves", authenticate, requireRole(["staff"]), async (req, res) =>
       .lt("tarikh", firstDayTwoMonths);
 
     if (branch_id) {
-       const { data: taken } = await supabase
-        .from("staff_leaves")
-        .select("tarikh")
-        .eq("branch_id", branch_id)
-        .in("tarikh", dates);
-        
-       if (taken && taken.length > 0) {
-         return res.status(400).json({ status: "error", message: `Tarikh ${taken[0].tarikh} telah diambil oleh staf lain di cawangan anda.` });
+       const { data: sameBranchStaff } = await supabase.from("staff").select("id").eq("branch_id", branch_id);
+       const sameBranchStaffIds = sameBranchStaff ? sameBranchStaff.map(s => s.id) : [];
+
+       if (sameBranchStaffIds.length > 0) {
+         const { data: taken } = await supabase
+          .from("staff_leaves")
+          .select("tarikh")
+          .in("staff_id", sameBranchStaffIds)
+          .in("tarikh", dates)
+          .eq("status", "Approved");
+          
+         if (taken && taken.length > 0) {
+           return res.status(400).json({ status: "error", message: `Tarikh ${taken[0].tarikh} telah diluluskan cuti untuk staf lain di cawangan anda.` });
+         }
        }
     }
 
     const inserts = dates.map(d => ({
       staff_id: staff_id,
-      branch_id: branch_id,
       tarikh: d
     }));
 
@@ -513,15 +518,20 @@ router.post("/emergency-leaves", authenticate, requireRole(["staff"]), async (re
     const branch_id = stData ? stData.branch_id : null;
 
     if (branch_id) {
-       const { data: taken } = await supabase
-        .from("staff_leaves")
-        .select("tarikh")
-        .eq("branch_id", branch_id)
-        .in("tarikh", dates)
-        .eq("status", "Approved");
-        
-       if (taken && taken.length > 0) {
-         return res.status(400).json({ status: "error", message: `Tarikh ${taken[0].tarikh} telah diluluskan cuti untuk staf lain di cawangan anda.` });
+       const { data: sameBranchStaff } = await supabase.from("staff").select("id").eq("branch_id", branch_id);
+       const sameBranchStaffIds = sameBranchStaff ? sameBranchStaff.map(s => s.id) : [];
+
+       if (sameBranchStaffIds.length > 0) {
+         const { data: taken } = await supabase
+          .from("staff_leaves")
+          .select("tarikh")
+          .in("staff_id", sameBranchStaffIds)
+          .in("tarikh", dates)
+          .eq("status", "Approved");
+          
+         if (taken && taken.length > 0) {
+           return res.status(400).json({ status: "error", message: `Tarikh ${taken[0].tarikh} telah diluluskan cuti untuk staf lain di cawangan anda.` });
+         }
        }
     }
 
@@ -543,7 +553,6 @@ router.post("/emergency-leaves", authenticate, requireRole(["staff"]), async (re
 
     const inserts = dates.map(d => ({
       staff_id: staff_id,
-      branch_id: branch_id,
       tarikh: d,
       sebab: reason,
       status: 'Pending',
