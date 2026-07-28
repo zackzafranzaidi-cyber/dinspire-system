@@ -1022,9 +1022,9 @@ async function submitEmergencyLeaves() {
       return;
    }
    
-   if (selectedDates.length !== window.emergencyLeaveMaxDays) {
-       if (typeof Swal !== "undefined") Swal.fire('Ralat', `Anda perlu memilih tepat ${window.emergencyLeaveMaxDays} hari cuti.`, 'error');
-       else alert(`Anda perlu memilih tepat ${window.emergencyLeaveMaxDays} hari cuti.`);
+   if (selectedDates.length === 0 || selectedDates.length > window.emergencyLeaveMaxDays) {
+       if (typeof Swal !== "undefined") Swal.fire('Ralat', `Anda perlu memilih antara 1 hingga ${window.emergencyLeaveMaxDays} hari cuti.`, 'error');
+       else alert(`Anda perlu memilih antara 1 hingga ${window.emergencyLeaveMaxDays} hari cuti.`);
        return;
    }
    
