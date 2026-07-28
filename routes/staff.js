@@ -454,6 +454,57 @@ router.post("/leaves", authenticate, requireRole(["staff"]), async (req, res) =>
 });
 
 // ==========================================
+// 7.5 Cuti Kecemasan (Emergency Leave)
+// ==========================================
+router.post("/emergency-leaves", authenticate, requireRole(["staff"]), async (req, res) => {
+  const staff_id = req.user.id;
+  const { date, reason } = req.body; 
+  
+  if (!date || !reason) {
+    return res.status(400).json({ status: "error", message: "Tarikh dan sebab cuti diperlukan." });
+  }
+
+  try {
+    const { data: stData } = await supabase.from("staff").select("branch_id").eq("id", staff_id).single();
+    const branch_id = stData ? stData.branch_id : null;
+
+    if (branch_id) {
+       const { data: taken } = await supabase
+        .from("staff_leaves")
+        .select("tarikh")
+        .eq("branch_id", branch_id)
+        .eq("tarikh", date)
+        .eq("status", "Approved");
+        
+       if (taken && taken.length > 0) {
+         return res.status(400).json({ status: "error", message: `Tarikh ${date} telah diluluskan cuti untuk staf lain di cawangan anda.` });
+       }
+    }
+
+    const { error } = await supabase.from("staff_leaves").insert([{
+      staff_id: staff_id,
+      branch_id: branch_id,
+      tarikh: date,
+      sebab: reason,
+      status: 'Pending',
+      jenis_cuti: 'Kecemasan'
+    }]);
+
+    if (error) {
+      if (error.code === '23505') { 
+        return res.status(400).json({ status: "error", message: "Cuti pada tarikh ini telah pun dipohon." });
+      }
+      throw error;
+    }
+
+    res.json({ status: "success", message: "Permohonan Cuti Kecemasan dihantar." });
+  } catch (err) {
+    console.error("Ralat post /emergency-leaves:", err);
+    res.status(500).json({ status: "error", message: "Gagal menghantar permohonan." });
+  }
+});
+
+// ==========================================
 // 8. Staf Pengesahan Bayaran Manual
 // ==========================================
 router.post(

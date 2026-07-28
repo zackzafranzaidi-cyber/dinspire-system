@@ -200,6 +200,94 @@ router.get(
 );
 
 // ==========================================
+// KELULUSAN CUTI KECEMASAN
+// ==========================================
+router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "admin"]), async (req, res) => {
+  const { leave_id, action } = req.body; // action: 'Approve' or 'Reject'
+  
+  if (!leave_id || !action) return res.status(400).json({ status: "error", message: "Data tidak lengkap." });
+
+  try {
+    // Dapatkan butiran cuti
+    const { data: leave } = await supabase.from("staff_leaves").select("*").eq("id", leave_id).single();
+    if (!leave) return res.status(404).json({ status: "error", message: "Cuti tidak dijumpai." });
+
+    if (action === 'Reject') {
+      await supabase.from("staff_leaves").update({ status: 'Rejected' }).eq("id", leave_id);
+      return res.json({ status: "success", message: "Cuti Kecemasan telah Ditolak." });
+    }
+
+    // Jika Approve, semak pertembungan booking pada tarikh tersebut
+    const [bReq, tReq, oReq] = await Promise.all([
+      supabase.from("booking_records").select("no_booking, masa, jenis_haircut(nama_potongan)").eq("staff_id", leave.staff_id).eq("tarikh", leave.tarikh).eq("status", "Belum"),
+      supabase.from("treatment_records").select("no_booking, masa, jenis_rawatan(nama_rawatan)").eq("staff_id", leave.staff_id).eq("tarikh", leave.tarikh).eq("status", "Belum"),
+      supabase.from("oncall_records").select("no_booking, masa, jenis_haircut(nama_potongan)").eq("staff_id", leave.staff_id).eq("tarikh", leave.tarikh).eq("status", "Belum")
+    ]);
+
+    let conflicts = [];
+    if (bReq.data) conflicts = conflicts.concat(bReq.data.map(b => ({ ...b, table: 'booking_records' })));
+    if (tReq.data) conflicts = conflicts.concat(tReq.data.map(b => ({ ...b, table: 'treatment_records' })));
+    if (oReq.data) conflicts = conflicts.concat(oReq.data.map(b => ({ ...b, table: 'oncall_records' })));
+
+    if (conflicts.length > 0) {
+      // Return amaran konflik berserta data untuk reassignment
+      return res.status(409).json({
+        status: "conflict",
+        message: "Terdapat tempahan yang bertembung pada tarikh ini.",
+        conflicts: conflicts
+      });
+    }
+
+    // Tiada konflik, terus Approve
+    await supabase.from("staff_leaves").update({ status: 'Approved' }).eq("id", leave_id);
+    res.json({ status: "success", message: "Cuti Kecemasan Berjaya Diluluskan!" });
+  } catch (error) {
+    console.error("Ralat kelulusan cuti:", error);
+    res.status(500).json({ status: "error", message: "Ralat pelayan." });
+  }
+});
+
+// ==========================================
+// TUKAR STAF UNTUK BOOKING BERKOLIZI (REASSIGN)
+// ==========================================
+router.post("/reassign-booking", authenticate, requireRole(["owner", "admin"]), async (req, res) => {
+  const { no_booking, new_staff_id, table_name } = req.body;
+  if (!no_booking || !new_staff_id || !table_name) return res.status(400).json({ status: "error", message: "Data tidak lengkap." });
+
+  try {
+    const { error } = await supabase.from(table_name).update({ staff_id: new_staff_id }).eq("no_booking", no_booking);
+    if (error) throw error;
+    res.json({ status: "success", message: "Booking berjaya dipindahkan ke staf lain." });
+  } catch (error) {
+    console.error("Ralat tukar staf:", error);
+    res.status(500).json({ status: "error", message: "Ralat pelayan semasa memindahkan booking." });
+  }
+});
+
+// ==========================================
+// BATAL BOOKING (OLEH ADMIN) DENGAN WHATSAPP
+// ==========================================
+router.post("/cancel-booking-admin", authenticate, requireRole(["owner", "admin"]), async (req, res) => {
+  const { no_booking, table_name } = req.body;
+  if (!no_booking || !table_name) return res.status(400).json({ status: "error", message: "Data tidak lengkap." });
+
+  try {
+    // Semak pelanggan dan details
+    const { data: bData } = await supabase.from(table_name).select("*").eq("no_booking", no_booking).single();
+    if (!bData) return res.status(404).json({ status: "error", message: "Booking tidak dijumpai." });
+
+    // Update status Batal dan cancelled_by = 'admin'
+    const { error } = await supabase.from(table_name).update({ status: "Batal", cancelled_by: "admin" }).eq("no_booking", no_booking);
+    if (error) throw error;
+
+    res.json({ status: "success", message: "Booking dibatalkan.", bookingDetails: bData });
+  } catch (error) {
+    console.error("Ralat batal booking admin:", error);
+    res.status(500).json({ status: "error", message: "Ralat pelayan semasa membatalkan booking." });
+  }
+});
+
+// ==========================================
 // [BAHARU] Laluan Cerdas: Analisis AI (AI Insights)
 // ==========================================
 router.post(

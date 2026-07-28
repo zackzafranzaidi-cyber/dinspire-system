@@ -129,6 +129,7 @@ function initStaffEventListeners() {
   });
 
   document.getElementById("btn-save-leave")?.addEventListener("click", submitLeaves);
+  document.getElementById("btn-save-emergency-leave")?.addEventListener("click", submitEmergencyLeaves);
 }
 
 async function loginStaffSystem() {
@@ -977,4 +978,39 @@ async function submitLeaves() {
    btn.innerHTML = '<i class="fas fa-save"></i> Simpan Cuti';
 }
 
+async function submitEmergencyLeaves() {
+   const dateInput = document.getElementById("emergency-leave-date").value;
+   const reasonInput = document.getElementById("emergency-leave-reason").value;
 
+   if (!dateInput || !reasonInput.trim()) {
+      if (typeof Swal !== "undefined") Swal.fire('Ralat', 'Sila isi tarikh dan sebab kecemasan.', 'error');
+      else alert('Sila isi tarikh dan sebab kecemasan.');
+      return;
+   }
+   
+   const btn = document.getElementById("btn-save-emergency-leave");
+   const originalText = btn.innerHTML;
+   btn.innerText = "Menghantar...";
+   
+   try {
+      const res = await fetch(`${API_BASE_URL}/staff/emergency-leaves`, {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         credentials: "include",
+         body: JSON.stringify({ date: dateInput, reason: reasonInput.trim() })
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+         if (typeof Swal !== "undefined") Swal.fire('Berjaya', data.message, 'success');
+         else alert(data.message);
+         document.getElementById("emergency-leave-date").value = "";
+         document.getElementById("emergency-leave-reason").value = "";
+      } else {
+         if (typeof Swal !== "undefined") Swal.fire('Gagal', data.message, 'error');
+         else alert(data.message);
+      }
+   } catch(err) {
+      if (typeof Swal !== "undefined") Swal.fire('Gagal', 'Sistem tidak dapat berhubung', 'error');
+   }
+   btn.innerHTML = originalText;
+}

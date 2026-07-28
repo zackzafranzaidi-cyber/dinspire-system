@@ -527,6 +527,59 @@
               </button>
             </div>
 
+            <!-- CUTI KECEMASAN -->
+            <div
+              style="
+                background: white;
+                border-radius: 20px;
+                padding: 20px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+                text-align: left;
+                margin-bottom: 20px;
+              "
+            >
+              <h3
+                style="
+                  font-size: 14px;
+                  font-weight: 700;
+                  margin-bottom: 15px;
+                  color: #e74c3c;
+                  text-transform: uppercase;
+                  text-align: center;
+                "
+              >
+                Cuti Kecemasan
+              </h3>
+              <p
+                style="
+                  font-size: 12px;
+                  color: var(--text-muted);
+                  text-align: center;
+                  margin-bottom: 15px;
+                "
+              >
+                Mohon cuti segera (Bulan Semasa). Bergantung kepada kelulusan Owner.
+              </p>
+              
+              <div class="form-group">
+                <input type="date" id="emergency-leave-date" class="input-field" style="background-color: white; cursor: pointer; text-align: center; font-weight: bold; margin-bottom: 10px;" />
+                <textarea id="emergency-leave-reason" class="input-field" placeholder="Sebab kecemasan..." style="height: 60px; font-size: 13px;"></textarea>
+              </div>
+              
+              <button
+                type="button"
+                class="btn btn-primary"
+                style="
+                  margin-bottom: 12px;
+                  background: #e74c3c;
+                  box-shadow: none;
+                "
+                id="btn-save-emergency-leave"
+              >
+                <i class="fas fa-paper-plane"></i> Hantar Permohonan
+              </button>
+            </div>
+
             <button type="button" class="btn btn-outline" id="btn-logout">
               <i
                 class="fas fa-power-off"

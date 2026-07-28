@@ -348,14 +348,21 @@ function toggleTxTab(type) {
 
 function togglePunchTab(type) {
   document.getElementById("punch-hadir-view").classList.add("hidden");
+  document.getElementById("punch-hadir-view").classList.remove("block");
   document.getElementById("punch-cuti-view").classList.add("hidden");
+  document.getElementById("punch-cuti-view").classList.remove("block");
+  document.getElementById("punch-kecemasan-view").classList.add("hidden");
+  document.getElementById("punch-kecemasan-view").classList.remove("block");
   
   if (type === 'hadir') {
     document.getElementById("punch-hadir-view").classList.remove("hidden");
     document.getElementById("punch-hadir-view").classList.add("block");
-  } else {
+  } else if (type === 'cuti') {
     document.getElementById("punch-cuti-view").classList.remove("hidden");
     document.getElementById("punch-cuti-view").classList.add("block");
+  } else if (type === 'kecemasan') {
+    document.getElementById("punch-kecemasan-view").classList.remove("hidden");
+    document.getElementById("punch-kecemasan-view").classList.add("block");
   }
 }
 
@@ -671,6 +678,7 @@ function processData() {
   renderReviewsTable(filteredReviews);
   renderPunchTable(filteredPunch);
   renderLeavesTable(filteredLeaves);
+  renderEmergencyLeavesTable(filteredLeaves);
   
   if (salesChartObj)
     updateBarChart(filteredBookings, filteredOrders, filterType);
@@ -1714,5 +1722,167 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// ==========================================
+// PENGURUSAN CUTI KECEMASAN
+// ==========================================
+function renderEmergencyLeavesTable(leavesData) {
+  const tbody = document.getElementById("table-emergency-leaves");
+  if (!tbody) return;
+
+  // Filter ONLY 'Pending' & 'Kecemasan'
+  let emergencyLeaves = leavesData.filter(l => l.jenis_cuti === 'Kecemasan' && l.status === 'Pending');
+  emergencyLeaves.sort((a, b) => new Date(a.tarikh) - new Date(b.tarikh));
+
+  let html = "";
+  if (emergencyLeaves.length === 0) {
+    html = `<tr><td colspan="5" class="text-center py-6 text-gray-400 italic">Tiada permohonan Cuti Kecemasan baharu</td></tr>`;
+  } else {
+    emergencyLeaves.forEach(l => {
+      let staffName = l.staff ? l.staff.username : "-";
+      let dateObj = parseGSDate(l.tarikh);
+      let dFmt = `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+      
+      html += `<tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+          <td class="py-3 px-2 md:px-4 text-center font-medium text-gray-800">${dFmt}</td>
+          <td class="py-3 px-2 md:px-4 text-center text-gray-600">${escapeHTML(staffName)}</td>
+          <td class="py-3 px-2 md:px-4 text-center text-gray-600">${escapeHTML(l.sebab || '-')}</td>
+          <td class="py-3 px-2 md:px-4 text-center text-yellow-600 font-bold">Menunggu</td>
+          <td class="py-3 px-2 md:px-4 text-center">
+            <button onclick="approveEmergencyLeave(${l.id})" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-bold mr-2"><i class="fas fa-check"></i> Lulus</button>
+            <button onclick="rejectEmergencyLeave(${l.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold"><i class="fas fa-times"></i> Tolak</button>
+          </td>
+      </tr>`;
+    });
+  }
+  tbody.innerHTML = html;
+}
+
+async function approveEmergencyLeave(id) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/owner/approve-emergency-leave`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("din_token_sys"),
+      },
+      body: JSON.stringify({ leave_id: id, action: 'Approve' }),
+    });
+    
+    const data = await res.json();
+    if (res.status === 409) {
+      // ADA KONFLIK BOOKING
+      handleBookingConflict(data.conflicts);
+    } else if (data.status === "success") {
+      Swal.fire("Berjaya!", data.message, "success").then(() => fetchOwnerDashboardData());
+    } else {
+      Swal.fire("Ralat!", data.message, "error");
+    }
+  } catch (err) {
+    console.error(err);
+    Swal.fire("Ralat!", "Gagal menghubungi pelayan.", "error");
+  }
+}
+
+async function rejectEmergencyLeave(id) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/owner/approve-emergency-leave`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("din_token_sys"),
+      },
+      body: JSON.stringify({ leave_id: id, action: 'Reject' }),
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      Swal.fire("Ditolak!", data.message, "success").then(() => fetchOwnerDashboardData());
+    } else {
+      Swal.fire("Ralat!", data.message, "error");
+    }
+  } catch (err) {
+    Swal.fire("Ralat!", "Gagal menghubungi pelayan.", "error");
+  }
+}
+
+function handleBookingConflict(conflicts) {
+  let conflictHtml = \`<div style="text-align:left; max-height:200px; overflow-y:auto; margin-bottom:15px; border:1px solid #ddd; padding:10px; border-radius:8px;">\`;
+  conflicts.forEach(c => {
+    conflictHtml += \`<div style="padding-bottom:5px; margin-bottom:5px; border-bottom:1px solid #eee;">
+      <strong>\${c.no_booking}</strong> - \${c.masa} <br/>
+      <small style="color:gray;">\${c.jenis_haircut ? c.jenis_haircut.nama_potongan : (c.jenis_rawatan ? c.jenis_rawatan.nama_rawatan : 'Servis')}</small>
+    </div>\`;
+  });
+  conflictHtml += \`</div>\`;
+
+  Swal.fire({
+    title: '⚠️ Amaran Pertembungan!',
+    html: \`<p style="margin-bottom:15px; color:red; font-weight:bold;">Terdapat tempahan yang bertembung jika cuti ini diluluskan.</p>
+           \${conflictHtml}
+           <p style="font-size:13px;">Sila selesaikan tempahan ini terlebih dahulu. Pilih sama ada untuk menukar staf atau batalkan tempahan.</p>\`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Tukar Staf (Reassign)',
+    cancelButtonText: 'Batal Tempahan (Cancel)',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Reassign logic (simplified to manual for now)
+      Swal.fire('Arahan', 'Sila hubungi staf lain dan maklumkan pertukaran. Kemudian anda boleh set manual dalam DB buat masa ini (atau tambah fungsi reassign di masa depan).', 'info');
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      // Trigger Cancel Booking with WhatsApp
+      cancelBookingAdminPrompt(conflicts[0].no_booking, conflicts[0].table);
+    }
+  });
+}
+
+async function cancelBookingAdminPrompt(no_booking, table_name) {
+  try {
+    const res = await fetch(\`\${API_BASE_URL}/owner/cancel-booking-admin\`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("din_token_sys"),
+      },
+      body: JSON.stringify({ no_booking, table_name }),
+    });
+    const data = await res.json();
+    
+    if (data.status === "success") {
+      let b = data.bookingDetails;
+      // FORMAT WHATSAPP
+      let text = \`Hi \${b.customer_name || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\\n\`;
+      text += \`no booking: \${b.no_booking}\\n\`;
+      text += \`tarikh: \${b.tarikh}\\n\`;
+      text += \`masa: \${b.masa}\\n\\n\`;
+      text += \`Sila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.\\n\\n\`;
+      text += \`Pelanggan yang dihormati, booking anda telah *dibatalkan* kerana masalah teknikal. Mohon pelanggan untuk menetapkan semula booking anda mengikut langkah-langkah di bawah:\\n\`;
+      text += \`1. Masuk semula ke link customer.dinspirebarbershop.com\\n\`;
+      text += \`2. Pergi ke bahagian notifikasi\\n\`;
+      text += \`3. Tekan butang Reset Booking\\n\`;
+      text += \`4. Tetapkan semula detail booking anda\\n\\n\`;
+      text += \`Sila tetapkan semula booking anda dengan kadar segera, Terima Kasih.\`;
+
+      let encodedText = encodeURIComponent(text);
+      let phone = b.no_phone || "";
+      if (phone.startsWith("0")) phone = "6" + phone;
+      
+      Swal.fire({
+        title: "Dibatalkan!",
+        text: "Tempahan dibatalkan. Anda akan dibawa ke WhatsApp.",
+        icon: "success",
+        confirmButtonText: "Teruskan ke WhatsApp"
+      }).then(() => {
+        window.open(\`https://wa.me/\${phone}?text=\${encodedText}\`, "_blank");
+        fetchOwnerDashboardData();
+      });
+    } else {
+      Swal.fire("Ralat", data.message, "error");
+    }
+  } catch(err) {
+    Swal.fire("Ralat", "Gagal menghubungi pelayan", "error");
+  }
+}
 
 

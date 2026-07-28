@@ -1476,7 +1476,7 @@ function renderNotifications() {
           let badgeStyle =
             o.status === "Pending Verification"
               ? "background:#FFF3CD; color:#856404;"
-              : o.status === "Rejected"
+              : o.status === "Rejected" || o.status === "Batal"
                 ? "background:#F8D7DA; color:#721C24;"
                 : o.status === "Belum"
                   ? "background:#FFF3E0; color:#E65100;"
@@ -1487,6 +1487,12 @@ function renderNotifications() {
           let actionBtnService = "";
           if (o.status === "Rejected") {
               actionBtnService = `<a href="https://wa.me/60174836277?text=Sila hubungi pihak kedai kerana tempahan saya ditolak. NO: ${o.id}" target="_blank" class="submit-btn" style="display:block; text-align:center; text-decoration:none; margin-top:12px; padding:12px; background:#E53935; color:white;"><i class="fab fa-whatsapp mr-2"></i> Hubungi Kedai</a>`;
+          } else if (o.status === "Batal") {
+              if (o.cancelled_by === 'admin') {
+                  actionBtnService = `<button class="submit-btn" style="display:block; width:100%; text-align:center; margin-top:12px; padding:12px; background:#007BFF; color:white;" onclick="triggerResetBooking('${o.id}', '${o.service_name}')"><i class="fas fa-undo-alt mr-2"></i> Reset Booking</button>`;
+              } else {
+                  actionBtnService = `<a href="https://wa.me/60174836277?text=cancelled booking%0Ano booking: ${o.id}%0A" target="_blank" class="submit-btn" style="display:block; text-align:center; text-decoration:none; margin-top:12px; padding:12px; background:#E53935; color:white;"><i class="fab fa-whatsapp mr-2"></i> Contact Us</a>`;
+              }
           }
           
           servicesHtml += `<div style="background:var(--bg-surface); padding:18px; border-radius:16px; margin-bottom:15px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:13px; font-weight:800; color:var(--primary-blue); font-family:monospace;">NO: ${o.id}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${displayStatus}</span></div><div style="font-size:14px; font-weight:700; margin-top:8px; color:var(--text-main);">${o.service_name}</div><div style="font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600;"><i class="fas fa-calendar-alt"></i> ${o.date} &nbsp; <i class="fas fa-clock"></i> ${o.time}</div>${actionBtnService}</div>`;
@@ -1741,13 +1747,135 @@ fetch('/bank-info.json')
       nameDisplay.innerText = data.bankName;
     }
 
-    if (container && data) {
-      container.innerHTML = `
-        <div>${data.ownerName}</div>
-        <div onclick="copyAccNum('${data.accountNumber}')" style="font-size: 16px; margin-top: 4px; letter-spacing: 1px; cursor: pointer; color: var(--primary-blue); display: inline-flex; align-items: center; gap: 8px;" title="Klik untuk Salin">
-          ${data.accountNumber} <i class="far fa-copy" style="font-size: 14px;"></i>
-        </div>
-      `;
-    }
+    bankInfo = data;
   })
   .catch(e => console.error('Error fetching bank info:', e));
+
+// ==========================================
+// RESET BOOKING FUNCTIONS
+// ==========================================
+function triggerResetBooking(orderNo, serviceName) {
+  document.getElementById("reset-booking-id").value = orderNo;
+  document.getElementById("reset-booking-service-name").innerText = serviceName;
+  
+  // Populate staff dropdown
+  const barberSelect = document.getElementById("reset-booking-barber");
+  let options = '<option value="" disabled selected>Sila Pilih Barber</option>';
+  if (shopData && shopData.staffs) {
+    shopData.staffs.forEach(s => {
+      options += `<option value="${s.id}">${s.username}</option>`;
+    });
+  }
+  barberSelect.innerHTML = options;
+  
+  document.getElementById("reset-booking-date").value = "";
+  document.getElementById("reset-booking-time").innerHTML = '<option value="">Pilih Masa</option>';
+  
+  document.getElementById("reset-booking-modal").style.display = "flex";
+  setTimeout(() => {
+    document.getElementById("reset-booking-modal").classList.add("active");
+  }, 10);
+}
+
+async function fetchBarberAvailabilityForReset() {
+  const barberId = document.getElementById("reset-booking-barber").value;
+  const dateStr = document.getElementById("reset-booking-date").value;
+  const timeSelect = document.getElementById("reset-booking-time");
+  
+  if (!barberId || !dateStr) {
+    timeSelect.innerHTML = '<option value="">Pilih Masa</option>';
+    return;
+  }
+  
+  const selectedDate = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  if (selectedDate <= today) {
+    timeSelect.innerHTML = '<option value="">Tarikh tidak sah</option>';
+    return;
+  }
+  
+  timeSelect.innerHTML = '<option value="">Memuat turun...</option>';
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/bookings/staff-availability?staff_id=${barberId}`);
+    const data = await res.json();
+    let currentBarberLeaves = data.leaves || [];
+    let currentBarberBookings = data.bookings || [];
+    
+    if (currentBarberLeaves.includes(dateStr)) {
+      timeSelect.innerHTML = '<option value="">Barber sedang bercuti</option>';
+      return;
+    }
+    
+    // Generate times
+    let bookedTimes = [];
+    currentBarberBookings.forEach(b => {
+      if (b.tarikh === dateStr) {
+        bookedTimes.push(b.masa.substring(0, 5));
+      }
+    });
+    
+    let allTimes = ["10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00"];
+    
+    let options = '<option value="" disabled selected>Pilih Masa</option>';
+    let availableCount = 0;
+    allTimes.forEach(t => {
+      if (bookedTimes.includes(t)) {
+        options += `<option value="${t}" disabled>${t} (Telah Ditempah)</option>`;
+      } else {
+        options += `<option value="${t}">${t}</option>`;
+        availableCount++;
+      }
+    });
+    
+    if (availableCount === 0) {
+      timeSelect.innerHTML = '<option value="">Semua masa penuh</option>';
+    } else {
+      timeSelect.innerHTML = options;
+    }
+  } catch (err) {
+    timeSelect.innerHTML = '<option value="">Ralat sistem</option>';
+  }
+}
+
+async function submitResetBooking() {
+  const orderNo = document.getElementById("reset-booking-id").value;
+  const staffId = document.getElementById("reset-booking-barber").value;
+  const dateStr = document.getElementById("reset-booking-date").value;
+  const timeStr = document.getElementById("reset-booking-time").value;
+  
+  if (!staffId || !dateStr || !timeStr) {
+    if (typeof Swal !== "undefined") Swal.fire('Perhatian', 'Sila pilih Barber, Tarikh dan Masa.', 'warning');
+    else alert('Sila pilih Barber, Tarikh dan Masa.');
+    return;
+  }
+  
+  if (!confirm("Adakah anda pasti untuk reset tempahan ini dengan masa yang baharu?")) return;
+  
+  try {
+    const res = await fetchWithAuth(`${API_BASE_URL}/bookings/reset/${orderNo}`, {
+      method: 'PUT',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tarikh: dateStr,
+        masa: timeStr,
+        staff_id: staffId
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      if (typeof Swal !== "undefined") Swal.fire('Berjaya!', data.message, 'success');
+      else alert(data.message);
+      
+      closeModal('reset-booking-modal');
+      renderNotifications();
+    } else {
+      if (typeof Swal !== "undefined") Swal.fire('Gagal!', data.message, 'error');
+      else alert(data.message);
+    }
+  } catch (err) {
+    if (typeof Swal !== "undefined") Swal.fire('Gagal', 'Sistem tidak dapat berhubung', 'error');
+    else alert('Sistem tidak dapat berhubung');
+  }
+}

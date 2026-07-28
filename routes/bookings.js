@@ -409,9 +409,10 @@ router.put(
       if (orderNo.startsWith("TR")) tableName = "treatment_records";
       else if (orderNo.startsWith("DBC")) tableName = "oncall_records";
 
+      let cancelledBy = req.user.role === "staff" ? "staff" : "admin";
       let query = supabase
         .from(tableName)
-        .update({ status: "Batal" })
+        .update({ status: "Batal", cancelled_by: cancelledBy })
         .eq("no_booking", orderNo);
       
       // Staff hanya boleh batal tempahan mereka sendiri
@@ -424,6 +425,64 @@ router.put(
     } catch (error) {
       console.error("Cancel Error:", error);
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
+    }
+  }
+);
+
+// ==========================================
+// 2.6. Pelanggan Reset Tempahan (Selepas Dibatalkan Admin)
+// ==========================================
+router.put(
+  "/order/:orderNo/reset",
+  authenticate,
+  requireRole(["customer"]),
+  async (req, res) => {
+    const { orderNo } = req.params;
+    const { new_date, new_time, new_staff_id } = req.body;
+
+    if (!new_date || !new_time || !new_staff_id) {
+      return res.status(400).json({ status: "error", message: "Tarikh, masa, dan staf baharu diperlukan." });
+    }
+
+    try {
+      let tableName = "booking_records";
+      if (orderNo.startsWith("TR")) tableName = "treatment_records";
+      else if (orderNo.startsWith("DBC")) tableName = "oncall_records";
+
+      // Semak jika booking wujud, status Batal, dan dibatalkan oleh admin
+      const { data: bData } = await supabase.from(tableName).select("*").eq("no_booking", orderNo).eq("customer_id", req.user.id).single();
+      
+      if (!bData) {
+        return res.status(404).json({ status: "error", message: "Tempahan tidak dijumpai." });
+      }
+      if (bData.status !== "Batal" || bData.cancelled_by !== "admin") {
+        return res.status(403).json({ status: "error", message: "Anda tidak dibenarkan reset tempahan ini." });
+      }
+
+      // Pastikan slot baru kosong
+      const { data: existB } = await supabase.from("booking_records").select("no_booking").eq("staff_id", new_staff_id).eq("tarikh", new_date).eq("masa", new_time).in("status", ["Belum", "Selesai"]);
+      const { data: existT } = await supabase.from("treatment_records").select("no_booking").eq("no_booking").eq("staff_id", new_staff_id).eq("tarikh", new_date).eq("masa", new_time).in("status", ["Belum", "Selesai"]);
+      const { data: existO } = await supabase.from("oncall_records").select("no_booking").eq("staff_id", new_staff_id).eq("tarikh", new_date).eq("masa", new_time).in("status", ["Belum", "Selesai"]);
+
+      if ((existB && existB.length > 0) || (existT && existT.length > 0) || (existO && existO.length > 0)) {
+        return res.status(409).json({ status: "error", message: "Slot telah ditempah. Sila pilih masa atau barber lain." });
+      }
+
+      // Update rekod kepada Belum
+      const { error } = await supabase.from(tableName).update({
+        tarikh: new_date,
+        masa: new_time,
+        staff_id: new_staff_id,
+        status: "Belum",
+        cancelled_by: null
+      }).eq("no_booking", orderNo);
+
+      if (error) throw error;
+
+      res.json({ status: "success", message: "Tempahan anda berjaya dikemas kini dan diaktifkan semula!" });
+    } catch (error) {
+      console.error("Reset Error:", error);
+      res.status(500).json({ status: "error", message: "Ralat pelayan semasa reset." });
     }
   }
 );
@@ -829,18 +888,18 @@ router.get(
       const { data: bookOrders } = await supabase
         .from("booking_records")
         .select(
-          "no_booking, tarikh, masa, status, created_at, haircuts(nama_potongan)",
+          "no_booking, tarikh, masa, status, cancelled_by, created_at, haircuts(nama_potongan)",
         )
         .eq("customer_id", req.user.id);
       const { data: treatOrders } = await supabase
         .from("treatment_records")
         .select(
-          "no_booking, tarikh, masa, status, created_at, treatments(nama_rawatan)",
+          "no_booking, tarikh, masa, status, cancelled_by, created_at, treatments(nama_rawatan)",
         )
         .eq("customer_id", req.user.id);
       const { data: oncallOrders } = await supabase
         .from("oncall_records")
-        .select("no_booking, tarikh, masa, status, created_at, address")
+        .select("no_booking, tarikh, masa, status, cancelled_by, created_at, address")
         .eq("customer_id", req.user.id);
 
       let allNotifications = [];
@@ -852,6 +911,7 @@ router.get(
           type: "service",
           id: b.no_booking,
           status: b.status,
+          cancelled_by: b.cancelled_by,
           created_at: b.created_at,
           date: b.tarikh,
           time: b.masa,
@@ -865,6 +925,7 @@ router.get(
           type: "service",
           id: t.no_booking,
           status: t.status,
+          cancelled_by: t.cancelled_by,
           created_at: t.created_at,
           date: t.tarikh,
           time: t.masa,
@@ -878,6 +939,7 @@ router.get(
           type: "oncall",
           id: o.no_booking,
           status: o.status,
+          cancelled_by: o.cancelled_by,
           created_at: o.created_at,
           date: o.tarikh,
           time: o.masa,
