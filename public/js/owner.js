@@ -1749,9 +1749,11 @@ function renderEmergencyLeavesTable(leavesData) {
           <td class="py-3 px-2 md:px-4 text-center text-gray-600">${escapeHTML(staffName)}</td>
           <td class="py-3 px-2 md:px-4 text-center text-gray-600">${escapeHTML(l.sebab || '-')}</td>
           <td class="py-3 px-2 md:px-4 text-center text-yellow-600 font-bold">Menunggu</td>
-          <td class="py-3 px-2 md:px-4 text-center">
-            <button onclick="approveEmergencyLeave(${l.id})" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-bold mr-2"><i class="fas fa-check"></i> Lulus</button>
-            <button onclick="rejectEmergencyLeave(${l.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold"><i class="fas fa-times"></i> Tolak</button>
+          <td class="py-3 px-2 md:px-4">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-2">
+              <button onclick="approveEmergencyLeave('${l.id}')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded-md text-xs font-bold w-full md:w-auto shadow-sm transition-all"><i class="fas fa-check mr-1"></i> Lulus</button>
+              <button onclick="rejectEmergencyLeave('${l.id}')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-md text-xs font-bold w-full md:w-auto shadow-sm transition-all"><i class="fas fa-times mr-1"></i> Tolak</button>
+            </div>
           </td>
       </tr>`;
     });
