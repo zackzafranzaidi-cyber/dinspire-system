@@ -1806,20 +1806,20 @@ async function rejectEmergencyLeave(id) {
 }
 
 function handleBookingConflict(conflicts) {
-  let conflictHtml = \`<div style="text-align:left; max-height:200px; overflow-y:auto; margin-bottom:15px; border:1px solid #ddd; padding:10px; border-radius:8px;">\`;
+  let conflictHtml = `<div style="text-align:left; max-height:200px; overflow-y:auto; margin-bottom:15px; border:1px solid #ddd; padding:10px; border-radius:8px;">`;
   conflicts.forEach(c => {
-    conflictHtml += \`<div style="padding-bottom:5px; margin-bottom:5px; border-bottom:1px solid #eee;">
-      <strong>\${c.no_booking}</strong> - \${c.masa} <br/>
-      <small style="color:gray;">\${c.jenis_haircut ? c.jenis_haircut.nama_potongan : (c.jenis_rawatan ? c.jenis_rawatan.nama_rawatan : 'Servis')}</small>
-    </div>\`;
+    conflictHtml += `<div style="padding-bottom:5px; margin-bottom:5px; border-bottom:1px solid #eee;">
+      <strong>${c.no_booking}</strong> - ${c.masa} <br/>
+      <small style="color:gray;">${c.jenis_haircut ? c.jenis_haircut.nama_potongan : (c.jenis_rawatan ? c.jenis_rawatan.nama_rawatan : 'Servis')}</small>
+    </div>`;
   });
-  conflictHtml += \`</div>\`;
+  conflictHtml += `</div>`;
 
   Swal.fire({
     title: '⚠️ Amaran Pertembungan!',
-    html: \`<p style="margin-bottom:15px; color:red; font-weight:bold;">Terdapat tempahan yang bertembung jika cuti ini diluluskan.</p>
-           \${conflictHtml}
-           <p style="font-size:13px;">Sila selesaikan tempahan ini terlebih dahulu. Pilih sama ada untuk menukar staf atau batalkan tempahan.</p>\`,
+    html: `<p style="margin-bottom:15px; color:red; font-weight:bold;">Terdapat tempahan yang bertembung jika cuti ini diluluskan.</p>
+           ${conflictHtml}
+           <p style="font-size:13px;">Sila selesaikan tempahan ini terlebih dahulu. Pilih sama ada untuk menukar staf atau batalkan tempahan.</p>`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#3085d6',
