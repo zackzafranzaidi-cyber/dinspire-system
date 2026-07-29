@@ -21,56 +21,63 @@ let currentActiveTab = "dashboard";
 
 let currentLang = "en";
 
+// Simpan reference animasi supaya tidak bertindih
+const activeAnimations = {};
+
 // Fungsi Animasi Nombor (Smooth Counter)
 function animateNumber(id, targetVal, prefix = "", suffix = "", decimals = 0) {
   const el = document.getElementById(id);
   if (!el) return;
 
+  // Hentikan animasi sedia ada jika elemen ini sedang dianimasikan (mengelakkan gegaran/flicker)
+  if (activeAnimations[id]) {
+    cancelAnimationFrame(activeAnimations[id]);
+  }
+
   // Dapatkan nilai bermula daripada innerText sedia ada (jika ada)
   let startText = el.innerText.replace(/[^0-9.-]+/g, "");
   let startVal = parseFloat(startText) || 0;
 
+  // Format Helper untuk koma yang tepat
+  const formatVal = (val) => {
+    return val.toLocaleString("en-MY", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  };
+
   if (startVal === targetVal) {
-    if (decimals > 0) {
-      el.innerText = prefix + targetVal.toFixed(decimals) + suffix;
-    } else {
-      el.innerText = prefix + Math.floor(targetVal).toLocaleString("en-MY") + suffix;
-    }
+    el.innerText = prefix + formatVal(targetVal) + suffix;
     return;
   }
 
-  const duration = 1800; // 1.8 saat
+  // Durasi lebih pantas sedikit (1.5s) untuk rasa lebih responsif dan premium
+  const duration = 1500; 
   let startTime = null;
 
-  function easeOutExpo(t) {
-    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  // Easing Out Quart (Sangat smooth dan estetik)
+  function easeOutQuart(t) {
+    return 1 - Math.pow(1 - t, 4);
   }
 
   function update(currentTime) {
     if (!startTime) startTime = currentTime;
     const progress = Math.min((currentTime - startTime) / duration, 1);
     
-    const easedProgress = easeOutExpo(progress);
+    const easedProgress = easeOutQuart(progress);
     const currentVal = startVal + (targetVal - startVal) * easedProgress;
 
-    if (decimals > 0) {
-      el.innerText = prefix + currentVal.toFixed(decimals) + suffix;
-    } else {
-      el.innerText = prefix + Math.floor(currentVal).toLocaleString("en-MY") + suffix;
-    }
+    el.innerText = prefix + formatVal(currentVal) + suffix;
 
     if (progress < 1) {
-      requestAnimationFrame(update);
+      activeAnimations[id] = requestAnimationFrame(update);
     } else {
-      if (decimals > 0) {
-        el.innerText = prefix + targetVal.toFixed(decimals) + suffix;
-      } else {
-        el.innerText = prefix + Math.floor(targetVal).toLocaleString("en-MY") + suffix;
-      }
+      el.innerText = prefix + formatVal(targetVal) + suffix;
+      delete activeAnimations[id];
     }
   }
 
-  requestAnimationFrame(update);
+  activeAnimations[id] = requestAnimationFrame(update);
 }
 
 const i18n = {
