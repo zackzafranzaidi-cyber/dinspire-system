@@ -1489,7 +1489,7 @@ function renderNotifications() {
               actionBtnService = `<a href="https://wa.me/60174836277?text=Sila hubungi pihak kedai kerana tempahan saya ditolak. NO: ${o.id}" target="_blank" class="submit-btn" style="display:block; text-align:center; text-decoration:none; margin-top:12px; padding:12px; background:#E53935; color:white;"><i class="fab fa-whatsapp mr-2"></i> Hubungi Kedai</a>`;
           } else if (o.status === "Batal") {
               if (o.cancelled_by === 'admin') {
-                  actionBtnService = `<button class="submit-btn" style="display:block; width:100%; text-align:center; margin-top:12px; padding:12px; background:#007BFF; color:white;" onclick="triggerResetBooking('${o.id}', '${o.service_name}')"><i class="fas fa-undo-alt mr-2"></i> Reset Booking</button>`;
+                  actionBtnService = `<button class="submit-btn" style="display:block; width:100%; text-align:center; margin-top:12px; padding:12px; background:#007BFF; color:white;" onclick="triggerResetBooking('${o.id}', '${o.service_name}', '${o.staff_id}')"><i class="fas fa-undo-alt mr-2"></i> Reset Booking</button>`;
               } else {
                   actionBtnService = `<a href="https://wa.me/60174836277?text=cancelled booking%0Ano booking: ${o.id}%0A" target="_blank" class="submit-btn" style="display:block; text-align:center; text-decoration:none; margin-top:12px; padding:12px; background:#E53935; color:white;"><i class="fab fa-whatsapp mr-2"></i> Contact Us</a>`;
               }
