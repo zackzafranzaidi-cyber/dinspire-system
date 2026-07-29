@@ -894,18 +894,18 @@ router.get(
       const { data: bookOrders } = await supabase
         .from("booking_records")
         .select(
-          "no_booking, tarikh, masa, status, cancelled_by, created_at, haircuts(nama_potongan)",
+          "no_booking, tarikh, masa, status, cancelled_by, created_at, staff_id, haircuts(nama_potongan)",
         )
         .eq("customer_id", req.user.id);
       const { data: treatOrders } = await supabase
         .from("treatment_records")
         .select(
-          "no_booking, tarikh, masa, status, cancelled_by, created_at, treatments(nama_rawatan)",
+          "no_booking, tarikh, masa, status, cancelled_by, created_at, staff_id, treatments(nama_rawatan)",
         )
         .eq("customer_id", req.user.id);
       const { data: oncallOrders } = await supabase
         .from("oncall_records")
-        .select("no_booking, tarikh, masa, status, cancelled_by, created_at, address")
+        .select("no_booking, tarikh, masa, status, cancelled_by, created_at, staff_id, address")
         .eq("customer_id", req.user.id);
 
       let allNotifications = [];
@@ -921,6 +921,7 @@ router.get(
           created_at: b.created_at,
           date: b.tarikh,
           time: b.masa,
+          staff_id: b.staff_id,
           service_name: b.haircuts
             ? b.haircuts.nama_potongan
             : "Servis Guntingan",
@@ -935,21 +936,21 @@ router.get(
           created_at: t.created_at,
           date: t.tarikh,
           time: t.masa,
-          service_name: t.treatments
-            ? t.treatments.nama_rawatan
-            : "Servis Rawatan",
+          staff_id: t.staff_id,
+          service_name: t.treatments ? t.treatments.nama_rawatan : "Rawatan",
         });
       });
       (oncallOrders || []).forEach((o) => {
         allNotifications.push({
-          type: "oncall",
+          type: "service",
           id: o.no_booking,
           status: o.status,
           cancelled_by: o.cancelled_by,
           created_at: o.created_at,
           date: o.tarikh,
           time: o.masa,
-          service_name: "Servis On-Call",
+          staff_id: o.staff_id,
+          service_name: "On-Call Service",
         });
       });
 

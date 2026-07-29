@@ -1032,15 +1032,12 @@
           
           <div class="form-group">
             <label style="font-size:12px; font-weight:700; color:var(--text-main); margin-bottom:8px; display:block;">Pilih Barber Baharu</label>
-            <select id="reset-booking-barber" class="input-field" onchange="fetchBarberAvailabilityForReset()"></select>
+            <select id="barber-reset-booking" class="input-field"></select>
           </div>
           <div class="form-group" style="position:relative; margin-top:15px;">
-            <input type="date" id="reset-booking-date" class="input-field" onchange="fetchBarberAvailabilityForReset()" style="background-color: white;" />
-          </div>
-          <div class="form-group" style="position:relative; margin-top:15px;">
-             <select id="reset-booking-time" class="input-field">
-                <option value="">Pilih Masa (Sila pilih tarikh & barber)</option>
-             </select>
+            <input type="hidden" id="input-date-reset-booking" />
+            <input type="hidden" id="input-time-reset-booking" />
+            <button type="button" class="btn-pilih-jadual" id="btn-jadual-reset-booking" onclick="openScheduleModal('reset-booking')" style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border-color); background:white; text-align:left; font-size:14px; font-weight:600; color:var(--text-main);">Pilih Jadual (Tarikh & Masa)</button>
           </div>
         </div>
         <div class="modal-footer" style="padding:15px 20px; border-top:1px solid #eee; display:flex; gap:10px;">

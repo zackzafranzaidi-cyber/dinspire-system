@@ -1754,37 +1754,52 @@ fetch('/bank-info.json')
 // ==========================================
 // RESET BOOKING FUNCTIONS
 // ==========================================
-function triggerResetBooking(orderNo, serviceName) {
+function triggerResetBooking(orderNo, serviceName, staffId) {
   document.getElementById("reset-booking-id").value = orderNo;
   document.getElementById("reset-booking-service-name").innerText = serviceName;
   
+  // Cari cawangan asal staf ini
+  let originalBranchId = null;
+  let allBarbersData = [];
+  if (shopData && shopData.Barbers) allBarbersData = allBarbersData.concat(shopData.Barbers);
+  if (shopData && shopData.OnCallBarbers) allBarbersData = allBarbersData.concat(shopData.OnCallBarbers);
+  
+  const origStaff = allBarbersData.find(b => b.id === staffId);
+  if (origStaff && origStaff.branch_id) {
+    originalBranchId = origStaff.branch_id;
+  }
+  
   // Populate staff dropdown
-  const barberSelect = document.getElementById("reset-booking-barber");
+  const barberSelect = document.getElementById("barber-reset-booking");
   let options = '<option value="" disabled selected>Sila Pilih Barber</option>';
   
-  // Gabungkan In-Branch dan On-Call
-  let allBarbers = [];
-  if (shopData && shopData.Barbers) allBarbers = allBarbers.concat(shopData.Barbers);
-  if (shopData && shopData.OnCallBarbers) allBarbers = allBarbers.concat(shopData.OnCallBarbers);
+  // Tapis staf di cawangan yang sama, atau jika On-Call, tunjuk semua
+  let filteredBarbers = allBarbersData.filter(b => {
+     if (originalBranchId) return b.branch_id === originalBranchId;
+     return true; 
+  });
   
-  if (allBarbers.length > 0) {
-    allBarbers.forEach(s => {
+  // Unikkan barber ID sekiranya duplikat
+  let uniqueBarbers = [];
+  let map = new Map();
+  for (let b of filteredBarbers) {
+      if(!map.has(b.id)){
+          map.set(b.id, true);
+          uniqueBarbers.push(b);
+      }
+  }
+
+  if (uniqueBarbers.length > 0) {
+    uniqueBarbers.forEach(s => {
       options += `<option value="${s.id}">${s.name}</option>`;
     });
   }
   barberSelect.innerHTML = options;
   
-  const dateInput = document.getElementById("reset-booking-date");
-  dateInput.value = "";
-  
-  // Tetapkan tarikh minimum (Esok)
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tzOffset = tomorrow.getTimezoneOffset() * 60000;
-  const tomorrowLocal = new Date(tomorrow.getTime() - tzOffset).toISOString().split('T')[0];
-  dateInput.min = tomorrowLocal;
-  
-  document.getElementById("reset-booking-time").innerHTML = '<option value="">Pilih Masa</option>';
+  document.getElementById("input-date-reset-booking").value = "";
+  document.getElementById("input-time-reset-booking").value = "";
+  document.getElementById("btn-jadual-reset-booking").innerText = "Pilih Jadual (Tarikh & Masa)";
+  document.getElementById("btn-jadual-reset-booking").classList.remove("has-value");
   
   document.getElementById("reset-booking-modal").style.display = "flex";
   setTimeout(() => {
@@ -1856,9 +1871,9 @@ async function fetchBarberAvailabilityForReset() {
 
 async function submitResetBooking() {
   const orderNo = document.getElementById("reset-booking-id").value;
-  const staffId = document.getElementById("reset-booking-barber").value;
-  const dateStr = document.getElementById("reset-booking-date").value;
-  const timeStr = document.getElementById("reset-booking-time").value;
+  const staffId = document.getElementById("barber-reset-booking").value;
+  const dateStr = document.getElementById("input-date-reset-booking").value;
+  const timeStr = document.getElementById("input-time-reset-booking").value;
   
   if (!staffId || !dateStr || !timeStr) {
     if (typeof Swal !== "undefined") Swal.fire('Perhatian', 'Sila pilih Barber, Tarikh dan Masa.', 'warning');
