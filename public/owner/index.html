@@ -78,6 +78,10 @@
         bottom: 2px !important;
         height: 28px !important;
       }
+      /* Cegah teks bergegar ketika animasi nombor */
+      [id^="val-"] {
+        font-variant-numeric: tabular-nums;
+      }
     </style>
       <link rel="manifest" href="/owner/manifest_owner.json?v=7">
     <meta name="theme-color" content="#ffffff">
@@ -1191,7 +1195,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=2"></script>
+    <script src="../js/owner.js?v=3"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>

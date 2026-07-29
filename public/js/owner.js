@@ -21,6 +21,58 @@ let currentActiveTab = "dashboard";
 
 let currentLang = "en";
 
+// Fungsi Animasi Nombor (Smooth Counter)
+function animateNumber(id, targetVal, prefix = "", suffix = "", decimals = 0) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  // Dapatkan nilai bermula daripada innerText sedia ada (jika ada)
+  let startText = el.innerText.replace(/[^0-9.-]+/g, "");
+  let startVal = parseFloat(startText) || 0;
+
+  if (startVal === targetVal) {
+    if (decimals > 0) {
+      el.innerText = prefix + targetVal.toFixed(decimals) + suffix;
+    } else {
+      el.innerText = prefix + Math.floor(targetVal).toLocaleString("en-MY") + suffix;
+    }
+    return;
+  }
+
+  const duration = 1800; // 1.8 saat
+  let startTime = null;
+
+  function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  }
+
+  function update(currentTime) {
+    if (!startTime) startTime = currentTime;
+    const progress = Math.min((currentTime - startTime) / duration, 1);
+    
+    const easedProgress = easeOutExpo(progress);
+    const currentVal = startVal + (targetVal - startVal) * easedProgress;
+
+    if (decimals > 0) {
+      el.innerText = prefix + currentVal.toFixed(decimals) + suffix;
+    } else {
+      el.innerText = prefix + Math.floor(currentVal).toLocaleString("en-MY") + suffix;
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      if (decimals > 0) {
+        el.innerText = prefix + targetVal.toFixed(decimals) + suffix;
+      } else {
+        el.innerText = prefix + Math.floor(targetVal).toLocaleString("en-MY") + suffix;
+      }
+    }
+  }
+
+  requestAnimationFrame(update);
+}
+
 const i18n = {
   en: {
     "header-subtitle": "DASHBOARD / BUSINESS ANALYSIS",
@@ -556,19 +608,13 @@ function processData() {
     }
   });
 
-  document.getElementById("val-revenue").innerText =
-    `RM ${(serviceRev + productRev).toLocaleString("en-MY", { minimumFractionDigits: 0 })}`;
-  const elSvcFee = document.getElementById("val-service-fee");
-  if (elSvcFee) elSvcFee.innerText = `RM ${totalServiceFees.toFixed(2)}`;
-  const elShipFee = document.getElementById("val-shipping-fee");
-  if (elShipFee) elShipFee.innerText = `RM ${totalShippingFees.toFixed(2)}`;
-  document.getElementById("val-commission").innerText =
-    `RM ${totalComm.toFixed(2)}`;
-  document.getElementById("val-products-rm").innerText =
-    `RM ${productRev.toFixed(2)}`;
-  document.getElementById("val-orders-count").innerText = productOrderCount;
-  document.getElementById("val-services-count").innerText =
-    filteredBookings.length;
+  animateNumber("val-revenue", serviceRev + productRev, "RM ", "", 0);
+  if (document.getElementById("val-service-fee")) animateNumber("val-service-fee", totalServiceFees, "RM ", "", 2);
+  if (document.getElementById("val-shipping-fee")) animateNumber("val-shipping-fee", totalShippingFees, "RM ", "", 2);
+  animateNumber("val-commission", totalComm, "RM ", "", 2);
+  animateNumber("val-products-rm", productRev, "RM ", "", 2);
+  animateNumber("val-orders-count", productOrderCount, "", "", 0);
+  animateNumber("val-services-count", filteredBookings.length, "", "", 0);
   document.getElementById("val-walkin-booking").innerText =
     `${countHcWalkin} / ${countHcBooking}`;
 
@@ -576,9 +622,8 @@ function processData() {
   filteredReviews.forEach(
     (r) => (tStars += parseInt(r.Stars || r.bintang) || 0),
   );
-  document.getElementById("val-rating").innerText = filteredReviews.length
-    ? (tStars / filteredReviews.length).toFixed(1)
-    : "0.0";
+  const avgRating = filteredReviews.length ? (tStars / filteredReviews.length) : 0.0;
+  animateNumber("val-rating", avgRating, "", "", 1);
 
   let topBranch = "-";
   let highest = -1;
