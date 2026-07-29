@@ -582,20 +582,20 @@ function processData() {
   let filteredBookings = masterData.bookings.filter(
     (b) =>
       b.Status === "Selesai" &&
-      isWithinFilter(b.Timestamp || b.Date || b.created_at, filterType, now),
+      isWithinFilter(b.Date || b.Timestamp || b.created_at, filterType, now),
   );
   let filteredOrders = masterData.orders.filter((o) =>
-    isWithinFilter(o.Timestamp || o.created_at || o.tarikh, filterType, now),
+    isWithinFilter(o.tarikh || o.Timestamp || o.created_at, filterType, now),
   );
   let filteredPunch = (masterData.punchCard || []).filter((p) =>
     isWithinFilter(
-      p.Timestamp || p.Tarikh || p.tarikh || p.created_at,
+      p.Tarikh || p.tarikh || p.Timestamp || p.created_at,
       filterType,
       now,
     ),
   );
   const filteredReviews = (masterData.reviews || []).filter((r) =>
-    isWithinFilter(r.Timestamp || r.created_at || r.tarikh, filterType, now),
+    isWithinFilter(r.tarikh || r.Timestamp || r.created_at, filterType, now),
   );
   
   const filteredLeaves = (masterData.staffLeaves || []).filter((l) =>
