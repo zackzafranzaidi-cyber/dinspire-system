@@ -1901,6 +1901,30 @@ async function submitReassign(no_booking, table_name) {
     });
     const data = await res.json();
     if (data.status === "success") {
+      let b = data.bookingDetails;
+      if (b) {
+        let text = `Hi ${b.customer_name || b.nama_pelanggan || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\n`;
+        text += `No. Booking: ${b.no_booking}\n`;
+        text += `Tarikh: ${b.tarikh}\n`;
+        text += `Masa: ${b.masa}\n\n`;
+        text += `Sila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.\n\n`;
+        text += `Pelanggan yang dihormati, barber yang anda booking terpaksa *ditukar* daripada ${data.old_barber_name} kepada ${data.new_barber_name} kerana masalah teknikal. Mohon pelanggan untuk menyemak semula details booking anda di bawah:\n`;
+        text += `No Booking: ${b.no_booking}\n`;
+        text += `Tarikh: ${b.tarikh}\n`;
+        text += `Masa: ${b.masa}\n`;
+        text += `Barber: ${data.new_barber_name}\n`;
+        text += `Cawangan: ${data.cawangan}\n\n`;
+        text += `Sila maklum sekiranya ada sebarang masalah :).`;
+
+        let encodedText = encodeURIComponent(text);
+        let phone = b.no_phone || "";
+        if (phone.startsWith("0")) phone = "6" + phone;
+        
+        window.open(`https://wa.me/${phone}?text=${encodedText}`, "_blank");
+      } else {
+        alert("Berjaya tukar staf!");
+      }
+
       currentConflictIndex++;
       showReassignModal();
     } else {
@@ -1922,10 +1946,10 @@ async function submitCancelAndWhatsApp(no_booking, table_name) {
     const data = await res.json();
     if (data.status === "success") {
       let b = data.bookingDetails;
-      let text = `Hi ${b.customer_name || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\n`;
-      text += `no booking: ${b.no_booking}\n`;
-      text += `tarikh: ${b.tarikh}\n`;
-      text += `masa: ${b.masa}\n\n`;
+      let text = `Hi ${b.customer_name || b.nama_pelanggan || 'Pelanggan'}, saya dari Dinspire Barbershop. adakah tuan pemilik booking ini:\n`;
+      text += `No. Booking: ${b.no_booking}\n`;
+      text += `Tarikh: ${b.tarikh}\n`;
+      text += `Masa: ${b.masa}\n\n`;
       text += `Sila reply *YA* sekiranya benar dan *TIDAK* sekiranya tidak benar.\n\n`;
       text += `Pelanggan yang dihormati, booking anda telah *dibatalkan* kerana masalah teknikal (tiada staf ganti). Mohon pelanggan untuk menetapkan semula booking anda mengikut langkah-langkah di bawah:\n`;
       text += `1. Masuk semula ke link customer.dinspirebarbershop.com\n`;

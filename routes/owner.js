@@ -321,9 +321,29 @@ router.post("/reassign-booking", authenticate, requireRole(["owner", "admin"]), 
   if (!no_booking || !new_staff_id || !table_name) return res.status(400).json({ status: "error", message: "Data tidak lengkap." });
 
   try {
+    const { data: bData } = await supabase.from(table_name).select("*").eq("no_booking", no_booking).single();
+    if (!bData) return res.status(404).json({ status: "error", message: "Booking tidak dijumpai." });
+
+    const { data: newStaff } = await supabase.from("staff").select("username, branch_id").eq("id", new_staff_id).single();
+    const { data: oldStaff } = await supabase.from("staff").select("username").eq("id", bData.staff_id).single();
+    
+    let cawangan = "Cawangan";
+    if (newStaff && newStaff.branch_id) {
+       const { data: br } = await supabase.from("branches").select("nama_cawangan").eq("id", newStaff.branch_id).single();
+       if (br) cawangan = br.nama_cawangan;
+    }
+
     const { error } = await supabase.from(table_name).update({ staff_id: new_staff_id }).eq("no_booking", no_booking);
     if (error) throw error;
-    res.json({ status: "success", message: "Booking berjaya dipindahkan ke staf lain." });
+
+    res.json({ 
+      status: "success", 
+      message: "Booking berjaya dipindahkan ke staf lain.",
+      bookingDetails: bData,
+      new_barber_name: newStaff ? newStaff.username : "Staf",
+      old_barber_name: oldStaff ? oldStaff.username : "Staf Asal",
+      cawangan: cawangan
+    });
   } catch (error) {
     console.error("Ralat tukar staf:", error);
     res.status(500).json({ status: "error", message: "Ralat pelayan semasa memindahkan booking." });

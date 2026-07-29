@@ -1761,14 +1761,29 @@ function triggerResetBooking(orderNo, serviceName) {
   // Populate staff dropdown
   const barberSelect = document.getElementById("reset-booking-barber");
   let options = '<option value="" disabled selected>Sila Pilih Barber</option>';
-  if (shopData && shopData.staffs) {
-    shopData.staffs.forEach(s => {
-      options += `<option value="${s.id}">${s.username}</option>`;
+  
+  // Gabungkan In-Branch dan On-Call
+  let allBarbers = [];
+  if (shopData && shopData.Barbers) allBarbers = allBarbers.concat(shopData.Barbers);
+  if (shopData && shopData.OnCallBarbers) allBarbers = allBarbers.concat(shopData.OnCallBarbers);
+  
+  if (allBarbers.length > 0) {
+    allBarbers.forEach(s => {
+      options += `<option value="${s.id}">${s.name}</option>`;
     });
   }
   barberSelect.innerHTML = options;
   
-  document.getElementById("reset-booking-date").value = "";
+  const dateInput = document.getElementById("reset-booking-date");
+  dateInput.value = "";
+  
+  // Tetapkan tarikh minimum (Esok)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tzOffset = tomorrow.getTimezoneOffset() * 60000;
+  const tomorrowLocal = new Date(tomorrow.getTime() - tzOffset).toISOString().split('T')[0];
+  dateInput.min = tomorrowLocal;
+  
   document.getElementById("reset-booking-time").innerHTML = '<option value="">Pilih Masa</option>';
   
   document.getElementById("reset-booking-modal").style.display = "flex";
