@@ -23,16 +23,12 @@ let currentLang = "en";
 
 // Simpan reference animasi supaya tidak bertindih
 const activeAnimations = {};
+const observerMap = {};
 
 // Fungsi Animasi Nombor (Smooth Counter)
 function animateNumber(id, targetVal, prefix = "", suffix = "", decimals = 0) {
   const el = document.getElementById(id);
   if (!el) return;
-
-  // Hentikan animasi sedia ada jika elemen ini sedang dianimasikan (mengelakkan gegaran/flicker)
-  if (activeAnimations[id]) {
-    cancelAnimationFrame(activeAnimations[id]);
-  }
 
   // Dapatkan nilai bermula daripada innerText sedia ada (jika ada)
   let startText = el.innerText.replace(/[^0-9.-]+/g, "");
@@ -51,33 +47,65 @@ function animateNumber(id, targetVal, prefix = "", suffix = "", decimals = 0) {
     return;
   }
 
-  // Durasi lebih pantas sedikit (1.5s) untuk rasa lebih responsif dan premium
-  const duration = 1500; 
-  let startTime = null;
+  // Fungsi utama yang menjalankan animasi
+  const runAnimation = () => {
+    if (activeAnimations[id]) cancelAnimationFrame(activeAnimations[id]);
 
-  // Easing Out Quart (Sangat smooth dan estetik)
-  function easeOutQuart(t) {
-    return 1 - Math.pow(1 - t, 4);
-  }
+    const duration = 1500; 
+    let startTime = null;
 
-  function update(currentTime) {
-    if (!startTime) startTime = currentTime;
-    const progress = Math.min((currentTime - startTime) / duration, 1);
-    
-    const easedProgress = easeOutQuart(progress);
-    const currentVal = startVal + (targetVal - startVal) * easedProgress;
-
-    el.innerText = prefix + formatVal(currentVal) + suffix;
-
-    if (progress < 1) {
-      activeAnimations[id] = requestAnimationFrame(update);
-    } else {
-      el.innerText = prefix + formatVal(targetVal) + suffix;
-      delete activeAnimations[id];
+    function easeOutQuart(t) {
+      return 1 - Math.pow(1 - t, 4);
     }
+
+    function update(currentTime) {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      
+      const easedProgress = easeOutQuart(progress);
+      const currentVal = startVal + (targetVal - startVal) * easedProgress;
+
+      el.innerText = prefix + formatVal(currentVal) + suffix;
+
+      if (progress < 1) {
+        activeAnimations[id] = requestAnimationFrame(update);
+      } else {
+        el.innerText = prefix + formatVal(targetVal) + suffix;
+        delete activeAnimations[id];
+      }
+    }
+
+    activeAnimations[id] = requestAnimationFrame(update);
+  };
+
+  // Buat IntersectionObserver jika belum ada
+  if (!observerMap[id]) {
+    observerMap[id] = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Jika elemen nampak di skrin, jalankan animasi yang tertunggak
+          if (el.pendingAnimation) {
+            el.pendingAnimation();
+            el.pendingAnimation = null;
+          }
+        }
+      });
+    }, { threshold: 0.1 }); // Trigger apabila sekurang-kurangnya 10% elemen nampak
+    observerMap[id].observe(el);
   }
 
-  activeAnimations[id] = requestAnimationFrame(update);
+  // Cek jika elemen sedang berada di dalam skrin sekarang
+  const rect = el.getBoundingClientRect();
+  const isInView = (rect.top < window.innerHeight && rect.bottom > 0);
+
+  if (isInView) {
+    // Terus jalankan jika sudah di skrin
+    runAnimation();
+    el.pendingAnimation = null;
+  } else {
+    // Simpan ke pending supaya observer akan jalankan bila di-scroll
+    el.pendingAnimation = runAnimation;
+  }
 }
 
 const i18n = {
