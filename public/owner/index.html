@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.0.3";
+      const CURRENT_APP_VERSION = "1.0.4";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -60,6 +60,19 @@
 
     <link rel="stylesheet" href="../css/owner.css?v=27" />
     <link rel="stylesheet" href="../css/loader.css?v=2" />
+    <style>
+      /* PAKSA KETINGGIAN 36px (Mengelakkan isu cache CSS lama) */
+      .segmented-control {
+        height: 36px !important;
+        padding: 3px !important;
+        align-items: center !important;
+      }
+      .segmented-control label {
+        height: 30px !important;
+        line-height: 30px !important;
+        padding: 0 !important;
+      }
+    </style>
       <link rel="manifest" href="/owner/manifest_owner.json?v=7">
     <meta name="theme-color" content="#ffffff">
 </head>
