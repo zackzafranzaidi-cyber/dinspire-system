@@ -192,6 +192,7 @@ body {
   max-width: 320px;
   margin: 0;
   align-items: center;
+  height: 36px; /* FIXED HEIGHT */
 }
 @media (max-width: 768px) {
   .segmented-control {
@@ -208,7 +209,9 @@ body {
   position: relative;
   flex: 1;
   text-align: center;
-  padding: 5px 0;
+  padding: 0;
+  height: 30px;
+  line-height: 30px;
   font-size: 13px;
   font-weight: 600;
   color: #8e8e93;
