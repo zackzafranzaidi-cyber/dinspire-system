@@ -1806,10 +1806,7 @@ function triggerResetBooking(orderNo, serviceName, staffId) {
   document.getElementById("btn-jadual-reset-booking").innerText = "Pilih Jadual (Tarikh & Masa)";
   document.getElementById("btn-jadual-reset-booking").classList.remove("has-value");
   
-  document.getElementById("reset-booking-modal").style.display = "flex";
-  setTimeout(() => {
-    document.getElementById("reset-booking-modal").classList.add("active");
-  }, 10);
+  document.getElementById("reset-booking-modal").classList.add("active");
 }
 
 async function fetchBarberAvailabilityForReset() {

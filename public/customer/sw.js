@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dinspire-pwa-v6';
+const CACHE_NAME = 'dinspire-pwa-v7';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -15,7 +15,11 @@ const urlsToCache = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+      .then(cache => {
+        return Promise.all(
+          urlsToCache.map(url => cache.add(url).catch(err => console.log('Failed to cache', url, err)))
+        );
+      })
   );
   self.skipWaiting(); // Force activate immediately
 });
