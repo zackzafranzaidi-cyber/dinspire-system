@@ -1657,43 +1657,48 @@ function switchView(id) {
 }
 
 
-// Handle bar drag down to close modal
-const dragHandleArea = document.getElementById('drag-handle-area');
-const editCartSheet = document.querySelector('.edit-cart-sheet');
-let modalStartY = 0;
-let modalCurrentY = 0;
-let isDraggingModal = false;
+// Generic function for bottom sheet drag to close
+function makeBottomSheetDraggable(dragHandleId, sheetElementSelector, modalId) {
+  const dragHandleArea = document.getElementById(dragHandleId);
+  const sheetElement = document.querySelector(sheetElementSelector);
+  let modalStartY = 0;
+  let modalCurrentY = 0;
+  let isDraggingModal = false;
 
-if (dragHandleArea && editCartSheet) {
-  dragHandleArea.addEventListener('pointerdown', (e) => {
-    isDraggingModal = true;
-    modalStartY = e.clientY;
-    editCartSheet.style.transition = 'none';
-    dragHandleArea.setPointerCapture(e.pointerId);
-  });
-  dragHandleArea.addEventListener('pointermove', (e) => {
-    if (!isDraggingModal) return;
-    modalCurrentY = e.clientY;
-    const diff = modalCurrentY - modalStartY;
-    if (diff > 0) {
-      editCartSheet.style.transform = `translateY(${diff}px)`;
-    }
-  });
-  const handlePointerEnd = (e) => {
-    if (!isDraggingModal) return;
-    isDraggingModal = false;
-    dragHandleArea.releasePointerCapture(e.pointerId);
-    editCartSheet.style.transition = 'transform 0.3s ease-out';
-    if (modalCurrentY > 0 && modalCurrentY - modalStartY > 50) {
-      closeModal('edit-cart-modal');
-    }
-    editCartSheet.style.transform = '';
-    modalStartY = 0;
-    modalCurrentY = 0;
-  };
-  dragHandleArea.addEventListener('pointerup', handlePointerEnd);
-  dragHandleArea.addEventListener('pointercancel', handlePointerEnd);
+  if (dragHandleArea && sheetElement) {
+    dragHandleArea.addEventListener('pointerdown', (e) => {
+      isDraggingModal = true;
+      modalStartY = e.clientY;
+      sheetElement.style.transition = 'none';
+      dragHandleArea.setPointerCapture(e.pointerId);
+    });
+    dragHandleArea.addEventListener('pointermove', (e) => {
+      if (!isDraggingModal) return;
+      modalCurrentY = e.clientY;
+      const diff = modalCurrentY - modalStartY;
+      if (diff > 0) {
+        sheetElement.style.transform = `translateY(${diff}px)`;
+      }
+    });
+    const handlePointerEnd = (e) => {
+      if (!isDraggingModal) return;
+      isDraggingModal = false;
+      dragHandleArea.releasePointerCapture(e.pointerId);
+      sheetElement.style.transition = 'transform 0.3s ease-out';
+      if (modalCurrentY > 0 && modalCurrentY - modalStartY > 50) {
+        closeModal(modalId);
+      }
+      sheetElement.style.transform = '';
+      modalStartY = 0;
+      modalCurrentY = 0;
+    };
+    dragHandleArea.addEventListener('pointerup', handlePointerEnd);
+    dragHandleArea.addEventListener('pointercancel', handlePointerEnd);
+  }
 }
+
+makeBottomSheetDraggable('drag-handle-area', '#edit-cart-modal .edit-cart-sheet', 'edit-cart-modal');
+makeBottomSheetDraggable('drag-handle-reset', '#reset-booking-sheet', 'reset-booking-modal');
 
 function selectPaymentMethod(method) {
   const fpxRow = document.getElementById('pm-fpx-row');

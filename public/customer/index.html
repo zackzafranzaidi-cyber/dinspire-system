@@ -1008,19 +1008,21 @@
         </div>
       </nav>
     <div class="custom-modal-overlay" id="reset-booking-modal" style="display:none;">
-      <div class="custom-modal">
-        <div class="modal-header">
-          <h3 style="font-size:16px; font-weight:800; color:var(--text-main); margin:0;">Tetapkan Semula (Reset)</h3>
-          <button type="button" class="close-modal-btn" onclick="closeModal('reset-booking-modal')">
-            <i class="fas fa-times"></i>
-          </button>
+      <div class="edit-cart-sheet" id="reset-booking-sheet" style="height: auto; padding-bottom: 20px;">
+        <div class="checkout-header" id="drag-handle-reset" style="padding-top: 8px; background: white; border-bottom: 1px solid #e5e5ea; touch-action: none; text-align: center;">
+          <div class="drag-indicator" style="height: 4px; margin-top: 0px; margin-bottom: 12px; width: 45px; background: #d1d5db; border-radius: 4px; margin-left: auto; margin-right: auto;"></div>
+          <h2 style="font-size: 17px; font-weight: 700; color: #111827; margin:0;">
+            Tetapkan Semula (Reset)
+          </h2>
+          <p style="font-size: 11px; color: #6b7280; margin-top: 2px; margin-bottom: 10px;">
+            Sila pilih Tarikh, Masa, dan Barber yang baharu untuk <strong id="reset-booking-service-name"></strong>.
+          </p>
         </div>
-        <div class="modal-body" style="padding:20px;">
+        <div class="checkout-body" style="padding: 16px; background: #fff;">
           <input type="hidden" id="reset-booking-id" />
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:15px;">Sila pilih Tarikh, Masa, dan Barber yang baharu untuk <strong id="reset-booking-service-name"></strong>.</p>
           
           <div class="form-group">
-            <label style="font-size:12px; font-weight:700; color:var(--text-main); margin-bottom:8px; display:block;">Pilih Barber Baharu</label>
+            <label style="font-size:12px; font-weight:700; color:var(--text-main); margin-bottom:8px; display:block; text-align:left;">Pilih Barber Baharu</label>
             <select id="barber-reset-booking" class="input-field"></select>
           </div>
           <div class="form-group" style="position:relative; margin-top:15px;">
@@ -1029,8 +1031,8 @@
             <button type="button" class="btn-pilih-jadual" id="btn-jadual-reset-booking" onclick="openScheduleModal('reset-booking')" style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border-color); background:white; text-align:left; font-size:14px; font-weight:600; color:var(--text-main);">Pilih Jadual (Tarikh & Masa)</button>
           </div>
         </div>
-        <div class="modal-footer" style="padding:15px 20px; border-top:1px solid #eee; display:flex; gap:10px;">
-          <button type="button" class="submit-btn" style="flex:1; background:#007BFF; padding:12px; font-weight:700;" onclick="submitResetBooking()">Sahkan Pertukaran</button>
+        <div class="checkout-footer" style="padding:0 16px; background:#fff; margin-top: 10px;">
+          <button type="button" class="submit-btn" style="width:100%; background:#007BFF; padding:12px; font-weight:700; border-radius:12px;" onclick="submitResetBooking()">Sahkan Pertukaran</button>
         </div>
       </div>
     </div>
