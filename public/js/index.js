@@ -546,7 +546,11 @@ function openAvatarModal() {
   document.getElementById("avatar-modal-overlay").classList.add("active");
 }
 function closeModal(id) {
-  document.getElementById(id).classList.remove("active");
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.remove("active");
+    el.style.display = "";
+  }
 }
 function generateAvatarGrid() {
   let html = "";
