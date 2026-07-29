@@ -1890,13 +1890,13 @@ async function submitResetBooking() {
   if (!confirm("Adakah anda pasti untuk reset tempahan ini dengan masa yang baharu?")) return;
   
   try {
-    const res = await fetchWithAuth(`${API_BASE_URL}/bookings/reset/${orderNo}`, {
+    const res = await fetchWithAuth(`${API_BASE_URL}/bookings/order/${orderNo}/reset`, {
       method: 'PUT',
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        tarikh: dateStr,
-        masa: timeStr,
-        staff_id: staffId
+        new_date: dateStr,
+        new_time: timeStr,
+        new_staff_id: staffId
       })
     });
     const data = await res.json();
