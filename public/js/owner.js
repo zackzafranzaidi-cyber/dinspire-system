@@ -108,6 +108,40 @@ function animateNumber(id, targetVal, prefix = "", suffix = "", decimals = 0) {
   }
 }
 
+// Fungsi Animasi Graf (Bila Scroll)
+function animateChartWhenVisible(chartObj, canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !chartObj) return;
+
+  if (!observerMap[canvasId]) {
+    observerMap[canvasId] = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          if (canvas.pendingChartUpdate) {
+            canvas.pendingChartUpdate();
+            canvas.pendingChartUpdate = null;
+          }
+        }
+      });
+    }, { threshold: 0.2 }); // Trigger bila 20% graf nampak
+    observerMap[canvasId].observe(canvas);
+  }
+
+  const rect = canvas.getBoundingClientRect();
+  const isInView = (rect.top < window.innerHeight && rect.bottom > 0);
+
+  const runUpdate = () => {
+    chartObj.update();
+  };
+
+  if (isInView) {
+    runUpdate();
+    canvas.pendingChartUpdate = null;
+  } else {
+    canvas.pendingChartUpdate = runUpdate;
+  }
+}
+
 const i18n = {
   en: {
     "header-subtitle": "DASHBOARD / BUSINESS ANALYSIS",
@@ -690,7 +724,7 @@ function processData() {
       demoChartObj.data.datasets[0].data = [1];
       demoChartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
     }
-    demoChartObj.update();
+    animateChartWhenVisible(demoChartObj, "demoChart");
   }
 
   if (payChartObj) {
@@ -719,7 +753,7 @@ function processData() {
       payChartObj.data.datasets[0].data = [1];
       payChartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
     }
-    payChartObj.update();
+    animateChartWhenVisible(payChartObj, "payChart");
   }
 
   if (staffChartObj) {
@@ -746,7 +780,7 @@ function processData() {
       staffChartObj.data.datasets[0].data = [1];
       staffChartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
     }
-    staffChartObj.update();
+    animateChartWhenVisible(staffChartObj, "staffChart");
   }
 
   renderBranchTable(branchStats);
@@ -1585,7 +1619,7 @@ function updateBarChart(bookings, orders, filterType) {
   salesChartObj.data.labels = labels;
   salesChartObj.data.datasets[0].data = dataPoints;
   salesChartObj.data.datasets[0].backgroundColor = bgColors;
-  salesChartObj.update();
+  animateChartWhenVisible(salesChartObj, "salesChart");
 }
 
 function openReceiptModal(link) {
