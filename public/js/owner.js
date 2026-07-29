@@ -78,34 +78,20 @@ function animateNumber(id, targetVal, prefix = "", suffix = "", decimals = 0) {
     activeAnimations[id] = requestAnimationFrame(update);
   };
 
-  // Buat IntersectionObserver jika belum ada
-  if (!observerMap[id]) {
-    observerMap[id] = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          // Jika elemen nampak di skrin, jalankan animasi yang tertunggak
-          if (el.pendingAnimation) {
-            el.pendingAnimation();
-            el.pendingAnimation = null;
-          }
+  if (observerMap[id]) observerMap[id].disconnect();
+
+  el.pendingAnimation = runAnimation;
+  observerMap[id] = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        if (el.pendingAnimation) {
+          el.pendingAnimation();
+          el.pendingAnimation = null;
         }
-      });
-    }, { threshold: 0.1 }); // Trigger apabila sekurang-kurangnya 10% elemen nampak
-    observerMap[id].observe(el);
-  }
-
-  // Cek jika elemen sedang berada di dalam skrin sekarang
-  const rect = el.getBoundingClientRect();
-  const isInView = (rect.top < window.innerHeight && rect.bottom > 0);
-
-  if (isInView) {
-    // Terus jalankan jika sudah di skrin
-    runAnimation();
-    el.pendingAnimation = null;
-  } else {
-    // Simpan ke pending supaya observer akan jalankan bila di-scroll
-    el.pendingAnimation = runAnimation;
-  }
+      }
+    });
+  }, { threshold: 0.1 });
+  observerMap[id].observe(el);
 }
 
 // Fungsi Animasi Graf (Bila Scroll)
@@ -113,33 +99,20 @@ function animateChartWhenVisible(chartObj, canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas || !chartObj) return;
 
-  if (!observerMap[canvasId]) {
-    observerMap[canvasId] = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          if (canvas.pendingChartUpdate) {
-            canvas.pendingChartUpdate();
-            canvas.pendingChartUpdate = null;
-          }
+  if (observerMap[canvasId]) observerMap[canvasId].disconnect();
+
+  canvas.pendingChartUpdate = () => chartObj.update();
+  observerMap[canvasId] = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        if (canvas.pendingChartUpdate) {
+          canvas.pendingChartUpdate();
+          canvas.pendingChartUpdate = null;
         }
-      });
-    }, { threshold: 0.2 }); // Trigger bila 20% graf nampak
-    observerMap[canvasId].observe(canvas);
-  }
-
-  const rect = canvas.getBoundingClientRect();
-  const isInView = (rect.top < window.innerHeight && rect.bottom > 0);
-
-  const runUpdate = () => {
-    chartObj.update();
-  };
-
-  if (isInView) {
-    runUpdate();
-    canvas.pendingChartUpdate = null;
-  } else {
-    canvas.pendingChartUpdate = runUpdate;
-  }
+      }
+    });
+  }, { threshold: 0.2 }); // Trigger bila 20% graf nampak
+  observerMap[canvasId].observe(canvas);
 }
 
 const i18n = {
@@ -1000,7 +973,7 @@ function renderCashTable(stats) {
 function renderTxServisTable(bookings) {
   const tbody = document.getElementById("table-tx-servis");
   let data = [...bookings].sort(
-    (a, b) => new Date(b.Timestamp || b.Date) - new Date(a.Timestamp || a.Date),
+    (a, b) => Date.parse(b.Timestamp || b.Date) - Date.parse(a.Timestamp || a.Date),
   );
   if (data.length === 0) {
     tbody.innerHTML = `<tr><td class="text-center py-6 text-gray-400 italic text-xs" data-i18n="table-no-record">${i18n[currentLang]["table-no-record"] || "Tiada Rekod"}</td></tr>`;
@@ -1074,7 +1047,7 @@ function renderTxServisTable(bookings) {
 function renderTxProdukTable(orders) {
   const tbody = document.getElementById("table-tx-produk");
   let data = [...orders].sort(
-    (a, b) => new Date(b.Timestamp) - new Date(a.Timestamp),
+    (a, b) => Date.parse(b.Timestamp) - Date.parse(a.Timestamp),
   );
   if (data.length === 0) {
     tbody.innerHTML = `<tr><td class="text-center py-6 text-gray-400 italic text-xs" data-i18n="table-no-record">${i18n[currentLang]["table-no-record"] || "Tiada Rekod"}</td></tr>`;
@@ -1265,10 +1238,12 @@ function renderReviewsTable(reviews) {
 
         let stars = r.Stars || r.bintang || 5;
         let text = r.Text || r.review_text || "Tiada komen.";
+        let dateVal = r.created_at ? new Date(r.created_at).toLocaleDateString("ms-MY") : "Tiada Tarikh";
 
         return `<div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-full">${escapeHTML(orderNo || "#")}</span>
+                        <span class="text-xs text-gray-500 ml-2"><i class="fas fa-clock"></i> ${escapeHTML(dateVal)}</span>
                         <span class="text-amber-500 text-sm tracking-widest drop-shadow-sm">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span>
                     </div>
                     <p class="text-sm text-gray-700 mt-3 mb-4 leading-relaxed font-medium">"${escapeHTML(text)}"</p>
@@ -1295,7 +1270,7 @@ function renderPunchTable(punchData) {
     if (!branches[br].staff.includes(name)) branches[br].staff.push(name);
   });
 
-  punchData.sort((a, b) => new Date(b.Timestamp || b.created_at || b.tarikh) - new Date(a.Timestamp || a.created_at || a.tarikh));
+  punchData.sort((a, b) => Date.parse(b.Timestamp || b.created_at || b.tarikh) - Date.parse(a.Timestamp || a.created_at || a.tarikh));
 
   punchData.forEach(p => {
     let staffName = p["Nama Staf"] || p.nama || (p.staff ? p.staff.username : "") || "-";
@@ -1389,7 +1364,7 @@ function renderLeavesTable(leavesData) {
 
   // Kumpul data mengikut cawangan
   let branches = {};
-  leavesData.sort((a, b) => new Date(b.tarikh) - new Date(a.tarikh));
+  leavesData.sort((a, b) => Date.parse(b.tarikh) - Date.parse(a.tarikh));
 
   leavesData.forEach(l => {
     let staffName = l.staff ? l.staff.username : "-";
@@ -1846,7 +1821,7 @@ function renderEmergencyLeavesTable(leavesData) {
 
   // Filter ONLY 'Pending' & 'Kecemasan'
   let emergencyLeaves = leavesData.filter(l => l.jenis_cuti === 'Kecemasan' && l.status === 'Pending');
-  emergencyLeaves.sort((a, b) => new Date(a.tarikh) - new Date(b.tarikh));
+  emergencyLeaves.sort((a, b) => Date.parse(a.tarikh) - Date.parse(b.tarikh));
 
   let html = "";
   if (emergencyLeaves.length === 0) {

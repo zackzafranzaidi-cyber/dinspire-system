@@ -317,7 +317,6 @@ router.post(
             cawangan: namaCawangan,
           },
         ]);
-
         if (error) throw error;
         res.json({
           status: "success",
@@ -509,7 +508,7 @@ router.post("/emergency-leaves", authenticate, requireRole(["staff"]), async (re
   const staff_id = req.user.id;
   const { dates, reason } = req.body; 
   
-  if (!Array.isArray(dates) || dates.length === 0 || !reason) {
+  if (!Array.isArray(dates) || dates.length === 0 || dates.length > 100 || !reason) {
     return res.status(400).json({ status: "error", message: "Tarikh dan sebab cuti diperlukan." });
   }
 
@@ -621,6 +620,8 @@ router.post(
           .eq("no_booking", order_no);
         if (error) throw error;
         return res.json({ status: "success", message: "Bayaran ditolak. Sila maklumkan kepada pelanggan." });
+      } else {
+        return res.status(400).json({ error: "Tindakan tidak sah" });
       }
     } catch (err) {
       console.error(err);

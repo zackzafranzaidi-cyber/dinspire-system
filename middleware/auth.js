@@ -10,22 +10,24 @@ function authenticate(req, res, next) {
   // [DIBAIKI] Guna Kunci Khas Sistem
   if (tokenSys) {
     if (global.jwtBlacklist && global.jwtBlacklist.has(tokenSys)) {
-      // Token ini sudah dibatalkan (Logged Out)
-    } else {
-      try {
-        req.users.sys = jwt.verify(tokenSys, process.env.JWT_SECRET_SYS);
-      } catch (e) {}
+      return res.status(401).json({ status: "error", message: "Sesi telah ditamatkan (Logged Out)." });
+    }
+    try {
+      req.users.sys = jwt.verify(tokenSys, process.env.JWT_SECRET_SYS);
+    } catch (e) {
+      console.error("Amaran Keselamatan: Manipulasi Token JWT dikesan.");
     }
   }
 
   // [DIBAIKI] Guna Kunci Khas Pelanggan
   if (tokenClient) {
     if (global.jwtBlacklist && global.jwtBlacklist.has(tokenClient)) {
-      // Token ini sudah dibatalkan (Logged Out)
-    } else {
-      try {
-        req.users.client = jwt.verify(tokenClient, process.env.JWT_SECRET_CLIENT);
-      } catch (e) {}
+      return res.status(401).json({ status: "error", message: "Sesi telah ditamatkan (Logged Out)." });
+    }
+    try {
+      req.users.client = jwt.verify(tokenClient, process.env.JWT_SECRET_CLIENT);
+    } catch (e) {
+      console.error("Amaran Keselamatan: Manipulasi Token JWT dikesan.");
     }
   }
 

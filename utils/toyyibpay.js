@@ -66,7 +66,7 @@ class ToyyibPaySystem {
         billPhone: phoneNumber,
         billSplitPayment: 0,
         billPaymentChannel: "0", // 0 = FPX Only, 2 = FPX & CC
-        billChargeToCustomer: 0, // 0 = Caj RM1 FPX ditanggung oleh pelanggan. Kosong = ditanggung oleh pemilik
+        billChargeToCustomer: 1, // 1 = Caj FPX ditanggung oleh pelanggan. 2 = ditanggung oleh pemilik
       });
 
       // KESELAMATAN: Tiada log data sensitif seperti kad kredit dsb.
@@ -122,9 +122,11 @@ class ToyyibPaySystem {
       const response = await this.client.post("/index.php/api/getBillTransactions", payload.toString());
       
       if (Array.isArray(response.data) && response.data.length > 0) {
-        // Semak jika nombor rujukan sepadan (mengelakkan eksploitasi guna resit orang lain)
-        const txn = response.data[0];
-        if (txn.billExternalReferenceNo === expectedOrderNo && String(txn.billpaymentStatus) === "1") {
+        // Semak jika nombor rujukan sepadan dan mana-mana transaksi berjaya
+        const isValid = response.data.some(txn => 
+          txn.billExternalReferenceNo === expectedOrderNo && String(txn.billpaymentStatus) === "1"
+        );
+        if (isValid) {
           return true;
         }
       }

@@ -317,8 +317,12 @@ router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "adm
 // TUKAR STAF UNTUK BOOKING BERKOLIZI (REASSIGN)
 // ==========================================
 router.post("/reassign-booking", authenticate, requireRole(["owner", "admin"]), async (req, res) => {
-  const { no_booking, new_staff_id, table_name } = req.body;
+  let { no_booking, new_staff_id, table_name } = req.body;
+  no_booking = String(no_booking || "");
   if (!no_booking || !new_staff_id || !table_name) return res.status(400).json({ status: "error", message: "Data tidak lengkap." });
+  
+  const ALLOWED_TABLES = ["booking_records", "treatment_records", "oncall_records"];
+  if (!ALLOWED_TABLES.includes(table_name)) return res.status(400).json({ status: "error", message: "Jadual tidak sah." });
 
   try {
     const { data: bData } = await supabase.from(table_name).select("*").eq("no_booking", no_booking).single();
@@ -354,8 +358,12 @@ router.post("/reassign-booking", authenticate, requireRole(["owner", "admin"]), 
 // BATAL BOOKING (OLEH ADMIN) DENGAN WHATSAPP
 // ==========================================
 router.post("/cancel-booking-admin", authenticate, requireRole(["owner", "admin"]), async (req, res) => {
-  const { no_booking, table_name } = req.body;
+  let { no_booking, table_name } = req.body;
+  no_booking = String(no_booking || "");
   if (!no_booking || !table_name) return res.status(400).json({ status: "error", message: "Data tidak lengkap." });
+
+  const ALLOWED_TABLES = ["booking_records", "treatment_records", "oncall_records"];
+  if (!ALLOWED_TABLES.includes(table_name)) return res.status(400).json({ status: "error", message: "Jadual tidak sah." });
 
   try {
     // Semak pelanggan dan details
@@ -517,7 +525,8 @@ router.post(
   authenticate,
   requireRole(["owner"]),
   async (req, res) => {
-    const { order_id, action } = req.body;
+    let { order_id, action } = req.body;
+    order_id = String(order_id || "");
     try {
       if (action === "approve") {
         const { error } = await supabase
@@ -533,6 +542,8 @@ router.post(
           .eq("id", order_id);
         if (error) throw error;
         return res.json({ status: "success", message: "Bayaran ditolak. Resit dibatalkan." });
+      } else {
+        return res.status(400).json({ error: "Tindakan tidak sah" });
       }
     } catch (err) {
       console.error(err);

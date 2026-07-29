@@ -8,16 +8,17 @@ router.get("/", async (req, res) => {
     const cachedData = cache.get("shop_data");
     if (cachedData) {
       console.log("[CACHE HIT] shop_data");
+      res.setHeader("Cache-Control", "public, max-age=300"); // [DIBAIKI] Browser Caching 5 Minit
       return res.json(cachedData);
     }
 
     const [
-      { data: hcData },
-      { data: trData },
-      { data: brData },
-      { data: stData },
-      { data: prData },
-      { data: allSettings },
+      { data: hcData, error: e1 },
+      { data: trData, error: e2 },
+      { data: brData, error: e3 },
+      { data: stData, error: e4 },
+      { data: prData, error: e5 },
+      { data: allSettings, error: e6 },
     ] = await Promise.all([
       supabase.from("haircuts").select("*").limit(200),
       supabase.from("treatments").select("*").limit(200),
@@ -27,6 +28,10 @@ router.get("/", async (req, res) => {
       // [DIBAIKI] Ketirisan Rahsia Syarikat: Jangan fetch peratus_komisen
       supabase.from("settings").select("setting_key, setting_value").in("setting_key", ["posters", "shipping_fee", "service_fee"]).limit(50),
     ]);
+
+    if (e1 || e2 || e3 || e4 || e5 || e6) {
+      throw (e1 || e2 || e3 || e4 || e5 || e6);
+    }
 
     let posters = [];
     let shippingFee = 0.0;

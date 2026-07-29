@@ -45,7 +45,7 @@ router.post("/request-otp", otpLimiter, async (req, res) => {
       });
   }
 
-  const otpCode = crypto.randomInt(100000, 999999).toString();
+  const otpCode = crypto.randomInt(100000, 1000000).toString();
   const expiresAt = new Date(Date.now() + 5 * 60000);
 
   const { error } = await supabase
@@ -85,16 +85,20 @@ router.post("/register", verifyLimiter, async (req, res) => {
       return res.status(400).json({ status: "error", message: "Kandungan tidak sah. Sila buang simbol berbahaya." });
     }
     
-    // Had panjang maksima
-    const safeUsername = safeUsernameStr.substring(0, 100).replace(/<[^>]*>?/gm, "");
-    const safeAddress = safeAddressStr.substring(0, 255).replace(/<[^>]*>?/gm, "");
-    const safePhone = safePhoneStr.substring(0, 20);
+    const safeUsername = safeUsernameStr.replace(/<[^>]*>?/gm, "").substring(0, 100);
+    const safeAddress = safeAddressStr.replace(/<[^>]*>?/gm, "").substring(0, 255);
+    
+    // Sanitize phone number to standard format
+    let cleanPhone = safePhoneStr.replace(/\\D/g, "");
+    if (cleanPhone.startsWith("0")) cleanPhone = "6" + cleanPhone;
+    else if (!cleanPhone.startsWith("6")) cleanPhone = "60" + cleanPhone;
+    const safePhone = cleanPhone.substring(0, 20);
 
     if (!password || password.length < 6 || password.length > 72) {
       return res.status(400).json({ status: "error", message: "Kata laluan mestilah antara 6 hingga 72 aksara." });
     }
 
-    const { data: existUser } = await supabase.from("customers").select("id").eq("phone", phone).single();
+    const { data: existUser } = await supabase.from("customers").select("id").eq("phone", safePhone).single();
     if (existUser) {
       return res.status(400).json({ status: "error", message: "Nombor telefon ini sudah didaftarkan." });
     }
@@ -103,7 +107,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
     const { data: otpRecord } = await supabase
       .from("otps")
       .select("*")
-      .eq("phone", phone)
+      .eq("phone", safePhone)
       .eq("otp_code", otp)
       .single();
     if (!otpRecord)
@@ -119,7 +123,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
     const { data: existing } = await supabase
       .from("customers")
       .select("id")
-      .eq("phone", phone);
+      .eq("phone", safePhone);
     if (existing && existing.length > 0)
       return res
         .status(400)
@@ -139,7 +143,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
       },
     ]);if (error) {
       console.error("REGISTER ERROR:", error);
-      require('fs').writeFileSync('debug-register.txt', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      console.error("REGISTER DEBUG:", error);
       return res
         .status(500)
         .json({
@@ -154,7 +158,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
       message: "Pendaftaran berjaya! Sila log masuk.",
     });
   } catch (err) {
-    require('fs').writeFileSync('crash.txt', err.stack);
+    console.error("CRASH:", err.stack);
     console.error("UNCAUGHT EXCEPTION IN /REGISTER:", err);
     res.status(500).json({ status: "error", message: "Ralat sistem: Pendaftaran tergendala seketika." });
   }
@@ -162,7 +166,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
 
 router.post("/login", verifyLimiter, async (req, res) => {
   const { phone, password, remember } = req.body;
-  if (!password) {
+  if (!password || password.length > 72) {
     return res.status(400).json({ status: "error", message: "Sila masukkan kata laluan." });
   }
 
@@ -184,6 +188,7 @@ router.post("/login", verifyLimiter, async (req, res) => {
     const isValid = await bcrypt.compare(password, user.password_hash || "");
     if (!isValid) {
       loginAttempts[phone] = (loginAttempts[phone] || 0) + 1;
+      if (loginAttempts[phone] === 1) setTimeout(() => delete loginAttempts[phone], 15 * 60 * 1000);
       return res.status(401).json({ status: "error", message: "Kata laluan salah." });
     }
 
@@ -227,9 +232,10 @@ router.post("/forgot-password/request-otp", otpLimiter, async (req, res) => {
     return res.status(404).json({ status: "error", message: "Akaun dengan nombor telefon ini tidak wujud." });
   }
 
-  const otpCode = crypto.randomInt(100000, 999999).toString();
+  const otpCode = crypto.randomInt(100000, 1000000).toString();
   const expiresAt = new Date(Date.now() + 5 * 60000);
   await supabase.from("otps").upsert([{ phone, otp_code: otpCode, expires_at: expiresAt }], { onConflict: "phone" });
+  otpAttempts[phone] = 0;
 
   console.log(`\n========================================`);
   console.log(`[SIMULASI SMS - LUPA KATA LALUAN] Hantar ke: ${phone}`);
@@ -282,7 +288,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
     // [DIBAIKI] Type Confusion DoS HPP
     const safeUsername = String(username || "");
 
-    if (!safeUsername || !password) {
+    if (!safeUsername || !password || password.length > 72) {
       return res
         .status(400)
         .json({ status: "error", message: "Sila lengkapkan semua medan." });
@@ -362,6 +368,7 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
 
     if (!isValid) {
       loginAttempts[safeUsername] = (loginAttempts[safeUsername] || 0) + 1;
+      if (loginAttempts[safeUsername] === 1) setTimeout(() => delete loginAttempts[safeUsername], 15 * 60 * 1000);
       return res
         .status(401)
         .json({

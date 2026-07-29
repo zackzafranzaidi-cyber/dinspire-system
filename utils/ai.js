@@ -79,7 +79,7 @@ async function generateBusinessInsights(prompt, dashboardData, activeTab = 'dash
                     JSON.parse(textResult);
                 } catch(e) {
                     // Jika gagal juga, kita format manual
-                    textResult = JSON.stringify({ text: textResult.replace(/["'{}]/g, ''), action: null, target: null });
+                    textResult = JSON.stringify({ text: textResult, action: null, target: null });
                 }
                 
                 return textResult;
@@ -153,7 +153,7 @@ async function generateBusinessInsights(prompt, dashboardData, activeTab = 'dash
                     try {
                         JSON.parse(textResult);
                     } catch(e) {
-                        textResult = JSON.stringify({ text: textResult.replace(/["'{}]/g, ''), action: null, target: null });
+                        textResult = JSON.stringify({ text: textResult, action: null, target: null });
                     }
                     
                     return textResult;

@@ -132,9 +132,9 @@ window.addEventListener("DOMContentLoaded", async () => {
       const bInfoEl = document.getElementById("checkout-bank-info");
       if (bInfoEl && bankInfo) {
         bInfoEl.innerHTML = `
-          <div style="margin-bottom: 2px;">${bankInfo.bankName || ""}</div>
-          <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">${bankInfo.ownerName || ""}</div>
-          <div style="font-size: 15px; letter-spacing: 1px; color: var(--primary-blue); font-family: monospace; margin-top: 4px;">${bankInfo.accountNumber || ""}</div>
+          <div style="margin-bottom: 2px;">${escapeHTML(bankInfo.bankName || "")}</div>
+          <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">${escapeHTML(bankInfo.ownerName || "")}</div>
+          <div style="font-size: 15px; letter-spacing: 1px; color: var(--primary-blue); font-family: monospace; margin-top: 4px;">${escapeHTML(bankInfo.accountNumber || "")}</div>
         `;
       }
     }
@@ -798,7 +798,7 @@ async function fetchShopData() {
     let bOpts =
       `<option value="" disabled selected>Pilih Cawangan</option>` +
       (shopData.Branches || [])
-        .map((b) => `<option value="${b.id}">${b.name}</option>`)
+        .map((b) => `<option value="${b.id}">${escapeHTML(b.name)}</option>`)
         .join("");
 
     const buildCard = (arr, prefix, tab, category) =>
@@ -807,7 +807,7 @@ async function fetchShopData() {
           (x, i) => `
       <div class="service-card-wrapper rgb-border-container" id="card-${prefix}${i}">
         <div class="card-inner rgb-border-inner service-card-inner">
-          <div class="card-header"><div><h3>${x.name}</h3><p style="font-weight:500; font-size:11px; margin-top:3px;">${x.desc || "Tiada diskripsi"}</p></div><div class="price">RM${parseFloat(x.price).toFixed(2)}</div></div>
+          <div class="card-header"><div><h3>${escapeHTML(x.name)}</h3><p style="font-weight:500; font-size:11px; margin-top:3px;">${escapeHTML(x.desc || "Tiada diskripsi")}</p></div><div class="price">RM${parseFloat(x.price).toFixed(2)}</div></div>
           <div class="card-body">
             <form data-service-id="${x.id}" data-price="${x.price}" data-category="${category}">
               <div class="form-group"><label>Cawangan</label><select class="input-field" name="branch" onchange="updBarber(this,'${prefix}${i}')" required>${bOpts}</select></div>
@@ -840,7 +840,7 @@ async function fetchShopData() {
         `<option value="" disabled selected>Pilih Servis</option>` +
         (shopData.OnCall || [])
           .map(
-            (s) => `<option value="${s.id}">${s.name} - RM${s.price}</option>`,
+            (s) => `<option value="${s.id}">${escapeHTML(s.name)} - RM${s.price}</option>`,
           )
           .join("");
 
@@ -849,7 +849,7 @@ async function fetchShopData() {
       oncallBarber.innerHTML =
         `<option value="" disabled selected>Pilih Barber</option>` +
         (shopData.OnCallBarbers || [])
-          .map((b) => `<option value="${b.id}">${b.name}</option>`).join("");
+          .map((b) => `<option value="${b.id}">${escapeHTML(b.name)}</option>`).join("");
 
     const posterTrack = document.getElementById("dynamic-slider-track");
     const paginationContainer = document.querySelector(".pagination");
@@ -870,20 +870,20 @@ async function fetchShopData() {
       
       // Sync dots on manual scroll
       if (viewport && paginationContainer) {
-        viewport.addEventListener('scroll', () => {
+        viewport.onscroll = () => {
           const index = Math.round(viewport.scrollLeft / viewport.clientWidth);
           const dots = paginationContainer.querySelectorAll('.dot');
           dots.forEach((dot, i) => {
             if (i === index) dot.classList.add('active');
             else dot.classList.remove('active');
           });
-        }, { passive: true });
+        };
       }
 
       if (window.sliderInterval) clearInterval(window.sliderInterval);
       if (shopData.Posters.length > 1) {
         window.sliderInterval = setInterval(() => {
-          if (!viewport) return;
+          if (!viewport || !viewport.offsetParent || document.hidden) return;
           const maxScroll = viewport.scrollWidth - viewport.clientWidth;
           
           if (viewport.scrollLeft >= maxScroll - 10) {
@@ -946,7 +946,7 @@ function updBarber(sel, id) {
   bSelect.innerHTML =
     arr.length > 0
       ? `<option value="" disabled selected>Pilih Barber</option>` +
-        arr.map((b) => `<option value="${b.id}">${b.name}</option>`).join("")
+        arr.map((b) => `<option value="${b.id}">${escapeHTML(b.name)}</option>`).join("")
       : `<option value="" disabled selected>Tiada Staff di Cawangan Ini</option>`;
 }
 
@@ -1023,9 +1023,9 @@ function renderProducts(searchQuery = "") {
       prodGrid.innerHTML = filtered.map(
         (p) => `
             <div class="product-card">
-                <img src="${p.imageUrl || "https://via.placeholder.com/150"}" class="product-img" alt="${p.name}" onerror="this.src='https://via.placeholder.com/150'">
+                <img src="${p.imageUrl || "https://via.placeholder.com/150"}" class="product-img" alt="${escapeHTML(p.name)}" onerror="this.src='https://via.placeholder.com/150'">
                 <div class="product-info">
-                    <div class="product-title">${p.name}</div>
+                    <div class="product-title">${escapeHTML(p.name)}</div>
                     <div class="product-price">RM ${parseFloat(p.price).toFixed(2)}</div>
                     <div class="card-actions mt-auto pt-2">
                         <div class="qty-control flex items-center justify-between bg-gray-100 rounded-lg p-1 flex-1">
@@ -1033,7 +1033,7 @@ function renderProducts(searchQuery = "") {
                             <span class="qty-num text-xs font-bold text-center w-5" id="temp-qty-${p.id}">1</span>
                             <button class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="changeTempQty('${p.id}', 1)">+</button>
                         </div>
-                        <button class="add-btn bg-gray-600 text-white rounded-lg px-2 py-1.5 text-xs font-bold" onclick="addToCart('${p.id}', '${(p.name || "").replace(/'/g, "\\'")}', ${parseFloat(p.price)}, '${p.imageUrl}')">${i18n_index[currentLang]["products-btn-add"]}</button>
+                        <button class="add-btn bg-gray-600 text-white rounded-lg px-2 py-1.5 text-xs font-bold" onclick="addToCart('${p.id}', '${escapeHTML(p.name || "")}', ${parseFloat(p.price)}, '${p.imageUrl}')">${i18n_index[currentLang]["products-btn-add"]}</button>
                     </div>
                 </div>
             </div>
@@ -1134,7 +1134,7 @@ function openEditCartPopup() {
                 <div style="display:flex; gap:10px; align-items:center;">
                     <img src="${item.imgUrl || "https://via.placeholder.com/40"}" style="width:40px; height:40px; border-radius:8px; object-fit:cover; pointer-events: none;">
                     <div>
-                        <div style="font-weight:600; font-size:13px; color:#111827;">${item.name}</div>
+                        <div style="font-weight:600; font-size:13px; color:#111827;">${escapeHTML(item.name)}</div>
                         <div style="color:#1877F2; font-size:11px; margin-top:2px;">RM ${parseFloat(item.price).toFixed(2)}</div>
                     </div>
                 </div>
@@ -1205,7 +1205,7 @@ function openCheckout(type) {
     for (let id in cartState) {
       let item = cartState[id];
       subtotal += item.price * item.qty;
-      itemsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><div><div style="font-weight:600; font-size:13px; color:#111827;">${item.name}</div><div style="font-size:11px; color:#6B7280; margin-top:2px;">Qty: ${item.qty}</div></div><div style="font-weight:600; font-size:13px; color:#111827;">RM ${(item.price * item.qty).toFixed(2)}</div></div>`;
+      itemsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><div><div style="font-weight:600; font-size:13px; color:#111827;">${escapeHTML(item.name)}</div><div style="font-size:11px; color:#6B7280; margin-top:2px;">Qty: ${item.qty}</div></div><div style="font-weight:600; font-size:13px; color:#111827;">RM ${(item.price * item.qty).toFixed(2)}</div></div>`;
     }
   } else {
     shippingCard.style.display = type === "oncall" ? "block" : "none";
@@ -1455,7 +1455,7 @@ function renderNotifications() {
           let trackInfo =
             (o.status === "Shipped" || o.status === "Received" || o.status === "Delivered") &&
             o.tracking_no
-              ? `<div style="font-size:13px; margin-top:8px; font-weight:700; color:var(--primary-blue); background:#F0F4FF; padding:8px 12px; border-radius:8px;">Tracking No: <span style="letter-spacing:1px; color:#1C1C1E;">${o.tracking_no}</span></div>`
+              ? `<div style="font-size:13px; margin-top:8px; font-weight:700; color:var(--primary-blue); background:#F0F4FF; padding:8px 12px; border-radius:8px;">Tracking No: <span style="letter-spacing:1px; color:#1C1C1E;">${escapeHTML(o.tracking_no)}</span></div>`
               : "";
           let actionBtn = "";
           if (o.status === "Shipped") {
@@ -1800,7 +1800,7 @@ function triggerResetBooking(orderNo, serviceName, staffId) {
 
   if (uniqueBarbers.length > 0) {
     uniqueBarbers.forEach(s => {
-      options += `<option value="${s.id}">${s.name}</option>`;
+      options += `<option value="${s.id}">${escapeHTML(s.name)}</option>`;
     });
   }
   barberSelect.innerHTML = options;

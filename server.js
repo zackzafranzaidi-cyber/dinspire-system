@@ -10,6 +10,7 @@ const supabase = require("./config/db");
 const logger = require("./utils/logger"); // Import Winston logger
 const { runAnnualArchive, runMonthlyArchive, runDailyCleanup } = require("./utils/archiver");
 const app = express();
+require("events").EventEmitter.defaultMaxListeners = 50; // [DIBAIKI] Tingkatkan had event listeners untuk trafik tinggi
 
 // ========================================================
 // [DIBAIKI] Tetapan Proksi untuk Load Balancer (Rate Limiter Fix)
@@ -120,7 +121,7 @@ app.disable("x-powered-by"); // Menghalang 'Information Disclosure' pelayan Expr
 app.use(helmet({
   contentSecurityPolicy: false, // Dimatikan untuk membenarkan pemuatan CDN luar (Leaflet/SweetAlert) dan skrip inline
 }));
-app.use(compression());
+app.use(compression({ level: 6 })); // [DIBAIKI] Mampatan Optimum Gzip/Brotli
 
 // [DIBAIKI] Menghalang Pelayar dari Menyimpan (Cache) Data Sensitif (JSON Leak)
 app.use((req, res, next) => {
@@ -167,7 +168,7 @@ const corsOptions = {
       allowedOrigins.includes(origin) ||
       origin === "https://dinspirebarbershop.com" ||
       (origin && origin.endsWith(".dinspirebarbershop.com")) ||
-      (origin && origin.endsWith(".vercel.app"))
+      (origin && origin === "https://din-barbershop-admin.vercel.app") // Locked specific Vercel app
     ) {
       callback(null, true);
     } else {
@@ -337,7 +338,11 @@ async function recoverSMSReminders() {
 // Mulakan Pelayan
 const PORT = process.env.PORT || 3000;
 // Mulakan pelayan pada port yang ditetapkan (Trigger Restart)
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
   console.log(`Server Dinspire berjalan di port ${PORT}`);
   await recoverSMSReminders(); // Jalankan Auto-Recovery selepas pelayan hidup
 });
+
+// [DIBAIKI] Penalaan Soket TCP Keep-Alive
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;

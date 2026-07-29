@@ -339,7 +339,8 @@ router.put(
   authenticate,
   requireRole(["staff", "owner"]),
   async (req, res) => {
-    const { orderNo } = req.params;
+    let { orderNo } = req.params;
+    orderNo = String(orderNo || "");
     const { final_price, receipt_url } = req.body;
 
     const parsedPrice = parseFloat(final_price);
@@ -407,7 +408,8 @@ router.put(
   authenticate,
   requireRole(["staff", "owner", "admin"]),
   async (req, res) => {
-    const { orderNo } = req.params;
+    let { orderNo } = req.params;
+    orderNo = String(orderNo || "");
     try {
       let tableName = "booking_records";
       if (orderNo.startsWith("TR")) tableName = "treatment_records";
@@ -685,12 +687,10 @@ router.post(
 
       if (error) throw error;
 
-
-
       try {
         // [DIBAIKI] Zon Masa Peringatan
         const bookingDateTime = new Date(`${date}T${time}+08:00`);
-        const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
+        /* const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
         if (reminderTime > new Date()) {
           schedule.scheduleJob(reminderTime, function() {
             console.log(`\n========================================`);
@@ -698,7 +698,7 @@ router.post(
             console.log(`Mesej: Peringatan! Sila bersedia di lokasi anda, Barber On-Call anda akan tiba dalam masa 2 jam.`);
             console.log(`========================================\n`);
           });
-        }
+        } */
       } catch (e) {
         console.error("Gagal menetapkan jadual peringatan SMS On-Call:", e);
       }
@@ -887,26 +887,17 @@ router.get(
       if (!cust)
         return res.json({ status: "error", message: "Akaun tidak dijumpai" });
 
-      const { data: prodOrders } = await supabase
-        .from("product_orders")
-        .select("id, senarai_produk, status, tracking_no, created_at")
-        .eq("customer_id", req.user.id);
-      const { data: bookOrders } = await supabase
-        .from("booking_records")
-        .select(
-          "no_booking, tarikh, masa, status, cancelled_by, created_at, staff_id, haircuts(nama_potongan)",
-        )
-        .eq("customer_id", req.user.id);
-      const { data: treatOrders } = await supabase
-        .from("treatment_records")
-        .select(
-          "no_booking, tarikh, masa, status, cancelled_by, created_at, staff_id, treatments(nama_rawatan)",
-        )
-        .eq("customer_id", req.user.id);
-      const { data: oncallOrders } = await supabase
-        .from("oncall_records")
-        .select("no_booking, tarikh, masa, status, cancelled_by, created_at, staff_id, address")
-        .eq("customer_id", req.user.id);
+      const [
+        { data: prodOrders },
+        { data: bookOrders },
+        { data: treatOrders },
+        { data: oncallOrders }
+      ] = await Promise.all([
+        supabase.from("product_orders").select("id, senarai_produk, status, tracking_no, created_at").eq("customer_id", req.user.id),
+        supabase.from("booking_records").select("no_booking, tarikh, masa, status, cancelled_by, created_at, staff_id, haircuts(nama_potongan)").eq("customer_id", req.user.id),
+        supabase.from("treatment_records").select("no_booking, tarikh, masa, status, cancelled_by, created_at, staff_id, treatments(nama_rawatan)").eq("customer_id", req.user.id),
+        supabase.from("oncall_records").select("no_booking, tarikh, masa, status, cancelled_by, created_at, staff_id, address").eq("customer_id", req.user.id)
+      ]);
 
       let allNotifications = [];
       (prodOrders || []).forEach((o) => {
@@ -1029,7 +1020,8 @@ router.post(
   authenticate,
   requireRole(["customer"]),
   async (req, res) => {
-    const { order_no, stars, review_text } = req.body;
+    let { order_no, stars, review_text } = req.body;
+    order_no = String(order_no || "");
       try {
         if (!order_no)
           return res
@@ -1059,10 +1051,21 @@ router.post(
           .select("no_booking, status, customer_id")
           .eq("no_booking", order_no)
           .maybeSingle();
-        if (treatment) targetOrder = treatment;
         
-        if (!booking && !treatment && (errBooking || errTreatment)) {
-           console.error("DB Error:", errBooking, errTreatment);
+        if (treatment) {
+          targetOrder = treatment;
+        } else {
+          const { data: oncall, error: errOncall } = await supabase
+            .from("oncall_records")
+            .select("no_booking, status, customer_id")
+            .eq("no_booking", order_no)
+            .maybeSingle();
+            
+          if (oncall) targetOrder = oncall;
+          
+          if (!booking && !treatment && !oncall && (errBooking || errTreatment || errOncall)) {
+             console.error("DB Error:", errBooking, errTreatment, errOncall);
+          }
         }
       }
 
@@ -1089,7 +1092,7 @@ router.post(
       }
         
       // [DIBAIKI] DB Exhaustion (Pengehadan Panjang Teks Ulasan)
-      const safeReviewText = String(review_text || "").substring(0, 500);
+      const safeReviewText = String(review_text || "").replace(/<[^>]*>?/gm, "").substring(0, 500);
 
       const { error } = await supabase
         .from("reviews")
@@ -1194,7 +1197,7 @@ router.get("/fpx/verify", async (req, res) => {
       .eq(tableName === "product_orders" ? "id" : "no_booking", tableName === "product_orders" ? order_id.replace("PRD-", "") : order_id)
       .single();
 
-    if (existingData && existingData.resit && existingData.resit.startsWith("FPX_PENDING:")) {
+    if (existingData && existingData.resit && (typeof existingData.resit === "string" && existingData.resit.startsWith("FPX_PENDING:"))) {
       // Hanya kemaskini jika ia masih PENDING
       const { error } = await supabase
         .from(tableName)

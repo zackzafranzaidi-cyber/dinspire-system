@@ -316,7 +316,7 @@ async function fetchServicesForWalkin() {
       shopSettings.walkin
         .map(
           (s) =>
-            `<option value="${s.id}" data-price="${s.price}">${s.name}</option>`,
+            `<option value="${s.id}" data-price="${s.price}">${escapeHTML(s.name)}</option>`,
         )
         .join("");
   } catch (err) {}
@@ -332,7 +332,7 @@ async function loadBranchOptions() {
       select.innerHTML =
         '<option value="" disabled selected>Pilih Cawangan</option>' +
         data.Branches.map(
-          (b) => `<option value="${b.id}">${b.name}</option>`,
+          (b) => `<option value="${b.id}">${escapeHTML(b.name)}</option>`,
         ).join("");
     }
   } catch (e) {
@@ -825,7 +825,7 @@ function submitPunch(type) {
           statusText.innerHTML = `<span style="color:var(--success);">Berjaya ${type}</span>`;
           showToast(data.message);
         } else {
-          statusText.innerHTML = `<span style="color:var(--danger);">${data.message}</span>`;
+          statusText.innerHTML = `<span style="color:var(--danger);">${escapeHTML(data.message)}</span>`;
         }
       })
       .catch((e) => {
@@ -855,7 +855,7 @@ function submitPunch(type) {
       hantarDataKePelayan(locLink, pLat, pLon);
     },
     (error) => {
-      statusText.innerHTML = `<span style="color:var(--danger);">GPS Gagal: ${error.message}. Lokasi Default digunakan.</span>`;
+      statusText.innerHTML = `<span style="color:var(--danger);">GPS Gagal: ${escapeHTML(error.message)}. Lokasi Default digunakan.</span>`;
       hantarDataKePelayan("GPS Tidak Dibenarkan / Gagal Dikesan", 0, 0);
     },
     { enableHighAccuracy: true, timeout: 10000 },

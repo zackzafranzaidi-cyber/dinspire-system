@@ -35,6 +35,8 @@ function isValidImageBuffer(buffer) {
 
 // [DIBAIKI] Fungsi Upload Keselamatan Tinggi (Anti-Malware & Regex DoS)
 async function uploadToStorage(base64Image, folder, namePrefix) {
+  namePrefix = String(namePrefix || "").replace(/[^a-zA-Z0-9_-]/g, ""); // Anti Path Traversal
+
   if (!base64Image || !base64Image.startsWith("data:image")) return base64Image;
   
   // [DIBAIKI] Pembekuan Teras Pemproses (Regex DoS)
@@ -412,23 +414,10 @@ router.post(
         }
 
         const stringData = JSON.stringify(finalPosters);
-        const { data: chk } = await supabase
+        const { error: upsertErr } = await supabase
           .from("settings")
-          .select("setting_key")
-          .eq("setting_key", "posters");
-
-        if (chk && chk.length > 0) {
-          const { error: updErr } = await supabase
-            .from("settings")
-            .update({ setting_value: stringData })
-            .eq("setting_key", "posters");
-          if (updErr) throw updErr;
-        } else {
-          const { error: insErr } = await supabase
-            .from("settings")
-            .insert([{ setting_key: "posters", setting_value: stringData }]);
-          if (insErr) throw insErr;
-        }
+          .upsert([{ setting_key: "posters", setting_value: stringData }], { onConflict: "setting_key" });
+        if (upsertErr) throw upsertErr;
       }
 
       // SIMPAN FEE KE JADUAL SETTINGS
@@ -441,22 +430,10 @@ router.post(
 
         for (let s of settingKeys) {
           if (s.val !== undefined && s.val !== null) {
-            const { data: chk } = await supabase
+            const { error: upsertErr } = await supabase
               .from("settings")
-              .select("setting_key")
-              .eq("setting_key", s.key);
-            if (chk && chk.length > 0) {
-              const { error: updErr } = await supabase
-                .from("settings")
-                .update({ setting_value: String(s.val) })
-                .eq("setting_key", s.key);
-              if (updErr) throw updErr;
-            } else {
-              const { error: insErr } = await supabase
-                .from("settings")
-                .insert([{ setting_key: s.key, setting_value: String(s.val) }]);
-              if (insErr) throw insErr;
-            }
+              .upsert([{ setting_key: s.key, setting_value: String(s.val) }], { onConflict: "setting_key" });
+            if (upsertErr) throw upsertErr;
           }
         }
       }
@@ -531,7 +508,8 @@ router.put(
   authenticate,
   requireRole(["admin", "owner"]),
   async (req, res) => {
-    const { id } = req.params;
+    let { id } = req.params;
+    id = String(id || "");
     const { field, value } = req.body;
     
     if (field !== "can_haircut" && field !== "can_treatment") {

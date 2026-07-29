@@ -31,3 +31,13 @@ module.exports = {
         console.log('[CACHE] Semua cache dikosongkan.');
     }
 };
+
+// Active expiration to prevent memory leak
+setInterval(() => {
+    const now = Date.now();
+    for (let key in cache) {
+        if (cache[key].expiry > 0 && cache[key].expiry <= now) {
+            delete cache[key];
+        }
+    }
+}, 10 * 60 * 1000);
