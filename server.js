@@ -45,7 +45,7 @@ setInterval(() => {
 // ========================================================
 // [DIBAIKI] Pembersihan Automatik Tempahan Terbengkalai (Anti Slot-Hoarding)
 // ========================================================
-schedule.scheduleJob("*/5 * * * *", async () => {
+schedule.scheduleJob({ rule: "*/5 * * * *", tz: "Asia/Kuala_Lumpur" }, async () => {
   try {
     const timeLimit = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     
@@ -62,7 +62,7 @@ schedule.scheduleJob("*/5 * * * *", async () => {
 // ========================================================
 // [DIBAIKI] Pembersihan Automatik Rekod Cuti Lepas (Jimat Storan)
 // ========================================================
-schedule.scheduleJob("0 0 1 * *", async () => {
+schedule.scheduleJob({ rule: "0 0 1 * *", tz: "Asia/Kuala_Lumpur" }, async () => {
   // Berjalan pada 12:00 AM setiap 1 haribulan
   try {
     const now = new Date();
@@ -82,7 +82,7 @@ schedule.scheduleJob("0 0 1 * *", async () => {
 // ========================================================
 // [BAHARU] Cron Job: Pengarkiban Data Tahunan (Setiap 31 Disember, 11:59 Malam)
 // ========================================================
-schedule.scheduleJob("59 23 31 12 *", async () => {
+schedule.scheduleJob({ rule: "59 23 31 12 *", tz: "Asia/Kuala_Lumpur" }, async () => {
   try {
     console.log("CRON: Memulakan rutin Pengarkiban Data Tahunan...");
     await runAnnualArchive(false); // Produksi (Gunakan emel .env jika ada)
@@ -94,7 +94,7 @@ schedule.scheduleJob("59 23 31 12 *", async () => {
 // ========================================================
 // [BAHARU] Cron Job: Laporan Bulanan (Setiap 1 haribulan, 2:00 Pagi)
 // ========================================================
-schedule.scheduleJob("0 2 1 * *", async () => {
+schedule.scheduleJob({ rule: "0 2 1 * *", tz: "Asia/Kuala_Lumpur" }, async () => {
   try {
     console.log("CRON: Memulakan rutin Laporan Bulanan...");
     await runMonthlyArchive(false);
@@ -106,7 +106,7 @@ schedule.scheduleJob("0 2 1 * *", async () => {
 // ========================================================
 // [BAHARU] Cron Job: Pembersihan Harian (Setiap Hari, 3:00 Pagi)
 // ========================================================
-schedule.scheduleJob("0 3 * * *", async () => {
+schedule.scheduleJob({ rule: "0 3 * * *", tz: "Asia/Kuala_Lumpur" }, async () => {
   try {
     console.log("CRON: Memulakan rutin Pembersihan Harian...");
     await runDailyCleanup();
