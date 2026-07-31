@@ -2084,3 +2084,92 @@ async function forceApproveLeave() {
     alert("Ralat kelulusan akhir.");
   }
 }
+
+// ==========================================
+// MARKETING & REVIEWS TAB LOGIC
+// ==========================================
+function toggleRevTab(tab) {
+  document.getElementById("rev-list-view").classList.add("hidden");
+  document.getElementById("rev-marketing-view").classList.add("hidden");
+
+  if (tab === "reviews") {
+    document.getElementById("rev-list-view").classList.remove("hidden");
+  } else if (tab === "marketing") {
+    document.getElementById("rev-marketing-view").classList.remove("hidden");
+    fetchMarketingData();
+  }
+}
+
+let marketingCustomers = [];
+
+async function fetchMarketingData() {
+  const token = localStorage.getItem("din_token_sys");
+  try {
+    const res = await fetch("/api/owner/marketing-customers", {
+      headers: { Authorization: "Bearer " + token },
+    });
+    if (!res.ok) throw new Error("Failed to fetch marketing data");
+    marketingCustomers = await res.json();
+    renderMarketingTable();
+  } catch (err) {
+    console.error(err);
+    document.getElementById("table-marketing").innerHTML = `<div class="text-center p-4 text-red-500">Gagal memuat turun data pelanggan.</div>`;
+  }
+}
+
+function renderMarketingTable() {
+  const container = document.getElementById("table-marketing");
+  if (!marketingCustomers || marketingCustomers.length === 0) {
+    container.innerHTML = `<div class="text-center p-4 text-gray-500">Tiada rekod pelanggan dijumpai.</div>`;
+    return;
+  }
+  
+  let html = `<table class="w-full text-sm text-left">
+    <thead class="text-xs text-gray-500 bg-gray-200 sticky top-0 shadow-sm uppercase tracking-wider">
+      <tr>
+        <th class="py-3 px-4">Nama Pelanggan</th>
+        <th class="py-3 px-4">No. Telefon</th>
+        <th class="py-3 px-4 text-center">Tindakan</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200 bg-white">`;
+
+  marketingCustomers.forEach((c) => {
+    // create whatsapp message
+    const waText = encodeURIComponent(`Salam sejahtera ${c.name}, kami dari Dinspire Barbershop ingin menjemput anda sertai group WhatsApp rasmi kami untuk promosi terkini! Sila klik link: https://chat.whatsapp.com/xxx`);
+    const waLink = `https://wa.me/${c.phone}?text=${waText}`;
+
+    html += `<tr class="hover:bg-gray-50 transition">
+      <td class="py-3 px-4 font-bold text-gray-800">${escapeHTML(c.name)} <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2 font-normal">${c.source}</span></td>
+      <td class="py-3 px-4 font-semibold text-gray-600">${c.phone}</td>
+      <td class="py-3 px-4 text-center">
+        <a href="${waLink}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs shadow-sm font-bold transition inline-flex items-center">
+          <i class="fab fa-whatsapp text-sm mr-1"></i> Jemput
+        </a>
+      </td>
+    </tr>`;
+  });
+  
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+}
+
+function exportMarketingCSV() {
+  if (!marketingCustomers || marketingCustomers.length === 0) return alert("Tiada data untuk dieksport.");
+  
+  let csv = "Nama Pelanggan,No Telefon,Sumber\n";
+  marketingCustomers.forEach(c => {
+    // Add quotes to escape commas in names
+    csv += `"${c.name}","${c.phone}","${c.source}"\n`;
+  });
+  
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "Senarai_Pemasaran_Pelanggan.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+

@@ -552,4 +552,52 @@ router.post(
   }
 );
 
+// Pemasaran (Marketing) - Ekstrak Pelanggan Tanpa Berulang
+router.get(
+  "/marketing-customers",
+  limitBiasa,
+  requireRole(["owner"]),
+  async (req, res) => {
+    try {
+      const [ { data: customers }, { data: walkins } ] = await Promise.all([
+        supabase.from("customers").select("username, no_phone"),
+        supabase.from("walkin_records").select("nama_pelanggan, no_phone").not("no_phone", "is", null)
+      ]);
+      
+      const uniqueCustomers = new Map();
+      
+      // Standardize phone number function
+      const formatPhone = (phone) => {
+        let p = phone.replace(/\D/g, "");
+        if (p.startsWith("0")) p = "6" + p;
+        else if (p.startsWith("+60")) p = p.substring(1);
+        else if (!p.startsWith("60")) p = "60" + p;
+        return p;
+      };
+
+      (walkins || []).forEach(w => {
+        if (w.no_phone && w.no_phone.length > 5) {
+          const p = formatPhone(w.no_phone);
+          if (!uniqueCustomers.has(p)) {
+            uniqueCustomers.set(p, { name: w.nama_pelanggan, phone: p, source: "Walk-In" });
+          }
+        }
+      });
+      
+      (customers || []).forEach(c => {
+        if (c.no_phone && c.no_phone.length > 5) {
+          const p = formatPhone(c.no_phone);
+          // Override name from registered customer as it's more accurate
+          uniqueCustomers.set(p, { name: c.username, phone: p, source: "Berdaftar" });
+        }
+      });
+
+      res.json(Array.from(uniqueCustomers.values()));
+    } catch (err) {
+      console.error("Marketing API Error:", err);
+      res.status(500).json({ error: "Ralat pelayan" });
+    }
+  }
+);
+
 module.exports = router;
