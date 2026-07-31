@@ -1519,23 +1519,30 @@ function initChart() {
   const ctx5 = document.getElementById("branchChart");
   if (ctx5) {
     branchChartObj = new Chart(ctx5.getContext("2d"), {
-      type: "doughnut",
+      type: "bar",
       data: {
         labels: [],
         datasets: [
           {
+            label: "Jualan (RM)",
             data: [],
             backgroundColor: [
               "#111827", "#374151", "#4b5563", "#6b7280", "#9ca3af", "#d1d5db",
             ],
+            borderRadius: 4
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "right", labels: { boxWidth: 10 } } },
-        cutout: "65%",
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 }
+          }
+        }
       },
     });
   }
