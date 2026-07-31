@@ -1751,18 +1751,32 @@ function updateBarChart(bookings, orders, filterType) {
     let datasets = [];
     let colorIndex = 0;
     
+    const ctxChart = document.getElementById("branchLineChart").getContext("2d");
+    const hexToRgb = (hex) => {
+      let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : "0,0,0";
+    };
+
     Object.keys(branchDataPoints).forEach(br => {
       // Abaikan cawangan jika tiada jualan langsung untuk jadikan graf kemas
       let totalSales = branchDataPoints[br].reduce((sum, val) => sum + val, 0);
       if (totalSales > 0) {
+        let baseColor = bColors[colorIndex % bColors.length];
+        let rgbColor = hexToRgb(baseColor);
+        let gradient = ctxChart.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, `rgba(${rgbColor}, 0.5)`);
+        gradient.addColorStop(1, `rgba(${rgbColor}, 0.0)`);
+
         datasets.push({
           label: br,
           data: branchDataPoints[br],
-          borderColor: bColors[colorIndex % bColors.length],
-          backgroundColor: bColors[colorIndex % bColors.length],
-          tension: 0.3,
+          borderColor: baseColor,
+          backgroundColor: gradient,
+          fill: true,
+          tension: 0.4,
           borderWidth: 2,
-          pointRadius: 2
+          pointRadius: 0,
+          pointHoverRadius: 5
         });
         colorIndex++;
       }
