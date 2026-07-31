@@ -558,16 +558,18 @@ router.get(
   requireRole(["owner"]),
   async (req, res) => {
     try {
-      const [ { data: customers }, { data: walkins } ] = await Promise.all([
-        supabase.from("customers").select("username, no_phone"),
+      const [resCustomers, resWalkins] = await Promise.all([
+        supabase.from("customers").select("name, phone"),
         supabase.from("walkin_records").select("nama_pelanggan, no_phone").not("no_phone", "is", null)
       ]);
       
+      const customers = resCustomers.data;
+      const walkins = resWalkins.data;
+      
       const uniqueCustomers = new Map();
       
-      // Standardize phone number function
       const formatPhone = (phone) => {
-        let p = phone.replace(/\D/g, "");
+        let p = String(phone).replace(/\D/g, "");
         if (p.startsWith("0")) p = "6" + p;
         else if (p.startsWith("+60")) p = p.substring(1);
         else if (!p.startsWith("60")) p = "60" + p;
@@ -575,26 +577,27 @@ router.get(
       };
 
       (walkins || []).forEach(w => {
-        if (w.no_phone && w.no_phone.length > 5) {
+        if (w.no_phone) {
           const p = formatPhone(w.no_phone);
-          if (!uniqueCustomers.has(p)) {
-            uniqueCustomers.set(p, { name: w.nama_pelanggan, phone: p, source: "Walk-In" });
+          if (p.length > 5 && !uniqueCustomers.has(p)) {
+            uniqueCustomers.set(p, { name: w.nama_pelanggan || "Walk-In", phone: p, source: "Walk-In" });
           }
         }
       });
       
       (customers || []).forEach(c => {
-        if (c.no_phone && c.no_phone.length > 5) {
-          const p = formatPhone(c.no_phone);
-          // Override name from registered customer as it's more accurate
-          uniqueCustomers.set(p, { name: c.username, phone: p, source: "Berdaftar" });
+        if (c.phone) {
+          const p = formatPhone(c.phone);
+          if (p.length > 5) {
+            uniqueCustomers.set(p, { name: c.name || "Pelanggan Dinspire", phone: p, source: "Berdaftar" });
+          }
         }
       });
 
       res.json(Array.from(uniqueCustomers.values()));
     } catch (err) {
       console.error("Marketing API Error:", err);
-      res.status(500).json({ error: "Ralat pelayan" });
+      res.status(500).json({ error: "Ralat pelayan: " + err.message });
     }
   }
 );
