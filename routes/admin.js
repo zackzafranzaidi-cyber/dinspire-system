@@ -535,10 +535,12 @@ router.put(
   }
 );
 
-module.exports = router;
+
 
 const { getSMSBalance } = require('../utils/sms');
 router.get('/sms-balance', authenticate, requireRole(['owner', 'admin']), async (req, res) => {
   const balance = await getSMSBalance();
   res.json({ status: 'success', balance });
 });
+
+module.exports = router;
