@@ -58,12 +58,14 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
     const targetMonth = now.getMonth() === 0 ? 12 : now.getMonth();
     const targetYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
     
-    let startM = targetMonth - 1;
+    let startM = targetMonth;
     let startY = targetYear;
-    if (startM === 0) { startM = 12; startY -= 1; }
+    let endM = targetMonth + 1;
+    let endY = targetYear;
+    if (endM > 12) { endM = 1; endY += 1; }
     
     const startDate = new Date(`${startY}-${String(startM).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
-    const endDate = new Date(`${targetYear}-${String(targetMonth).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
+    const endDate = new Date(`${endY}-${String(endM).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
 
     const [
       { data: bookings },
@@ -259,14 +261,26 @@ async function runAnnualArchive(isTest = false, targetEmail = "") {
       await supabase.storage.from("receipts").remove(allImages.slice(i, i + chunkSize));
     }
 
+    console.log("Memadam semua fail ZIP arkib bulanan dari storan...");
+    const { data: zipFiles } = await supabase.storage.from("receipts").list("archives");
+    if (zipFiles && zipFiles.length > 0) {
+      // Abaikan folder dummy jika ada
+      const validZips = zipFiles.filter(f => f.name.endsWith(".zip"));
+      if (validZips.length > 0) {
+        const zipsToDelete = validZips.map(f => `archives/${f.name}`);
+        for (let i = 0; i < zipsToDelete.length; i += chunkSize) {
+          await supabase.storage.from("receipts").remove(zipsToDelete.slice(i, i + chunkSize));
+        }
+      }
+    }
+
     console.log("Memadam semua rekod mentah dari pangkalan data...");
-    const dummyFilterId = "00000000-0000-0000-0000-000000000000";
     await Promise.all([
-      supabase.from("booking_records").delete().neq("id", dummyFilterId),
-      supabase.from("walkin_records").delete().neq("id", dummyFilterId),
-      supabase.from("oncall_records").delete().neq("id", dummyFilterId),
-      supabase.from("treatment_records").delete().neq("id", dummyFilterId),
-      supabase.from("product_orders").delete().neq("id", dummyFilterId),
+      supabase.from("booking_records").delete().not("no_booking", "is", null),
+      supabase.from("walkin_records").delete().not("id", "is", null),
+      supabase.from("oncall_records").delete().not("no_booking", "is", null),
+      supabase.from("treatment_records").delete().not("id", "is", null),
+      supabase.from("product_orders").delete().not("id", "is", null),
     ]);
 
     console.log("Master Cleanup Selesai!");
