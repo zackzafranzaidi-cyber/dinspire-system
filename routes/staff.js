@@ -3,6 +3,7 @@ const router = express.Router();
 const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
 const schedule = require("node-schedule"); // [DIBAIKI] Ditambah untuk jadual SMS
+const { sendSMS } = require("../utils/sms");
 
 // ==========================================
 // 1. Papan Pemuka Tugasan Staf (Dashboard)
@@ -604,11 +605,9 @@ router.post(
           const bookingDateTime = new Date(`${data.tarikh}T${data.masa}`);
           const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
           if (reminderTime > new Date()) {
-            schedule.scheduleJob(reminderTime, function() {
-              console.log(`\n========================================`);
-              console.log(`[SIMULASI SMS - PERINGATAN 2 JAM] Hantar ke: ${data.no_phone}`);
-              console.log(`Mesej: Peringatan mesra! Tempahan anda (${order_no}) akan bermula pada ${data.masa}. Sila hadir awal.`);
-              console.log(`========================================\n`);
+            schedule.scheduleJob(reminderTime, async function() {
+              const reminderMsg = `Peringatan mesra! Tempahan anda (${order_no}) akan bermula pada ${data.masa}. Sila hadir awal.`;
+              await sendSMS(data.no_phone, reminderMsg, false);
             });
           }
         }

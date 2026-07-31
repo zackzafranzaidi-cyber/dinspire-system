@@ -8,6 +8,7 @@ const rateLimit = require("express-rate-limit");
 const schedule = require("node-schedule");
 const supabase = require("./config/db");
 const logger = require("./utils/logger"); // Import Winston logger
+const { sendSMS } = require("./utils/sms");
 const { runAnnualArchive, runMonthlyArchive, runDailyCleanup } = require("./utils/archiver");
 const app = express();
 require("events").EventEmitter.defaultMaxListeners = 50; // [DIBAIKI] Tingkatkan had event listeners untuk trafik tinggi
@@ -301,8 +302,9 @@ async function recoverSMSReminders() {
         const reminderTime = new Date(bDate.getTime() - 2 * 60 * 60 * 1000);
         
         if (reminderTime > new Date()) {
-          schedule.scheduleJob(reminderTime, function() {
-            console.log(`\n[AUTO-RECOVERY SMS] Hantar ke: ${b.no_phone} | Tempahan: ${b.no_booking}`);
+          schedule.scheduleJob(reminderTime, async function() {
+            const reminderMsg = `Peringatan mesra! Tempahan anda (${b.no_booking}) akan bermula pada ${b.masa}. Sila hadir awal.`;
+            await sendSMS(b.no_phone, reminderMsg, false);
           });
         }
       });
@@ -322,8 +324,13 @@ async function recoverSMSReminders() {
         const reminderTime = new Date(oDate.getTime() - 2 * 60 * 60 * 1000);
         
         if (reminderTime > new Date()) {
-          schedule.scheduleJob(reminderTime, function() {
-            console.log(`\n[AUTO-RECOVERY SMS] Hantar ke Pelanggan On-Call ID: ${o.customer_id} | Tempahan: ${o.no_booking}`);
+          schedule.scheduleJob(reminderTime, async function() {
+            // Need to get customer's phone for oncall
+            const { data: cust } = await supabase.from("customers").select("phone").eq("id", o.customer_id).maybeSingle();
+            if (cust && cust.phone) {
+              const oncallMsg = `Peringatan! Sila bersedia di lokasi anda, Barber On-Call anda akan tiba dalam masa 2 jam.`;
+              await sendSMS(cust.phone, oncallMsg, false);
+            }
           });
         }
       });

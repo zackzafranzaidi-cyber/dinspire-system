@@ -5,6 +5,7 @@ const { authenticate, requireRole } = require("../middleware/auth");
 const crypto = require("crypto");
 const cache = require("../utils/cache");
 const schedule = require("node-schedule");
+const { sendSMS } = require("../utils/sms");
 
 // ==========================================
 // [DIBAIKI] Fungsi Keselamatan: Semak Magic Number Fail (Bukan sekadar Regex)
@@ -690,15 +691,13 @@ router.post(
       try {
         // [DIBAIKI] Zon Masa Peringatan
         const bookingDateTime = new Date(`${date}T${time}+08:00`);
-        /* const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
+        const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
         if (reminderTime > new Date()) {
-          schedule.scheduleJob(reminderTime, function() {
-            console.log(`\n========================================`);
-            console.log(`[SIMULASI SMS - PERINGATAN ON-CALL 2 JAM] Hantar kepada Pelanggan: ${cust.name}`);
-            console.log(`Mesej: Peringatan! Sila bersedia di lokasi anda, Barber On-Call anda akan tiba dalam masa 2 jam.`);
-            console.log(`========================================\n`);
+          schedule.scheduleJob(reminderTime, async function() {
+            const oncallMsg = `Peringatan! Sila bersedia di lokasi anda, Barber On-Call anda akan tiba dalam masa 2 jam.`;
+            await sendSMS(cust.phone, oncallMsg, false);
           });
-        } */
+        }
       } catch (e) {
         console.error("Gagal menetapkan jadual peringatan SMS On-Call:", e);
       }
@@ -990,7 +989,7 @@ router.put(
     const safeTrackingNo = String(tracking_no || "Tiada").replace(/<[^>]*>?/gm, "").substring(0, 100);
 
     try {
-      const { data: order } = await supabase.from("product_orders").select("status").eq("id", req.params.id).maybeSingle();
+      const { data: order } = await supabase.from("product_orders").select("status, customer_id").eq("id", req.params.id).maybeSingle();
       if (!order) return res.status(404).json({ status: "error", message: "Pesanan tidak dijumpai." });
 
       const { error } = await supabase
@@ -1000,10 +999,11 @@ router.put(
       if (error) throw error;
 
       if (order.status !== "Shipped") {
-        console.log(`\n========================================`);
-        console.log(`[SIMULASI SMS - ORDER SHIPPED] Hantar untuk order ID: ${req.params.id}`);
-        console.log(`Mesej: Pesanan anda telah dihantar! No Tracking: ${safeTrackingNo}. Terima kasih kerana membeli-belah dengan Dinspire!`);
-        console.log(`========================================\n`);
+        const { data: cust } = await supabase.from("customers").select("phone").eq("id", order.customer_id).maybeSingle();
+        if (cust && cust.phone) {
+          const shippedMsg = `Pesanan anda telah dihantar! No Tracking: ${safeTrackingNo}. Terima kasih kerana membeli-belah dengan Dinspire!`;
+          await sendSMS(cust.phone, shippedMsg, false);
+        }
       }
       res.json({
         status: "success",

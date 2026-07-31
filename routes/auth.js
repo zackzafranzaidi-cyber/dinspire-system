@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const rateLimit = require("express-rate-limit");
+const { sendSMS } = require("../utils/sms");
 
 // ==========================================
 // LIMITER
@@ -58,12 +59,16 @@ router.post("/request-otp", otpLimiter, async (req, res) => {
       .status(500)
       .json({ status: "error", message: "Ralat pelayan semasa menjana OTP." });
 
-  console.log(`\n========================================`);
-  console.log(`[SIMULASI SMS] Hantar ke: ${phone}`);
-  console.log(
-    `Mesej: Kod OTP Dinspire anda ialah ${otpCode}. Sah untuk 5 minit.`,
-  );
-  console.log(`========================================\n`);
+  // ==========================================
+  // HANTAR SMS SEBENAR KEPADA PELANGGAN
+  // ==========================================
+  const otpMsg = `Kod OTP Dinspire anda ialah ${otpCode}. Sah untuk 5 minit.`;
+  try {
+    // Parameter ke-3 = true (supaya ralat dilemparkan jika SMS gagal)
+    await sendSMS(phone, otpMsg, true);
+  } catch (error) {
+    return res.status(500).json({ error: "Gagal menghantar SMS OTP. Sila pastikan nombor telefon anda sah atau hubungi admin." });
+  }
 
   res.json({
     status: "success",
@@ -237,10 +242,15 @@ router.post("/forgot-password/request-otp", otpLimiter, async (req, res) => {
   await supabase.from("otps").upsert([{ phone, otp_code: otpCode, expires_at: expiresAt }], { onConflict: "phone" });
   otpAttempts[phone] = 0;
 
-  console.log(`\n========================================`);
-  console.log(`[SIMULASI SMS - LUPA KATA LALUAN] Hantar ke: ${phone}`);
-  console.log(`Mesej: Kod OTP tetapan semula kata laluan anda ialah ${otpCode}.`);
-  console.log(`========================================\n`);
+  // ==========================================
+  // HANTAR SMS LUPA KATA LALUAN
+  // ==========================================
+  const otpMsg = `Kod OTP tetapan semula kata laluan anda ialah ${otpCode}.`;
+  try {
+    await sendSMS(phone, otpMsg, true);
+  } catch (error) {
+    return res.status(500).json({ error: "Gagal menghantar SMS Lupa Kata Laluan. Sila semak no telefon anda." });
+  }
 
   res.json({ status: "success", message: "Kod OTP telah dihantar untuk menetapkan semula kata laluan." });
 });
