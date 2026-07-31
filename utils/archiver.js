@@ -125,16 +125,10 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
     await processData(products, "Produk");
 
     let csvData = allRawCsvData.length > 0 ? new Parser().parse(allRawCsvData) : "Tiada Rekod Bulan Ini.";
-    let zipUrl = "";
+    let zipBuffer = null;
+    let zipFilename = `Arkib_Resit_${targetYear}_${targetMonth}.zip`;
     if (hasImages) {
-      const zipBuffer = zip.toBuffer();
-      const zipFilename = `Arkib_Resit_${targetYear}_${targetMonth}.zip`;
-      const { data: uploadData, error: uploadErr } = await supabase.storage.from("receipts").upload(`archives/${zipFilename}`, zipBuffer, { contentType: "application/zip", upsert: true });
-      if (uploadErr) console.error("ZIP Upload Error:", uploadErr);
-      if (!uploadErr) {
-        const { data: publicUrlData } = supabase.storage.from("receipts").getPublicUrl(`archives/${zipFilename}`);
-        zipUrl = publicUrlData.publicUrl;
-      }
+      zipBuffer = zip.toBuffer();
     }
 
     let transporter;
@@ -145,14 +139,19 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
       transporter = nodemailer.createTransport({ host: "smtp.ethereal.email", port: 587, secure: false, auth: { user: testAccount.user, pass: testAccount.pass } });
     }
 
+    const attachments = [{ filename: `Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, content: csvData }];
+    if (zipBuffer) {
+      attachments.push({ filename: zipFilename, content: zipBuffer });
+    }
+
     const mailOptions = {
       from: '"Sistem Dinspire" <admin@dinspire.com>',
       to: targetEmail || process.env.OWNER_EMAIL || "zafran.zaidi@gmail.com",
       subject: `Laporan Bulanan Dinspire - Bulan ${targetMonth}/${targetYear}`,
       text: `Salam Tuan,\n\nDilampirkan adalah laporan CSV untuk bulan ${targetMonth}/${targetYear}.\n\n` +
-            (zipUrl ? `Oleh kerana saiz gambar yang besar, kesemua resit bulan ini telah dimampatkan ke dalam fail ZIP. Sila muat turun di sini:\n${zipUrl}\n\n` : (hasImages ? "Terdapat gambar resit bulan ini, tetapi fail ZIP gagal dimuat naik kerana saiznya terlalu besar.\n\n" : "Tiada gambar resit untuk bulan ini.\n\n")) +
+            (zipBuffer ? `Kesemua gambar resit bulan ini turut dilampirkan dalam fail ZIP berasingan bersama emel ini.\n\n` : "Tiada gambar resit untuk bulan ini.\n\n") +
             `Terima kasih.`,
-      attachments: [{ filename: `Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, content: csvData }],
+      attachments: attachments,
     };
 
     let info = await transporter.sendMail(mailOptions);
