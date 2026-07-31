@@ -14,7 +14,7 @@ let masterData = {
   commissionPercent: 50,
 };
 let mapBarberBranch = {};
-let salesChartObj, demoChartObj, payChartObj, staffChartObj;
+let salesChartObj, demoChartObj, payChartObj, staffChartObj, branchChartObj;
 let hasAutoTriggeredAI = false;
 let currentInsightAbortController = null;
 let currentActiveTab = "dashboard";
@@ -755,6 +755,23 @@ function processData() {
       staffChartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
     }
     animateChartWhenVisible(staffChartObj, "staffChart");
+  }
+
+  if (branchChartObj) {
+    let bNames = Object.keys(branchStats);
+    let totalBranchSales = bNames.reduce((sum, n) => sum + branchStats[n].sales, 0);
+    if (bNames.length > 0 && totalBranchSales > 0) {
+      branchChartObj.data.labels = bNames;
+      branchChartObj.data.datasets[0].data = bNames.map(n => branchStats[n].sales);
+      branchChartObj.data.datasets[0].backgroundColor = [
+        "#111827", "#374151", "#4b5563", "#6b7280", "#9ca3af", "#d1d5db"
+      ];
+    } else {
+      branchChartObj.data.labels = ["Tiada Data"];
+      branchChartObj.data.datasets[0].data = [1];
+      branchChartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
+    }
+    animateChartWhenVisible(branchChartObj, "branchChart");
   }
 
   renderBranchTable(branchStats);
@@ -1498,6 +1515,30 @@ function initChart() {
       cutout: "65%",
     },
   });
+
+  const ctx5 = document.getElementById("branchChart");
+  if (ctx5) {
+    branchChartObj = new Chart(ctx5.getContext("2d"), {
+      type: "doughnut",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            data: [],
+            backgroundColor: [
+              "#111827", "#374151", "#4b5563", "#6b7280", "#9ca3af", "#d1d5db",
+            ],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "right", labels: { boxWidth: 10 } } },
+        cutout: "65%",
+      },
+    });
+  }
 }
 
 function updateBarChart(bookings, orders, filterType) {
