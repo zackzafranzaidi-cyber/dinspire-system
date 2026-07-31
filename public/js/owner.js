@@ -2457,3 +2457,19 @@ async function fetchSMSBalance() {
     console.error("Gagal mengambil baki SMS:", e);
   }
 }
+
+async function triggerEmailTest() {
+  if (!confirm("Sistem akan menjana fail arkib ZIP dari pangkalan data sebenar dan menghantarnya ke emel anda sekarang. Teruskan?")) return;
+  try {
+    const res = await fetch("/api/owner/trigger-monthly-archive");
+    const data = await res.json();
+    if (data.status === "success") {
+      alert("Emel berjaya dihantar! Sila semak peti masuk anda.");
+    } else {
+      alert("Ralat: " + data.message);
+    }
+  } catch (err) {
+    alert("Gagal menghubungi pelayan.");
+  }
+}
+
