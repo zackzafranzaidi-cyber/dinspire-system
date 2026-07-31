@@ -1,5 +1,5 @@
 const { Parser } = require("json2csv");
-const supabase = require("../config/supabase");
+const supabase = require("../config/db");
 
 async function generateMonthlyCsv(targetMonth, targetYear) {
   try {
