@@ -19,7 +19,6 @@ let hasAutoTriggeredAI = false;
 let currentInsightAbortController = null;
 let currentActiveTab = "dashboard";
 let currentReferenceDate = new Date();
-let branchLineChartObj;
 
 function resetDateOffset() {
   currentReferenceDate = new Date();
