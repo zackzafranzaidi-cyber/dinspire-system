@@ -170,13 +170,15 @@ async function runAnnualArchive(isTest = false, targetEmail = "") {
   try {
     console.log("Memulakan Proses Pengarkiban Data Tahunan (Master Cleanup)...");
     const year = new Date().getFullYear();
+    const startDate = new Date(`${year}-01-01T00:00:00+08:00`).toISOString();
+    const endDate = new Date(`${year + 1}-01-01T00:00:00+08:00`).toISOString();
 
     const [ { data: bookings }, { data: walkins }, { data: oncalls }, { data: treatments }, { data: products } ] = await Promise.all([
-      supabase.from("booking_records").select("*, staff(username)"),
-      supabase.from("walkin_records").select("*, staff(username)"),
-      supabase.from("oncall_records").select("*, staff(username)"),
-      supabase.from("treatment_records").select("*, staff(username)"),
-      supabase.from("product_orders").select("*"),
+      supabase.from("booking_records").select("*, staff(username)").gte("tarikh", `${year}-01-01`).lte("tarikh", `${year}-12-31`),
+      supabase.from("walkin_records").select("*, staff(username)").gte("tarikh", `${year}-01-01`).lte("tarikh", `${year}-12-31`),
+      supabase.from("oncall_records").select("*, staff(username)").gte("tarikh", `${year}-01-01`).lte("tarikh", `${year}-12-31`),
+      supabase.from("treatment_records").select("*, staff(username)").gte("tarikh", `${year}-01-01`).lte("tarikh", `${year}-12-31`),
+      supabase.from("product_orders").select("*").gte("created_at", startDate).lt("created_at", endDate),
     ]);
 
     let monthlyData = {};
@@ -264,8 +266,8 @@ async function runAnnualArchive(isTest = false, targetEmail = "") {
     console.log("Memadam semua fail ZIP arkib bulanan dari storan...");
     const { data: zipFiles } = await supabase.storage.from("receipts").list("archives");
     if (zipFiles && zipFiles.length > 0) {
-      // Abaikan folder dummy jika ada
-      const validZips = zipFiles.filter(f => f.name.endsWith(".zip"));
+      // Abaikan folder dummy jika ada dan pastikan ia kepunyaan tahun ini sahaja
+      const validZips = zipFiles.filter(f => f.name.startsWith(`Arkib_Resit_${year}_`) && f.name.endsWith(".zip"));
       if (validZips.length > 0) {
         const zipsToDelete = validZips.map(f => `archives/${f.name}`);
         for (let i = 0; i < zipsToDelete.length; i += chunkSize) {
@@ -276,11 +278,11 @@ async function runAnnualArchive(isTest = false, targetEmail = "") {
 
     console.log("Memadam semua rekod mentah dari pangkalan data...");
     await Promise.all([
-      supabase.from("booking_records").delete().not("no_booking", "is", null),
-      supabase.from("walkin_records").delete().not("id", "is", null),
-      supabase.from("oncall_records").delete().not("no_booking", "is", null),
-      supabase.from("treatment_records").delete().not("id", "is", null),
-      supabase.from("product_orders").delete().not("id", "is", null),
+      supabase.from("booking_records").delete().gte("tarikh", `${year}-01-01`).lte("tarikh", `${year}-12-31`),
+      supabase.from("walkin_records").delete().gte("tarikh", `${year}-01-01`).lte("tarikh", `${year}-12-31`),
+      supabase.from("oncall_records").delete().gte("tarikh", `${year}-01-01`).lte("tarikh", `${year}-12-31`),
+      supabase.from("treatment_records").delete().gte("tarikh", `${year}-01-01`).lte("tarikh", `${year}-12-31`),
+      supabase.from("product_orders").delete().gte("created_at", startDate).lt("created_at", endDate),
     ]);
 
     console.log("Master Cleanup Selesai!");
