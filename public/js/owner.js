@@ -2103,10 +2103,11 @@ function toggleRevTab(tab) {
 let marketingCustomers = [];
 
 async function fetchMarketingData() {
-  const token = localStorage.getItem("din_token_sys");
   try {
     const res = await fetch(`${API_BASE_URL}/owner/marketing-customers`, {
-      headers: { Authorization: "Bearer " + token },
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to fetch marketing data");
     marketingCustomers = await res.json();
