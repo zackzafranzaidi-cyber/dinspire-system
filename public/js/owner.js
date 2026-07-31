@@ -2105,7 +2105,7 @@ let marketingCustomers = [];
 async function fetchMarketingData() {
   const token = localStorage.getItem("din_token_sys");
   try {
-    const res = await fetch("/api/owner/marketing-customers", {
+    const res = await fetch(`${API_BASE_URL}/owner/marketing-customers`, {
       headers: { Authorization: "Bearer " + token },
     });
     if (!res.ok) throw new Error("Failed to fetch marketing data");

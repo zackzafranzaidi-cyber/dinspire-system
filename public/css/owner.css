@@ -246,6 +246,12 @@ body {
 #tab-tx-produk:checked ~ .slider {
   left: calc(3px + (100% - 6px) / 2);
 }
+#tab-rev-list:checked ~ .slider {
+  left: 3px;
+}
+#tab-rev-marketing:checked ~ .slider {
+  left: calc(3px + (100% - 6px) / 2);
+}
 #tab-punch-hadir:checked ~ .slider {
   left: 3px;
 }
