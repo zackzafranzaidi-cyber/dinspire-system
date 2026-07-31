@@ -85,6 +85,7 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
     let zip = new AdmZip();
     let hasImages = false;
 
+    const processData = async (records, category) => {
       // Extract promises for concurrent fetching
       const fetchPromises = [];
       for (let r of (records || [])) {
