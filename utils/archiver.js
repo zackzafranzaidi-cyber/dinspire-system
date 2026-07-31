@@ -62,10 +62,13 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
     let startY = targetYear;
     let endM = targetMonth + 1;
     let endY = targetYear;
-    if (endM > 12) { endM = 1; endY += 1; }
+    console.log(`Menjana Laporan Bulanan untuk: ${targetMonth}/${targetYear}`);
     
-    const startDate = new Date(`${startY}-${String(startM).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
-    const endDate = new Date(`${endY}-${String(endM).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
+    console.log("Memuat turun data dari Supabase...");
+    const startDate = new Date(`${targetYear}-${String(targetMonth).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
+    const nextMonth = targetMonth === 12 ? 1 : targetMonth + 1;
+    const nextYear = targetMonth === 12 ? targetYear + 1 : targetYear;
+    const endDate = new Date(`${nextYear}-${String(nextMonth).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
 
     const [
       { data: bookings },
@@ -104,15 +107,18 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
       }
     };
 
+    console.log("Memproses data menjadi CSV...");
     await processData(bookings, "Booking");
     await processData(walkins, "Walk-In");
     await processData(oncalls, "On-Call");
     await processData(treatments, "Treatment");
     await processData(products, "Produk");
 
+    console.log("Menjana fail CSV...");
     let csvData = allRawCsvData.length > 0 ? new Parser().parse(allRawCsvData) : "Tiada Rekod Bulan Ini.";
     let archiveLink = `https://dinspire-system.onrender.com/owner/archive-download.html?month=${targetMonth}&year=${targetYear}`;
 
+    console.log("Menyediakan Transporter Emel...");
     let transporter;
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       transporter = nodemailer.createTransport({ service: "gmail", auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } });
@@ -132,6 +138,7 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
       attachments: [{ filename: `Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, content: csvData }],
     };
 
+    console.log("Menghantar emel...");
     let info = await transporter.sendMail(mailOptions);
     console.log("Emel Laporan Bulanan dihantar: %s", info.messageId);
     return { status: "success", message: "Laporan Bulanan Selesai" };
