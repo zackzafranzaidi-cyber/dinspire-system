@@ -1773,7 +1773,7 @@ function updateBarChart(bookings, orders, filterType) {
           borderColor: baseColor,
           backgroundColor: gradient,
           fill: true,
-          tension: 0,
+          tension: 0.4,
           borderWidth: 2,
           pointRadius: 0,
           pointHoverRadius: 5
