@@ -2137,16 +2137,27 @@ function renderMarketingTable() {
 
   marketingCustomers.forEach((c) => {
     // create whatsapp message
-    const waText = encodeURIComponent(`Salam sejahtera ${c.name}, kami dari Dinspire Barbershop ingin menjemput anda sertai group WhatsApp rasmi kami untuk promosi terkini! Sila klik link: https://chat.whatsapp.com/xxx`);
-    const waLink = `https://wa.me/${c.phone}?text=${waText}`;
+    const linkGrup1 = "https://chat.whatsapp.com/EkfdpBSuTML196bdnSm0QT?s=cl&p=a&ilr=1&amv=0";
+    const linkGrup2 = "https://chat.whatsapp.com/IvYFBzcpFr3IEctsrhnhq1?s=cl&p=a&ilr=1&amv=0";
+    
+    const waText1 = encodeURIComponent(`Salam sejahtera ${c.name}, kami dari Dinspire Barbershop ingin menjemput anda sertai group WhatsApp rasmi kami untuk promosi terkini! Sila klik link Grup 1: ${linkGrup1}`);
+    const waText2 = encodeURIComponent(`Salam sejahtera ${c.name}, kami dari Dinspire Barbershop ingin menjemput anda sertai group WhatsApp rasmi kami untuk promosi terkini! Sila klik link Grup 2: ${linkGrup2}`);
+    
+    const waLink1 = `https://wa.me/${c.phone}?text=${waText1}`;
+    const waLink2 = `https://wa.me/${c.phone}?text=${waText2}`;
 
-    html += `<tr class="hover:bg-gray-50 transition">
-      <td class="py-3 px-4 font-bold text-gray-800">${escapeHTML(c.name)} <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2 font-normal">${c.source}</span></td>
-      <td class="py-3 px-4 font-semibold text-gray-600">${c.phone}</td>
+    html += `<tr class="hover:bg-gray-50 transition border-b border-gray-100">
+      <td class="py-3 px-4 font-bold text-gray-800 text-xs sm:text-sm whitespace-normal">${escapeHTML(c.name)} <br/><span class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-normal">${c.source}</span></td>
+      <td class="py-3 px-4 font-semibold text-gray-600 text-xs sm:text-sm whitespace-nowrap">${c.phone}</td>
       <td class="py-3 px-4 text-center">
-        <a href="${waLink}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs shadow-sm font-bold transition inline-flex items-center">
-          <i class="fab fa-whatsapp text-sm mr-1"></i> Jemput
-        </a>
+        <div class="flex flex-col sm:flex-row gap-2 justify-center">
+          <a href="${waLink1}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1.5 rounded-lg text-xs shadow-sm font-bold transition inline-flex items-center justify-center">
+            <i class="fab fa-whatsapp text-sm mr-1"></i> Grup 1
+          </a>
+          <a href="${waLink2}" target="_blank" class="bg-[#128C7E] hover:bg-[#075E54] text-white px-2 py-1.5 rounded-lg text-xs shadow-sm font-bold transition inline-flex items-center justify-center">
+            <i class="fab fa-whatsapp text-sm mr-1"></i> Grup 2
+          </a>
+        </div>
       </td>
     </tr>`;
   });
