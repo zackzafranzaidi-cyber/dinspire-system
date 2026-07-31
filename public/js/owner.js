@@ -499,6 +499,7 @@ async function fetchOwnerDashboardData() {
       if (!masterData.orders) masterData.orders = [];
       if (!masterData.bookings) masterData.bookings = [];
       processData();
+      fetchSMSBalance();
     } else {
       alert("Ralat Sistem: " + (data.message || "Gagal mendapatkan data."));
       logoutOwner();
@@ -2238,3 +2239,30 @@ function exportReviewsCSV() {
 }
 
 
+
+async function fetchSMSBalance() {
+  try {
+    const res = await fetch(${API_BASE_URL}/admin/sms-balance, {
+      method: " GET\,
+ headers: { \Content-Type\: \application/json\ },
+ credentials: \include\,
+ });
+ if (res.ok) {
+ const data = await res.json();
+ if (data.status === \success\ && data.balance !== undefined) {
+ const el = document.getElementById(\val-sms-balance\);
+ if (el) el.innerText = data.balance.toLocaleString();
+ if (data.balance >= 0 && data.balance < 500) {
+ Swal.fire({
+ icon: \warning\,
+ title: \Baki SMS Rendah\,
+ text: Baki kredit ESMS anda hanya tinggal . Sila tambah nilai segera sebelum kehabisan.,
+ confirmButtonColor: \#a855f7\
+ });
+ }
+ }
+ }
+ } catch (e) {
+ console.error(\Gagal mengambil baki SMS:\, e);
+ }
+}

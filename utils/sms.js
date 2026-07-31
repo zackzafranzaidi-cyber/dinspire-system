@@ -70,3 +70,25 @@ async function sendSMS(to, msg, throwError = false) {
 module.exports = {
   sendSMS
 };
+
+async function getSMSBalance() {
+  try {
+    const user = process.env.ESMS_USER;
+    const pass = process.env.ESMS_PASS;
+    if (!user || !pass) return -1;
+    const payload = new URLSearchParams();
+    payload.append('user', user);
+    payload.append('pass', pass);
+    const response = await axios.post('https://api.esms.com.my/sms/balance', payload.toString(), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    if (response.data.status === 0) {
+      return response.data.balance;
+    }
+    return -1;
+  } catch (error) {
+    console.error('[SMS EXCEPTION] Ralat menyemak baki:', error.message);
+    return -1;
+  }
+}
+module.exports.getSMSBalance = getSMSBalance;

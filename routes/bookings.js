@@ -694,7 +694,7 @@ router.post(
         const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
         if (reminderTime > new Date()) {
           schedule.scheduleJob(reminderTime, async function() {
-            const oncallMsg = `Peringatan! Sila bersedia di lokasi anda, Barber On-Call anda akan tiba dalam masa 2 jam.`;
+            const oncallMsg = `Dinspire Barbershop - Hai ${cust.name}, Peringatan! Sila bersedia di lokasi anda, Barber On-Call anda akan tiba dalam masa 2 jam.`;
             await sendSMS(cust.phone, oncallMsg, false);
           });
         }
@@ -999,9 +999,9 @@ router.put(
       if (error) throw error;
 
       if (order.status !== "Shipped") {
-        const { data: cust } = await supabase.from("customers").select("phone").eq("id", order.customer_id).maybeSingle();
+        const { data: cust } = await supabase.from("customers").select("phone, name").eq("id", order.customer_id).maybeSingle();
         if (cust && cust.phone) {
-          const shippedMsg = `Pesanan anda telah dihantar! No Tracking: ${safeTrackingNo}. Terima kasih kerana membeli-belah dengan Dinspire!`;
+          const shippedMsg = `Dinspire Barbershop - Hai ${cust.name}, Pesanan anda telah dihantar! No Tracking: ${safeTrackingNo}. Terima kasih kerana membeli-belah dengan Dinspire!`;
           await sendSMS(cust.phone, shippedMsg, false);
         }
       }

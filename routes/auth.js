@@ -62,7 +62,7 @@ router.post("/request-otp", otpLimiter, async (req, res) => {
   // ==========================================
   // HANTAR SMS SEBENAR KEPADA PELANGGAN
   // ==========================================
-  const otpMsg = `Kod OTP Dinspire anda ialah ${otpCode}. Sah untuk 5 minit.`;
+  const otpMsg = `Dinspire Barbershop - Hai Pelanggan, Kod OTP anda ialah ${otpCode}. Sah untuk 5 minit.`;
   try {
     // Parameter ke-3 = true (supaya ralat dilemparkan jika SMS gagal)
     await sendSMS(phone, otpMsg, true);
@@ -245,7 +245,7 @@ router.post("/forgot-password/request-otp", otpLimiter, async (req, res) => {
   // ==========================================
   // HANTAR SMS LUPA KATA LALUAN
   // ==========================================
-  const otpMsg = `Kod OTP tetapan semula kata laluan anda ialah ${otpCode}.`;
+  const otpMsg = `Dinspire Barbershop - Hai Pelanggan, Kod OTP tetapan semula kata laluan anda ialah ${otpCode}. Sah untuk 5 minit.`;
   try {
     await sendSMS(phone, otpMsg, true);
   } catch (error) {

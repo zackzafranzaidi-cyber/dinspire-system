@@ -303,7 +303,7 @@ async function recoverSMSReminders() {
         
         if (reminderTime > new Date()) {
           schedule.scheduleJob(reminderTime, async function() {
-            const reminderMsg = `Peringatan mesra! Tempahan anda (${b.no_booking}) akan bermula pada ${b.masa}. Sila hadir awal.`;
+            const reminderMsg = `Dinspire Barbershop - Hai ${b.nama_pelanggan || "Pelanggan"}, Peringatan mesra! Tempahan anda (${b.no_booking}) akan bermula pada ${b.masa}. Sila hadir awal.`;
             await sendSMS(b.no_phone, reminderMsg, false);
           });
         }
@@ -326,9 +326,9 @@ async function recoverSMSReminders() {
         if (reminderTime > new Date()) {
           schedule.scheduleJob(reminderTime, async function() {
             // Need to get customer's phone for oncall
-            const { data: cust } = await supabase.from("customers").select("phone").eq("id", o.customer_id).maybeSingle();
+            const { data: cust } = await supabase.from("customers").select("phone, name").eq("id", o.customer_id).maybeSingle();
             if (cust && cust.phone) {
-              const oncallMsg = `Peringatan! Sila bersedia di lokasi anda, Barber On-Call anda akan tiba dalam masa 2 jam.`;
+              const oncallMsg = `Dinspire Barbershop - Hai ${cust.name || "Pelanggan"}, Peringatan! Sila bersedia di lokasi anda, Barber On-Call anda akan tiba dalam masa 2 jam.`;
               await sendSMS(cust.phone, oncallMsg, false);
             }
           });
