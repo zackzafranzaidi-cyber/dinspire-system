@@ -92,9 +92,9 @@ schedule.scheduleJob({ rule: "59 23 31 12 *", tz: "Asia/Kuala_Lumpur" }, async (
 });
 
 // ========================================================
-// [BAHARU] Cron Job: Laporan Bulanan (Setiap 1 haribulan, 4:00 Pagi)
+// [BAHARU] Cron Job: Laporan Bulanan (Setiap 1 haribulan, 4:05 Pagi)
 // ========================================================
-schedule.scheduleJob({ rule: "0 4 1 * *", tz: "Asia/Kuala_Lumpur" }, async () => {
+schedule.scheduleJob({ rule: "5 4 1 * *", tz: "Asia/Kuala_Lumpur" }, async () => {
   try {
     console.log("CRON: Memulakan rutin Laporan Bulanan...");
     await runMonthlyArchive(false);
