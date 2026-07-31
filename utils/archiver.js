@@ -107,7 +107,7 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
 
         if (r.resit && r.resit.startsWith("http")) {
           try {
-            const response = await axios.get(r.resit, { responseType: 'arraybuffer' });
+            const response = await axios.get(r.resit, { responseType: 'arraybuffer', timeout: 10000 });
             const filename = `${category}_${r.no_booking || r.id}.jpg`;
             zip.addFile(filename, Buffer.from(response.data, "binary"));
             hasImages = true;
@@ -130,6 +130,7 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
       const zipBuffer = zip.toBuffer();
       const zipFilename = `Arkib_Resit_${targetYear}_${targetMonth}.zip`;
       const { data: uploadData, error: uploadErr } = await supabase.storage.from("receipts").upload(`archives/${zipFilename}`, zipBuffer, { contentType: "application/zip", upsert: true });
+      if (uploadErr) console.error("ZIP Upload Error:", uploadErr);
       if (!uploadErr) {
         const { data: publicUrlData } = supabase.storage.from("receipts").getPublicUrl(`archives/${zipFilename}`);
         zipUrl = publicUrlData.publicUrl;
@@ -149,7 +150,7 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
       to: targetEmail || process.env.OWNER_EMAIL || "zafran.zaidi@gmail.com",
       subject: `Laporan Bulanan Dinspire - Bulan ${targetMonth}/${targetYear}`,
       text: `Salam Tuan,\n\nDilampirkan adalah laporan CSV untuk bulan ${targetMonth}/${targetYear}.\n\n` +
-            (zipUrl ? `Oleh kerana saiz gambar yang besar, kesemua resit bulan ini telah dimampatkan ke dalam fail ZIP. Sila muat turun di sini:\n${zipUrl}\n\n` : "Tiada gambar resit untuk bulan ini.\n\n") +
+            (zipUrl ? `Oleh kerana saiz gambar yang besar, kesemua resit bulan ini telah dimampatkan ke dalam fail ZIP. Sila muat turun di sini:\n${zipUrl}\n\n` : (hasImages ? "Terdapat gambar resit bulan ini, tetapi fail ZIP gagal dimuat naik kerana saiznya terlalu besar.\n\n" : "Tiada gambar resit untuk bulan ini.\n\n")) +
             `Terima kasih.`,
       attachments: [{ filename: `Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, content: csvData }],
     };
