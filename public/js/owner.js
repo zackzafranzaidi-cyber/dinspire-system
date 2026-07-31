@@ -2459,17 +2459,16 @@ async function fetchSMSBalance() {
 }
 
 async function triggerEmailTest() {
-  if (!confirm("Sistem akan menjana fail arkib ZIP dari pangkalan data sebenar dan menghantarnya ke emel anda sekarang. Teruskan?")) return;
-  try {
-    const res = await fetch(`${API_BASE_URL}/owner/trigger-monthly-archive`);
-    const data = await res.json();
-    if (data.status === "success") {
-      alert("Emel berjaya dihantar! Sila semak peti masuk anda.");
-    } else {
-      alert("Ralat: " + data.message);
-    }
-  } catch (err) {
-    alert("Gagal menghubungi pelayan.");
+  if (!confirm("Sistem akan menjana jadual laporan CSV dan arkib ZIP gambar-gambar resit dari pangkalan data.\n\nProses muat turun akan mengambil masa 1 ke 2 minit bergantung kepada kelajuan internet anda. Teruskan?")) return;
+  
+  const d = new Date();
+  let targetMonth = d.getMonth();
+  let targetYear = d.getFullYear();
+  if (targetMonth === 0) {
+    targetMonth = 12;
+    targetYear -= 1;
   }
+  
+  // Buka tab baharu untuk mulakan proses muat turun arkib (CSV + Imej)
+  window.open(`/owner/archive-download.html?month=${targetMonth}&year=${targetYear}`, '_blank');
 }
-

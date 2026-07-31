@@ -79,6 +79,21 @@
 
         document.getElementById("progressText").innerText = `0 / ${allUrls.length} Resit dimuat turun`;
         let zip = new JSZip();
+        
+        // 1. Dapatkan fail CSV dan masukkan ke dalam ZIP
+        try {
+          document.getElementById("statusText").innerText = "Menjana Jadual Laporan CSV...";
+          // Guna host semasa (samada api.dinspirebarbershop.com atau owner.dinspirebarbershop.com bergantung pada konfigurasi proxy)
+          // Memandangkan ini dijalankan dari owner.dinspirebarbershop.com, kita perlukan API url penuh jika tiada proxy
+          const apiBaseUrl = window.location.hostname === 'localhost' ? 'http://localhost:10000' : 'https://api.dinspirebarbershop.com';
+          const csvRes = await fetch(`${apiBaseUrl}/api/owner/monthly-csv?month=${targetMonth}&year=${targetYear}`);
+          const csvText = await csvRes.text();
+          zip.file(`Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, csvText);
+        } catch(e) {
+          console.error("Gagal menjana CSV", e);
+        }
+
+        document.getElementById("statusText").innerText = `Memproses Arkib Bulan ${targetMonth}/${targetYear}...`;
         let count = 0;
 
         // Muat turun gambar secara selari dengan limit
@@ -103,7 +118,7 @@
         document.getElementById("statusText").innerText = "Memampatkan fail ZIP... Sila tunggu.";
         
         zip.generateAsync({ type: "blob" }).then(function (content) {
-          const zipName = `Arkib_Resit_${targetYear}_${targetMonth}.zip`;
+          const zipName = `Laporan_Dan_Resit_${targetYear}_${targetMonth}.zip`;
           saveAs(content, zipName);
           document.getElementById("statusText").innerText = "Muat Turun Berjaya!";
           document.getElementById("downloadBtn").classList.remove("hidden");

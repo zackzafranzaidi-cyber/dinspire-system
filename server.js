@@ -92,18 +92,6 @@ schedule.scheduleJob({ rule: "59 23 31 12 *", tz: "Asia/Kuala_Lumpur" }, async (
 });
 
 // ========================================================
-// [BAHARU] Cron Job: Laporan Bulanan (Setiap 1 haribulan, 4:05 Pagi)
-// ========================================================
-schedule.scheduleJob({ rule: "5 4 1 * *", tz: "Asia/Kuala_Lumpur" }, async () => {
-  try {
-    console.log("CRON: Memulakan rutin Laporan Bulanan...");
-    await runMonthlyArchive(false);
-  } catch (err) {
-    console.error("CRON ERROR: Gagal menjalankan Laporan Bulanan", err);
-  }
-});
-
-// ========================================================
 // [BAHARU] Cron Job: Pembersihan Harian (Setiap Hari, 3:00 Pagi)
 // ========================================================
 schedule.scheduleJob({ rule: "0 3 * * *", tz: "Asia/Kuala_Lumpur" }, async () => {
@@ -230,10 +218,16 @@ app.get("/api/owner/trigger-annual-archive", async (req, res) => {
   }
 });
 
-app.get("/api/owner/trigger-monthly-archive", async (req, res) => {
+app.get("/api/owner/monthly-csv", async (req, res) => {
   try {
-    const result = await runMonthlyArchive(true, "zafran.zaidi@gmail.com");
-    res.json({ status: "success", message: "Laporan bulanan berjaya disimulasikan.", data: result });
+    const { month, year } = req.query;
+    if (!month || !year) {
+      return res.status(400).send("Parameter month dan year diperlukan.");
+    }
+    const csvData = await generateMonthlyCsv(month, year);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="Laporan_Bulanan_${month}_${year}.csv"`);
+    res.send(csvData);
   } catch (err) {
     res.status(500).json({ status: "error", message: err.message });
   }
