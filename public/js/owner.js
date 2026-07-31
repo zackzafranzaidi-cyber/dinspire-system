@@ -885,13 +885,15 @@ function renderStaffTable(stats) {
     (a, b) => stats[b].sales - stats[a].sales,
   );
   if (sortedStaff.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang]["table-no-record"] || "Tiada Rekod"}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-400 italic" data-i18n="table-no-record">${i18n[currentLang]["table-no-record"] || "Tiada Rekod"}</td></tr>`;
     return;
   }
   tbody.innerHTML = sortedStaff
     .map(
-      (name) =>
-        `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">${escapeHTML(name).charAt(0)}</div>${escapeHTML(name)}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[name].count}</td><td class="py-3 px-2 text-right font-black text-gray-900">RM ${stats[name].sales.toFixed(2)}</td></tr>`,
+      (name) => {
+        const comm = stats[name].sales * (masterData.commissionPercent / 100);
+        return `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">${escapeHTML(name).charAt(0)}</div>${escapeHTML(name)}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[name].count}</td><td class="py-3 px-2 text-right font-black text-gray-900">RM ${stats[name].sales.toFixed(2)}</td><td class="py-3 px-2 text-right font-black text-blue-600">RM ${comm.toFixed(2)}</td></tr>`;
+      }
     )
     .join("");
 }
