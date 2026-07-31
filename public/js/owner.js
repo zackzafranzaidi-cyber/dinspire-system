@@ -2177,3 +2177,64 @@ function exportMarketingCSV() {
   document.body.removeChild(link);
 }
 
+// ==========================================
+// EXPORT TABLE TO CSV UTILITY
+// ==========================================
+function exportTableToCSV(tableId, filename) {
+  const tbody = document.getElementById(tableId);
+  if (!tbody) return alert("Tiada jadual untuk dieksport.");
+  const table = tbody.tagName === "TBODY" ? tbody.closest("table") : tbody;
+  if (!table) return alert("Tiada jadual untuk dieksport.");
+
+  let csv = [];
+  const rows = table.querySelectorAll("tr");
+  if (rows.length <= 1) return alert("Tiada rekod untuk dieksport.");
+
+  rows.forEach((row) => {
+    let rowData = [];
+    const cols = row.querySelectorAll("th, td");
+    
+    // Check if it's the actions column by inner text
+    let skipTindakanIdx = -1;
+    
+    cols.forEach((col, idx) => {
+      let text = (col.innerText || col.textContent).replace(/"/g, '""').replace(/\n/g, " ").trim();
+      rowData.push(`"${text}"`);
+    });
+    if (rowData.length > 0) csv.push(rowData.join(","));
+  });
+
+  const csvContent = csv.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename + ".csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportReviewsCSV() {
+  if (!masterData.reviews || masterData.reviews.length === 0) return alert("Tiada maklum balas untuk dieksport.");
+  let csv = "Tarikh,No Booking,Pelanggan,Cawangan,Barber,Bintang,Komen\n";
+  masterData.reviews.forEach(r => {
+    const t = parseGSDate(r.created_at);
+    const df = `${t.getDate()}/${t.getMonth()+1}/${t.getFullYear()}`;
+    const pel = r.customers ? r.customers.username : "-";
+    const caw = r.branches ? r.branches.nama_cawangan : "-";
+    const sta = r.staff ? r.staff.username : "-";
+    const komen = r.ulasan ? r.ulasan.replace(/"/g, '""').replace(/\n/g, " ").trim() : "";
+    csv += `"${df}","${r.no_booking}","${pel}","${caw}","${sta}","${r.bintang}","${komen}"\n`;
+  });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "Senarai_Maklum_Balas.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+
