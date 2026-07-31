@@ -82,12 +82,7 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
     ]);
 
     let allRawCsvData = [];
-    let zip = new AdmZip();
-    let hasImages = false;
-
-    const processData = async (records, category) => {
-      // Extract promises for concurrent fetching
-      const fetchPromises = [];
+    const processData = (records, category) => {
       for (let r of (records || [])) {
         if (r.status === "Pending Verification" || r.status === "Rejected") continue;
 
@@ -106,27 +101,6 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
           Total_RM: price + fee,
           Status: r.status
         });
-
-        if (r.resit && r.resit.startsWith("http")) {
-          const filename = `${category}_${r.no_booking || r.id}.jpg`;
-          fetchPromises.push(
-            axios.get(r.resit, { responseType: 'arraybuffer', timeout: 10000 })
-              .then(response => ({ filename, data: Buffer.from(response.data, "binary") }))
-              .catch(imgErr => {
-                console.error(`Gagal muat turun resit: ${r.resit}`);
-                return null;
-              })
-          );
-        }
-      }
-
-      // Tunggu semua muat turun selesai secara serentak (Laju!)
-      const results = await Promise.all(fetchPromises);
-      for (let res of results) {
-        if (res) {
-          zip.addFile(res.filename, res.data);
-          hasImages = true;
-        }
       }
     };
 
@@ -137,17 +111,7 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
     await processData(products, "Produk");
 
     let csvData = allRawCsvData.length > 0 ? new Parser().parse(allRawCsvData) : "Tiada Rekod Bulan Ini.";
-    let zipUrl = "";
-    if (hasImages) {
-      const zipBuffer = zip.toBuffer();
-      const zipFilename = `Arkib_Resit_${targetYear}_${targetMonth}.zip`;
-      const { data: uploadData, error: uploadErr } = await supabase.storage.from("receipts").upload(`archives/${zipFilename}`, zipBuffer, { contentType: "application/zip", upsert: true });
-      if (uploadErr) console.error("ZIP Upload Error:", uploadErr);
-      if (!uploadErr) {
-        const { data: publicUrlData } = supabase.storage.from("receipts").getPublicUrl(`archives/${zipFilename}`);
-        zipUrl = publicUrlData.publicUrl;
-      }
-    }
+    let archiveLink = `https://dinspire-system.onrender.com/owner/archive-download.html?month=${targetMonth}&year=${targetYear}`;
 
     let transporter;
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
@@ -162,8 +126,9 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
       to: targetEmail || process.env.OWNER_EMAIL || "zafran.zaidi@gmail.com",
       subject: `Laporan Bulanan Dinspire - Bulan ${targetMonth}/${targetYear}`,
       text: `Salam Tuan,\n\nDilampirkan adalah laporan CSV untuk bulan ${targetMonth}/${targetYear}.\n\n` +
-            (zipUrl ? `Oleh kerana saiz gambar yang besar, kesemua resit bulan ini telah dimampatkan ke dalam fail ZIP. Sila muat turun di sini (Pautan hanya aktif sehingga hujung tahun):\n${zipUrl}\n\n` : (hasImages ? "Terdapat gambar resit bulan ini, tetapi fail ZIP gagal dimuat naik ke Supabase kerana saiznya melebihi had.\n\n" : "Tiada gambar resit untuk bulan ini.\n\n")) +
-            `Terima kasih.`,
+            `Bagi menjimatkan memori pelayan, fail ZIP gambar-gambar resit tidak lagi dijana secara automatik. ` +
+            `Sebaliknya, Tuan boleh klik pautan di bawah untuk memuat turun semua resit secara serentak menggunakan komputer Tuan:\n\n` +
+            `${archiveLink}\n\nTerima kasih.`,
       attachments: [{ filename: `Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, content: csvData }],
     };
 

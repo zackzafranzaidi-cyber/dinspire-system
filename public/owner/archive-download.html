@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muat Turun Arkib Resit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full bg-gray-800 p-8 rounded-2xl shadow-xl text-center">
+    <h2 class="text-2xl font-bold mb-4">Muat Turun Arkib Resit</h2>
+    <p class="text-gray-300 mb-6" id="statusText">Sila tunggu, memuatkan data...</p>
+    
+    <div class="w-full bg-gray-700 rounded-full h-4 mb-6 overflow-hidden">
+      <div id="progressBar" class="bg-blue-500 h-4 rounded-full" style="width: 0%"></div>
+    </div>
+    
+    <p id="progressText" class="text-sm text-gray-400">0 / 0 Resit diproses</p>
+    
+    <button id="downloadBtn" class="mt-6 w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-4 rounded-xl hidden transition">
+      Muat Turun Selesai (Klik Jika Belum)
+    </button>
+  </div>
+
+  <script type="module">
+    import { supabaseUrl, supabaseKey } from "../js/config.js";
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Dapatkan parameter bulan & tahun dari URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetMonth = parseInt(urlParams.get("month"));
+    const targetYear = parseInt(urlParams.get("year"));
+
+    if (!targetMonth || !targetYear) {
+      document.getElementById("statusText").innerText = "Parameter bulan/tahun tidak sah.";
+    } else {
+      document.getElementById("statusText").innerText = `Memproses Arkib Bulan ${targetMonth}/${targetYear}...`;
+      startDownload();
+    }
+
+    async function startDownload() {
+      try {
+        const startDate = new Date(`${targetYear}-${String(targetMonth).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
+        const nextMonth = targetMonth === 12 ? 1 : targetMonth + 1;
+        const nextYear = targetMonth === 12 ? targetYear + 1 : targetYear;
+        const endDate = new Date(`${nextYear}-${String(nextMonth).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
+
+        // Ambil semua data
+        const [bookings, walkins, oncalls, treatments, products] = await Promise.all([
+          supabase.from("booking_records").select("resit, id, no_booking, status").gte("created_at", startDate).lt("created_at", endDate),
+          supabase.from("walkin_records").select("resit, id, no_booking, status").gte("created_at", startDate).lt("created_at", endDate),
+          supabase.from("oncall_records").select("resit, id, no_booking, status").gte("created_at", startDate).lt("created_at", endDate),
+          supabase.from("treatment_records").select("resit, id, no_booking, status").gte("created_at", startDate).lt("created_at", endDate),
+          supabase.from("product_orders").select("resit, id, status").gte("created_at", startDate).lt("created_at", endDate)
+        ]);
+
+        let allUrls = [];
+        const pushUrls = (data, prefix) => {
+          (data.data || []).forEach(r => {
+            if (r.status !== "Pending Verification" && r.status !== "Rejected" && r.resit && r.resit.startsWith("http")) {
+              allUrls.push({ url: r.resit, name: `${prefix}_${r.no_booking || r.id}.jpg` });
+            }
+          });
+        };
+
+        pushUrls(bookings, "Booking");
+        pushUrls(walkins, "Walk-In");
+        pushUrls(oncalls, "On-Call");
+        pushUrls(treatments, "Treatment");
+        pushUrls(products, "Produk");
+
+        if (allUrls.length === 0) {
+          document.getElementById("statusText").innerText = "Tiada gambar resit dijumpai untuk bulan ini.";
+          return;
+        }
+
+        document.getElementById("progressText").innerText = `0 / ${allUrls.length} Resit dimuat turun`;
+        let zip = new JSZip();
+        let count = 0;
+
+        // Muat turun gambar secara selari dengan limit
+        const limit = 10; 
+        for (let i = 0; i < allUrls.length; i += limit) {
+          const chunk = allUrls.slice(i, i + limit);
+          await Promise.all(chunk.map(async (item) => {
+            try {
+              const response = await fetch(item.url);
+              const blob = await response.blob();
+              zip.file(item.name, blob);
+            } catch (e) {
+              console.error("Gagal muat turun:", item.url);
+            }
+            count++;
+            let p = Math.round((count / allUrls.length) * 100);
+            document.getElementById("progressBar").style.width = p + "%";
+            document.getElementById("progressText").innerText = `${count} / ${allUrls.length} Resit dimuat turun`;
+          }));
+        }
+
+        document.getElementById("statusText").innerText = "Memampatkan fail ZIP... Sila tunggu.";
+        
+        zip.generateAsync({ type: "blob" }).then(function (content) {
+          const zipName = `Arkib_Resit_${targetYear}_${targetMonth}.zip`;
+          saveAs(content, zipName);
+          document.getElementById("statusText").innerText = "Muat Turun Berjaya!";
+          document.getElementById("downloadBtn").classList.remove("hidden");
+          document.getElementById("downloadBtn").onclick = () => saveAs(content, zipName);
+        });
+
+      } catch (err) {
+        document.getElementById("statusText").innerText = "Berlaku ralat: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
