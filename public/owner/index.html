@@ -328,19 +328,24 @@
             <i class="fas fa-language text-purple-500"></i>
             <span id="lang-indicator">EN</span>
           </button>
-          <select
-            id="timeFilter"
-            onchange="processData()"
-            class="bg-white border border-gray-200 text-gray-800 py-2 px-4 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900 font-bold cursor-pointer text-sm outline-none flex-1 md:flex-none"
-          >
-            <option value="daily" data-i18n="filter-daily">HARI INI</option>
-            <option value="weekly" data-i18n="filter-weekly">MINGGU INI</option>
-            <option value="monthly" selected data-i18n="filter-monthly">
-              BULAN INI
-            </option>
-            <option value="yearly" data-i18n="filter-yearly">TAHUN INI</option>
-            <option value="all" data-i18n="filter-all">SEMUA REKOD</option>
-          </select>
+          <div class="flex items-center gap-1 bg-white border border-gray-200 rounded-xl shadow-sm p-1">
+            <button onclick="changeDateOffset(-1)" class="px-3 py-1 text-gray-500 hover:text-purple-600 transition font-bold"><i class="fas fa-chevron-left"></i></button>
+            <select
+              id="timeFilter"
+              onchange="resetDateOffset(); processData()"
+              class="bg-transparent text-gray-800 py-1 px-2 focus:outline-none font-bold cursor-pointer text-sm outline-none"
+            >
+              <option value="daily" data-i18n="filter-daily">HARIAN</option>
+              <option value="weekly" data-i18n="filter-weekly">MINGGUAN</option>
+              <option value="monthly" selected data-i18n="filter-monthly">BULANAN</option>
+              <option value="yearly" data-i18n="filter-yearly">TAHUNAN</option>
+              <option value="all" data-i18n="filter-all">SEMUA</option>
+            </select>
+            <button onclick="changeDateOffset(1)" class="px-3 py-1 text-gray-500 hover:text-purple-600 transition font-bold"><i class="fas fa-chevron-right"></i></button>
+          </div>
+          <div class="hidden lg:flex items-center text-sm font-bold text-purple-700 bg-purple-50 px-4 py-2 rounded-xl border border-purple-100" id="currentDateDisplay">
+            <!-- Akan diisi oleh JS -->
+          </div>
           <button
             onclick="logoutOwner()"
             class="md:hidden bg-rose-50 border border-rose-200 text-rose-600 px-3 py-2 rounded-xl shadow-sm hover:bg-rose-100 flex items-center justify-center transition"
@@ -654,15 +659,28 @@
         </div>
 
         <!-- CARTA -->
-        <div class="card mb-6 border border-gray-200 w-full max-w-full">
-          <h3
-            class="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide"
-            data-i18n="chart-sales"
-          >
-            Trend Aliran Tunai
-          </h3>
-          <div class="relative h-64 w-full">
-            <canvas id="salesChart"></canvas>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="card border border-gray-200 w-full max-w-full">
+            <h3
+              class="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide"
+              data-i18n="chart-sales"
+            >
+              Trend Aliran Tunai
+            </h3>
+            <div class="relative h-64 w-full">
+              <canvas id="salesChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="card border border-gray-200 w-full max-w-full">
+            <h3
+              class="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide"
+            >
+              <i class="fas fa-chart-line mr-2 text-gray-500"></i> Trend Jualan Cawangan
+            </h3>
+            <div class="relative h-64 w-full">
+              <canvas id="branchLineChart"></canvas>
+            </div>
           </div>
         </div>
 

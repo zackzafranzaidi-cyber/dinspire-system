@@ -14,10 +14,63 @@ let masterData = {
   commissionPercent: 50,
 };
 let mapBarberBranch = {};
-let salesChartObj, demoChartObj, payChartObj, staffChartObj, branchChartObj;
+let salesChartObj, demoChartObj, payChartObj, staffChartObj, branchChartObj, branchLineChartObj;
 let hasAutoTriggeredAI = false;
 let currentInsightAbortController = null;
 let currentActiveTab = "dashboard";
+let currentReferenceDate = new Date();
+let branchLineChartObj;
+
+function resetDateOffset() {
+  currentReferenceDate = new Date();
+}
+
+function changeDateOffset(direction) {
+  const filterType = document.getElementById("timeFilter").value;
+  if (filterType === "all") return; // No offset for all time
+  
+  let newDate = new Date(currentReferenceDate);
+  if (filterType === "daily") {
+    newDate.setDate(newDate.getDate() + direction);
+  } else if (filterType === "weekly") {
+    newDate.setDate(newDate.getDate() + (direction * 7));
+  } else if (filterType === "monthly") {
+    newDate.setMonth(newDate.getMonth() + direction);
+  } else if (filterType === "yearly") {
+    newDate.setFullYear(newDate.getFullYear() + direction);
+  }
+  
+  // Prevent navigating to the future beyond today if desired, or let them see empty data
+  currentReferenceDate = newDate;
+  processData();
+}
+
+function updateDateDisplay() {
+  const filterType = document.getElementById("timeFilter").value;
+  const displayEl = document.getElementById("currentDateDisplay");
+  if (!displayEl) return;
+  
+  if (filterType === "all") {
+    displayEl.innerHTML = "<i class='fas fa-infinity mr-2'></i> Sepanjang Masa";
+    return;
+  }
+  
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  if (filterType === "yearly") {
+    displayEl.innerHTML = "<i class='fas fa-calendar-alt mr-2'></i> Tahun " + currentReferenceDate.getFullYear();
+  } else if (filterType === "monthly") {
+    const monthName = currentReferenceDate.toLocaleDateString("ms-MY", { month: "long" });
+    displayEl.innerHTML = "<i class='fas fa-calendar-alt mr-2'></i> " + monthName + " " + currentReferenceDate.getFullYear();
+  } else if (filterType === "weekly") {
+    let startOfWeek = new Date(currentReferenceDate);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    let endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6);
+    displayEl.innerHTML = "<i class='fas fa-calendar-week mr-2'></i> " + startOfWeek.getDate() + " - " + endOfWeek.getDate() + " " + endOfWeek.toLocaleDateString("ms-MY", { month: "long" });
+  } else if (filterType === "daily") {
+    displayEl.innerHTML = "<i class='fas fa-calendar-day mr-2'></i> " + currentReferenceDate.toLocaleDateString("ms-MY", options);
+  }
+}
 
 let currentLang = "en";
 
@@ -538,7 +591,9 @@ function isWithinFilter(dateData, filterType, refDate) {
     let startOfWeek = new Date(refDate);
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
-    return dateObj >= startOfWeek;
+    let endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 7);
+    return dateObj >= startOfWeek && dateObj < endOfWeek;
   }
   if (filterType === "monthly")
     return (
@@ -551,8 +606,9 @@ function isWithinFilter(dateData, filterType, refDate) {
 }
 
 function processData() {
+  updateDateDisplay();
   const filterType = document.getElementById("timeFilter").value;
-  const now = new Date();
+  const now = currentReferenceDate;
   let filteredBookings = masterData.bookings.filter(
     (b) =>
       b.Status === "Selesai" &&
@@ -1546,13 +1602,43 @@ function initChart() {
       },
     });
   }
+
+  const ctx6 = document.getElementById("branchLineChart");
+  if (ctx6) {
+    branchLineChartObj = new Chart(ctx6.getContext("2d"), {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: []
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "top", labels: { boxWidth: 10 } } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 }
+          }
+        }
+      },
+    });
+  }
 }
 
 function updateBarChart(bookings, orders, filterType) {
   let labels = [];
   let dataPoints = [];
   let bgColors = [];
-  const now = new Date();
+  const now = currentReferenceDate;
+
+  // Sediakan penjejak data cawangan
+  let branchDataPoints = {};
+  Object.values(mapBarberBranch).forEach(br => {
+    if (!branchDataPoints[br]) branchDataPoints[br] = [];
+  });
+  // Pastikan cawangan utama/In-Branch ada kalau tiada dalam map
+  if (!branchDataPoints["In-Branch"]) branchDataPoints["In-Branch"] = [];
 
   if (filterType === "daily") {
     for (let i = 0; i < 24; i++) {
@@ -1602,7 +1688,12 @@ function updateBarChart(bookings, orders, filterType) {
     bgColors = ["#111827"];
   }
 
-  const addAmount = (dateStr, timeStr, amount) => {
+  // Isi data kosong untuk setiap cawangan mengikut panjang paksi X
+  Object.keys(branchDataPoints).forEach(br => {
+    branchDataPoints[br] = new Array(labels.length).fill(0);
+  });
+
+  const addAmount = (dateStr, timeStr, amount, branch = "In-Branch") => {
     let d;
     if (
       dateStr &&
@@ -1619,33 +1710,68 @@ function updateBarChart(bookings, orders, filterType) {
     }
     if (!d || isNaN(d.getTime())) return;
 
+    let idx = -1;
     if (filterType === "daily") {
       let hour = d.getHours();
-      if (hour >= 0 && hour < 24) dataPoints[hour] += amount;
+      if (hour >= 0 && hour < 24) idx = hour;
     } else if (filterType === "weekly") {
       let day = d.getDay();
-      dataPoints[day] += amount;
+      idx = day;
     } else if (filterType === "monthly") {
       let dateNum = d.getDate();
-      if (dateNum >= 1 && dateNum <= dataPoints.length)
-        dataPoints[dateNum - 1] += amount;
+      if (dateNum >= 1 && dateNum <= dataPoints.length) idx = dateNum - 1;
     } else if (filterType === "yearly") {
       let month = d.getMonth();
-      if (month >= 0 && month < 12) dataPoints[month] += amount;
+      if (month >= 0 && month < 12) idx = month;
     } else {
-      dataPoints[0] += amount;
+      idx = 0;
+    }
+
+    if (idx !== -1) {
+      dataPoints[idx] += amount;
+      if (branchDataPoints[branch]) {
+        branchDataPoints[branch][idx] += amount;
+      }
     }
   };
 
-  bookings.forEach((b) =>
-    addAmount(b.Date || b.Timestamp, b.Time, parseFloat(b.Price) || 0),
-  );
-  orders.forEach((o) => addAmount(o.Timestamp, null, o._calculatedTotal || 0));
+  bookings.forEach((b) => {
+    let br = mapBarberBranch[b.Barber] || "In-Branch";
+    addAmount(b.Date || b.Timestamp, b.Time, parseFloat(b.Price) || 0, br);
+  });
+  orders.forEach((o) => addAmount(o.Timestamp, null, o._calculatedTotal || 0, "In-Branch"));
 
   salesChartObj.data.labels = labels;
   salesChartObj.data.datasets[0].data = dataPoints;
   salesChartObj.data.datasets[0].backgroundColor = bgColors;
   animateChartWhenVisible(salesChartObj, "salesChart");
+
+  if (branchLineChartObj) {
+    branchLineChartObj.data.labels = labels;
+    let bColors = ["#8b5cf6", "#3b82f6", "#ec4899", "#10b981", "#f59e0b", "#6366f1"];
+    let datasets = [];
+    let colorIndex = 0;
+    
+    Object.keys(branchDataPoints).forEach(br => {
+      // Abaikan cawangan jika tiada jualan langsung untuk jadikan graf kemas
+      let totalSales = branchDataPoints[br].reduce((sum, val) => sum + val, 0);
+      if (totalSales > 0) {
+        datasets.push({
+          label: br,
+          data: branchDataPoints[br],
+          borderColor: bColors[colorIndex % bColors.length],
+          backgroundColor: bColors[colorIndex % bColors.length],
+          tension: 0.3,
+          borderWidth: 2,
+          pointRadius: 2
+        });
+        colorIndex++;
+      }
+    });
+
+    branchLineChartObj.data.datasets = datasets;
+    animateChartWhenVisible(branchLineChartObj, "branchLineChart");
+  }
 }
 
 function openReceiptModal(link) {
