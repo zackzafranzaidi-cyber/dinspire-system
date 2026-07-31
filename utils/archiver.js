@@ -85,7 +85,8 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
     let zip = new AdmZip();
     let hasImages = false;
 
-    const processData = async (records, category) => {
+      // Extract promises for concurrent fetching
+      const fetchPromises = [];
       for (let r of (records || [])) {
         if (r.status === "Pending Verification" || r.status === "Rejected") continue;
 
@@ -106,14 +107,24 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
         });
 
         if (r.resit && r.resit.startsWith("http")) {
-          try {
-            const response = await axios.get(r.resit, { responseType: 'arraybuffer', timeout: 10000 });
-            const filename = `${category}_${r.no_booking || r.id}.jpg`;
-            zip.addFile(filename, Buffer.from(response.data, "binary"));
-            hasImages = true;
-          } catch (imgErr) {
-            console.error(`Gagal muat turun resit: ${r.resit}`);
-          }
+          const filename = `${category}_${r.no_booking || r.id}.jpg`;
+          fetchPromises.push(
+            axios.get(r.resit, { responseType: 'arraybuffer', timeout: 10000 })
+              .then(response => ({ filename, data: Buffer.from(response.data, "binary") }))
+              .catch(imgErr => {
+                console.error(`Gagal muat turun resit: ${r.resit}`);
+                return null;
+              })
+          );
+        }
+      }
+
+      // Tunggu semua muat turun selesai secara serentak (Laju!)
+      const results = await Promise.all(fetchPromises);
+      for (let res of results) {
+        if (res) {
+          zip.addFile(res.filename, res.data);
+          hasImages = true;
         }
       }
     };
@@ -125,10 +136,16 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
     await processData(products, "Produk");
 
     let csvData = allRawCsvData.length > 0 ? new Parser().parse(allRawCsvData) : "Tiada Rekod Bulan Ini.";
-    let zipBuffer = null;
-    let zipFilename = `Arkib_Resit_${targetYear}_${targetMonth}.zip`;
+    let zipUrl = "";
     if (hasImages) {
-      zipBuffer = zip.toBuffer();
+      const zipBuffer = zip.toBuffer();
+      const zipFilename = `Arkib_Resit_${targetYear}_${targetMonth}.zip`;
+      const { data: uploadData, error: uploadErr } = await supabase.storage.from("receipts").upload(`archives/${zipFilename}`, zipBuffer, { contentType: "application/zip", upsert: true });
+      if (uploadErr) console.error("ZIP Upload Error:", uploadErr);
+      if (!uploadErr) {
+        const { data: publicUrlData } = supabase.storage.from("receipts").getPublicUrl(`archives/${zipFilename}`);
+        zipUrl = publicUrlData.publicUrl;
+      }
     }
 
     let transporter;
@@ -139,19 +156,14 @@ async function runMonthlyArchive(isTest = false, targetEmail = "") {
       transporter = nodemailer.createTransport({ host: "smtp.ethereal.email", port: 587, secure: false, auth: { user: testAccount.user, pass: testAccount.pass } });
     }
 
-    const attachments = [{ filename: `Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, content: csvData }];
-    if (zipBuffer) {
-      attachments.push({ filename: zipFilename, content: zipBuffer });
-    }
-
     const mailOptions = {
       from: '"Sistem Dinspire" <admin@dinspire.com>',
       to: targetEmail || process.env.OWNER_EMAIL || "zafran.zaidi@gmail.com",
       subject: `Laporan Bulanan Dinspire - Bulan ${targetMonth}/${targetYear}`,
       text: `Salam Tuan,\n\nDilampirkan adalah laporan CSV untuk bulan ${targetMonth}/${targetYear}.\n\n` +
-            (zipBuffer ? `Kesemua gambar resit bulan ini turut dilampirkan dalam fail ZIP berasingan bersama emel ini.\n\n` : "Tiada gambar resit untuk bulan ini.\n\n") +
+            (zipUrl ? `Oleh kerana saiz gambar yang besar, kesemua resit bulan ini telah dimampatkan ke dalam fail ZIP. Sila muat turun di sini (Pautan hanya aktif sehingga hujung tahun):\n${zipUrl}\n\n` : (hasImages ? "Terdapat gambar resit bulan ini, tetapi fail ZIP gagal dimuat naik ke Supabase kerana saiznya melebihi had.\n\n" : "Tiada gambar resit untuk bulan ini.\n\n")) +
             `Terima kasih.`,
-      attachments: attachments,
+      attachments: [{ filename: `Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, content: csvData }],
     };
 
     let info = await transporter.sendMail(mailOptions);
