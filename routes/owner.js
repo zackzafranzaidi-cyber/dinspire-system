@@ -555,6 +555,7 @@ router.post(
 // Pemasaran (Marketing) - Ekstrak Pelanggan Tanpa Berulang
 router.get(
   "/marketing-customers",
+  authenticate,
   requireRole(["owner"]),
   async (req, res) => {
     try {
