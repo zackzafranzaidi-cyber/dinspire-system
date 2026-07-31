@@ -2461,7 +2461,7 @@ async function fetchSMSBalance() {
 async function triggerEmailTest() {
   if (!confirm("Sistem akan menjana fail arkib ZIP dari pangkalan data sebenar dan menghantarnya ke emel anda sekarang. Teruskan?")) return;
   try {
-    const res = await fetch("/api/owner/trigger-monthly-archive");
+    const res = await fetch(`${API_BASE_URL}/owner/trigger-monthly-archive`);
     const data = await res.json();
     if (data.status === "success") {
       alert("Emel berjaya dihantar! Sila semak peti masuk anda.");
