@@ -17,8 +17,20 @@ let mapBarberBranch = {};
 let salesChartObj, demoChartObj, payChartObj, staffChartObj, branchChartObj, branchLineChartObj;
 let hasAutoTriggeredAI = false;
 let currentInsightAbortController = null;
+let insightDebounceTimer = null;
 let currentActiveTab = "dashboard";
 let currentReferenceDate = new Date();
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  if (!t) {
+    alert(msg);
+    return;
+  }
+  t.innerText = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
 
 function resetDateOffset() {
   currentReferenceDate = new Date();
@@ -894,8 +906,10 @@ async function fetchDashboardInsights(
 
   const bgPrompt = `Sebagai penganalisis perniagaan Dinspire, berikan rumusan eksekutif yang sangat padat (maksimum 3 ayat pendek) berdasarkan data ${timeframe} ini: Jumlah Keseluruhan Jualan RM${totalSales}, Jumlah Pelanggan Servis ${totalServis} (Pecahan -> Walk-in: ${walkin}, Booking: ${booking}, Rawatan: ${rawatan}, OnCall: ${oncall}). Nyatakan sama ada prestasi baik/buruk secara ringkas, dan selitkan satu nasihat operasi ringkas. Terus kepada inti pati, jangan guna tajuk besar.`;
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/owner/ai-insights`, {
+  if (insightDebounceTimer) clearTimeout(insightDebounceTimer);
+  insightDebounceTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/owner/ai-insights`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -930,6 +944,7 @@ async function fetchDashboardInsights(
     document.getElementById("ai-insights-content").innerHTML =
       `<p class="text-rose-400 text-xs md:text-sm font-semibold break-words whitespace-normal">Ralat: ${escapeHTML(err.message)}</p>`;
   }
+  }, 1000);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -2630,7 +2645,7 @@ async function renderReportsTab() {
 }
 
 async function downloadMonthlyZip(month, year) {
-  alert(`Sedang menjana ZIP untuk Bulan ${month} Tahun ${year}. Sila tunggu...`);
+  showToast(`Sedang menjana ZIP untuk Bulan ${month} Tahun ${year}. Sila tunggu...`);
   
   try {
     const res = await fetch(`${API_BASE_URL}/owner/monthly-archive-data?month=${month}&year=${year}&t=${Date.now()}`, {
@@ -2641,7 +2656,7 @@ async function downloadMonthlyZip(month, year) {
     
     const data = await res.json();
     if (!data || !data.rawData) {
-       alert("Tiada rekod untuk bulan ini.");
+       showToast("Tiada rekod untuk bulan ini.");
        return;
     }
     
@@ -2661,7 +2676,7 @@ async function downloadMonthlyZip(month, year) {
     });
 
     if (!hasData) {
-      alert("Tiada data wujud pada bulan tersebut.");
+      showToast("Tiada data wujud pada bulan tersebut.");
       return;
     }
     
@@ -2685,16 +2700,16 @@ async function downloadMonthlyZip(month, year) {
     
     const content = await zip.generateAsync({ type: "blob" });
     saveAs(content, `Arkib_${monthFolderName}.zip`);
-    alert("Muat turun selesai!");
+    showToast("Muat turun selesai!");
     
   } catch (err) {
     console.error(err);
-    alert("Ralat menjana ZIP Bulanan.");
+    showToast("Ralat menjana ZIP Bulanan.");
   }
 }
 
 async function downloadYearlyArchive(year) {
-  alert(`Sedang menjana ZIP Tahunan ${year}. Sila tunggu, proses ini mungkin mengambil masa lebih 1 minit...`);
+  showToast(`Sedang menjana ZIP Tahunan ${year}. Sila tunggu, proses ini mungkin mengambil masa lebih 1 minit...`);
   
   try {
     const token = localStorage.getItem("din_token_sys");
@@ -2788,16 +2803,16 @@ async function downloadYearlyArchive(year) {
     
     const content = await zip.generateAsync({ type: "blob" });
     saveAs(content, `Arkib_Lengkap_${year}.zip`);
-    alert("Muat turun selesai!");
+    showToast("Muat turun selesai!");
     
   } catch (err) {
     console.error(err);
-    alert("Ralat menjana ZIP Tahunan.");
+    showToast("Ralat menjana ZIP Tahunan.");
   }
 }
 
 async function downloadCompressedArchive(year) {
-  alert(`Sedang menjana laporan mampat untuk tahun ${year}...`);
+  showToast(`Sedang menjana laporan mampat untuk tahun ${year}...`);
   try {
     const token = localStorage.getItem("din_token_sys");
     const res = await fetch(`${API_BASE_URL}/owner/historical-data?year=${year}&t=${Date.now()}`, {
@@ -2815,10 +2830,10 @@ async function downloadCompressedArchive(year) {
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(blob, `Laporan_Mampat_${year}.xlsx`);
     
-    alert("Muat turun selesai!");
+    showToast("Muat turun selesai!");
   } catch (e) {
     console.error(e);
-    alert("Ralat menjana laporan mampat.");
+    showToast("Ralat menjana laporan mampat.");
   }
 }
 
