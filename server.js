@@ -206,65 +206,7 @@ app.use("/api/shop-data", shopRoutes);
 app.use("/api/owner", ownerRoutes);
 app.use("/api/admin", adminRoutes);
 
-// ========================================================
-// [BAHARU] API Tersembunyi (Test Trigger) Untuk Pengarkiban Tahunan
-// ========================================================
-app.get("/api/owner/trigger-pruning", async (req, res) => {
-  try {
-    await pruneYearlyData();
-    res.json({ status: "success", message: "Proses pembersihan & kompresi (pruning) berjaya disimulasikan." });
-  } catch (err) {
-    res.status(500).json({ status: "error", message: err.message });
-  }
-});
 
-app.get("/api/owner/monthly-archive-data", async (req, res) => {
-  try {
-    const { month, year } = req.query;
-    if (!month || !year) {
-      return res.status(400).send("Parameter month dan year diperlukan.");
-    }
-    const archiveData = await generateMonthlyArchiveData(month, year);
-    res.json(archiveData);
-  } catch (err) {
-    res.status(500).json({ status: "error", message: err.message });
-  }
-});
-
-app.get("/api/owner/reports-data", async (req, res) => {
-  try {
-    const { startDate, endDate } = req.query;
-    if (!startDate || !endDate) {
-      return res.status(400).send("Parameter startDate dan endDate diperlukan.");
-    }
-    const archiveData = await generateArchiveDataByDateRange(startDate, endDate);
-    res.json(archiveData);
-  } catch (err) {
-    res.status(500).json({ status: "error", message: err.message });
-  }
-});
-
-app.get("/api/owner/historical-years", async (req, res) => {
-  try {
-    const { data } = await supabase.from("historical_sales").select("tahun").order("tahun", { ascending: false });
-    if (!data) return res.json([]);
-    const uniqueYears = [...new Set(data.map(item => item.tahun))];
-    res.json(uniqueYears.map(y => ({ tahun: y })));
-  } catch (err) {
-    res.status(500).json({ status: "error", message: err.message });
-  }
-});
-
-app.get("/api/owner/historical-data", async (req, res) => {
-  try {
-    const { year } = req.query;
-    if (!year) return res.status(400).send("Parameter year diperlukan");
-    const { data } = await supabase.from("historical_sales").select("*").eq("tahun", year).order("bulan", { ascending: true });
-    res.json(data || []);
-  } catch (err) {
-    res.status(500).json({ status: "error", message: err.message });
-  }
-});
 
 app.get("/api/owner/trigger-daily-cleanup", async (req, res) => {
   try {
