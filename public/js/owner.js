@@ -2874,7 +2874,7 @@ function checkArchivingReminders() {
      const lastMonthYear = month === 0 ? year - 1 : year;
      
      // Elakkan popup spam berulang kali dalam 1 session
-     if (!sessionStorage.getItem("monthly_reminder_shown")) {
+     if (!sessionStorage.getItem("din_monthly_reminder_shown_v2")) {
         showReminderPopup(
           `Laporan jualan bagi bulan lepas sedia untuk dimuat turun. Sila muat turun salinan anda sekarang.`, 
           `Muat Turun Laporan Bulan ${lastMonth}/${lastMonthYear}`, 
@@ -2882,7 +2882,7 @@ function checkArchivingReminders() {
              downloadMonthlyZip(lastMonth, lastMonthYear);
           }
         );
-        sessionStorage.setItem("monthly_reminder_shown", "true");
+        sessionStorage.setItem("din_monthly_reminder_shown_v2", "true");
      }
   }
   
@@ -2890,7 +2890,7 @@ function checkArchivingReminders() {
   if (month === 0 && date >= 27 && date <= 31) {
      const lastYear = year - 1;
      
-     if (!sessionStorage.getItem("yearly_reminder_shown")) {
+     if (!sessionStorage.getItem("din_yearly_reminder_shown_v2")) {
         showReminderPopup(
           `PERHATIAN: Data laporan mentah dan resit untuk tahun ${lastYear} akan DIPADAM KEKAL pada 1 Februari. Sila muat turun Laporan Lengkap Tahunan anda dengan segera!`, 
           `Muat Turun ZIP Tahunan ${lastYear}`, 
@@ -2899,7 +2899,7 @@ function checkArchivingReminders() {
           },
           true // isDanger
         );
-        sessionStorage.setItem("yearly_reminder_shown", "true");
+        sessionStorage.setItem("din_yearly_reminder_shown_v2", "true");
      }
   }
 }
@@ -2948,7 +2948,5 @@ function showReminderPopup(message, btnText, callback, isDanger = false) {
 }
 
 // Invoke checkArchivingReminders() on load
-document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(checkArchivingReminders, 2000);
-});
+setTimeout(checkArchivingReminders, 2500);
 
