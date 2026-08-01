@@ -2913,7 +2913,7 @@ function showReminderPopup(message, btnText, callback, isDanger = false) {
    card.className = "bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center transform transition-all scale-100";
    
    const icon = document.createElement("div");
-   icon.className = `text-5xl mb-4 ${isDanger ? 'text-red-500' : 'text-blue-500'}`;
+   icon.className = `text-5xl mb-4 ${isDanger ? 'text-red-500' : 'text-gray-900'}`;
    icon.innerHTML = isDanger ? '<i class="fas fa-exclamation-triangle"></i>' : '<i class="fas fa-bell"></i>';
    
    const title = document.createElement("h3");
@@ -2925,7 +2925,7 @@ function showReminderPopup(message, btnText, callback, isDanger = false) {
    text.innerText = message;
    
    const btnPrimary = document.createElement("button");
-   btnPrimary.className = `w-full py-3 rounded-xl font-bold text-white mb-2 shadow-md transition ${isDanger ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`;
+   btnPrimary.className = `w-full py-3 rounded-xl font-bold text-white mb-2 shadow-md transition ${isDanger ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-900 hover:bg-black'}`;
    btnPrimary.innerText = btnText;
    btnPrimary.onclick = () => {
       callback();

@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.6";
+      const CURRENT_APP_VERSION = "1.1.7";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -1319,7 +1319,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=17"></script>
+    <script src="../js/owner.js?v=18"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>
@@ -1498,7 +1498,7 @@
         if ("serviceWorker" in navigator) {
           window.addEventListener("load", () => {
             navigator.serviceWorker
-              .register("/owner/sw.js?v=16");
+              .register("/owner/sw.js?v=17");
             });
         }
     </script>
