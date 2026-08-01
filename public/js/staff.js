@@ -307,11 +307,6 @@ async function fetchServicesForWalkin() {
     const data = await res.json();
     let allServices = [];
     if (data.WalkInServices) allServices = allServices.concat(data.WalkInServices);
-    if (data.Treatments) {
-      // Hilangkan harga untuk rawatan supaya tak auto-fill
-      const trs = data.Treatments.map(t => ({...t, price: ""}));
-      allServices = allServices.concat(trs);
-    }
     shopSettings.walkin = allServices;
 
     const wiSel = document.getElementById("wi-service");
