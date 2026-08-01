@@ -26,93 +26,61 @@
   </div>
 
   <script type="module">
-    import { supabaseUrl, supabaseKey } from "../js/config.js";
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    import JSZip from "https://cdn.jsdelivr.net/npm/jszip/+esm";
+    import { saveAs } from "https://cdn.jsdelivr.net/npm/file-saver/+esm";
 
-    // Dapatkan parameter bulan & tahun dari URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetMonth = parseInt(urlParams.get("month"));
-    const targetYear = parseInt(urlParams.get("year"));
+    async function runDownload() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetMonth = urlParams.get("month");
+      const targetYear = urlParams.get("year");
 
-    if (!targetMonth || !targetYear) {
-      document.getElementById("statusText").innerText = "Parameter bulan/tahun tidak sah.";
-    } else {
-      document.getElementById("statusText").innerText = `Memproses Arkib Bulan ${targetMonth}/${targetYear}...`;
-      startDownload();
-    }
+      if (!targetMonth || !targetYear) {
+        document.getElementById("statusText").innerText = "Parameter tidak lengkap.";
+        return;
+      }
 
-    async function startDownload() {
+      document.getElementById("statusText").innerText = "Sila tunggu, memuatkan data pelayan...";
+      let zip = new JSZip();
+
       try {
-        const startDate = new Date(`${targetYear}-${String(targetMonth).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
-        const nextMonth = targetMonth === 12 ? 1 : targetMonth + 1;
-        const nextYear = targetMonth === 12 ? targetYear + 1 : targetYear;
-        const endDate = new Date(`${nextYear}-${String(nextMonth).padStart(2, '0')}-01T00:00:00+08:00`).toISOString();
-
-        // Ambil semua data
-        const [bookings, walkins, oncalls, treatments, products] = await Promise.all([
-          supabase.from("booking_records").select("resit, id, no_booking, status").gte("created_at", startDate).lt("created_at", endDate),
-          supabase.from("walkin_records").select("resit, id, no_booking, status").gte("created_at", startDate).lt("created_at", endDate),
-          supabase.from("oncall_records").select("resit, id, no_booking, status").gte("created_at", startDate).lt("created_at", endDate),
-          supabase.from("treatment_records").select("resit, id, no_booking, status").gte("created_at", startDate).lt("created_at", endDate),
-          supabase.from("product_orders").select("resit, id, status").gte("created_at", startDate).lt("created_at", endDate)
-        ]);
-
-        let allUrls = [];
-        const pushUrls = (data, prefix) => {
-          (data.data || []).forEach(r => {
-            if (r.status !== "Pending Verification" && r.status !== "Rejected" && r.resit && r.resit.startsWith("http")) {
-              allUrls.push({ url: r.resit, name: `${prefix}_${r.no_booking || r.id}.jpg` });
-            }
-          });
-        };
-
-        pushUrls(bookings, "Booking");
-        pushUrls(walkins, "Walk-In");
-        pushUrls(oncalls, "On-Call");
-        pushUrls(treatments, "Treatment");
-        pushUrls(products, "Produk");
-
-        if (allUrls.length === 0) {
-          document.getElementById("statusText").innerText = "Tiada gambar resit dijumpai untuk bulan ini.";
+        const apiBaseUrl = window.location.hostname === 'localhost' ? 'http://localhost:10000' : 'https://api.dinspirebarbershop.com';
+        const res = await fetch(`${apiBaseUrl}/api/owner/monthly-archive-data?month=${targetMonth}&year=${targetYear}`);
+        const data = await res.json();
+        
+        if (!data || !data.csvData) {
+          document.getElementById("statusText").innerText = "Ralat mengambil data laporan.";
           return;
         }
 
-        document.getElementById("progressText").innerText = `0 / ${allUrls.length} Resit dimuat turun`;
-        let zip = new JSZip();
-        
-        // 1. Dapatkan fail CSV dan masukkan ke dalam ZIP
-        try {
-          document.getElementById("statusText").innerText = "Menjana Jadual Laporan CSV...";
-          // Guna host semasa (samada api.dinspirebarbershop.com atau owner.dinspirebarbershop.com bergantung pada konfigurasi proxy)
-          // Memandangkan ini dijalankan dari owner.dinspirebarbershop.com, kita perlukan API url penuh jika tiada proxy
-          const apiBaseUrl = window.location.hostname === 'localhost' ? 'http://localhost:10000' : 'https://api.dinspirebarbershop.com';
-          const csvRes = await fetch(`${apiBaseUrl}/api/owner/monthly-csv?month=${targetMonth}&year=${targetYear}`);
-          const csvText = await csvRes.text();
-          zip.file(`Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, csvText);
-        } catch(e) {
-          console.error("Gagal menjana CSV", e);
-        }
+        document.getElementById("statusText").innerText = "Memproses laporan CSV...";
+        zip.file(`Laporan_Bulanan_${targetMonth}_${targetYear}.csv`, data.csvData);
 
-        document.getElementById("statusText").innerText = `Memproses Arkib Bulan ${targetMonth}/${targetYear}...`;
-        let count = 0;
+        const allUrls = data.imageUrls || [];
 
-        // Muat turun gambar secara selari dengan limit
-        const limit = 10; 
-        for (let i = 0; i < allUrls.length; i += limit) {
-          const chunk = allUrls.slice(i, i + limit);
-          await Promise.all(chunk.map(async (item) => {
-            try {
-              const response = await fetch(item.url);
-              const blob = await response.blob();
-              zip.file(item.name, blob);
-            } catch (e) {
-              console.error("Gagal muat turun:", item.url);
-            }
-            count++;
-            let p = Math.round((count / allUrls.length) * 100);
-            document.getElementById("progressBar").style.width = p + "%";
-            document.getElementById("progressText").innerText = `${count} / ${allUrls.length} Resit dimuat turun`;
-          }));
+        if (allUrls.length === 0) {
+          document.getElementById("statusText").innerText = "Tiada gambar resit dijumpai untuk bulan ini.";
+          // Kita masih teruskan untuk zip CSV
+        } else {
+          document.getElementById("progressText").innerText = `0 / ${allUrls.length} Resit dimuat turun`;
+          let count = 0;
+
+          const limit = 10; 
+          for (let i = 0; i < allUrls.length; i += limit) {
+            const chunk = allUrls.slice(i, i + limit);
+            await Promise.all(chunk.map(async (item) => {
+              try {
+                const response = await fetch(item.url);
+                const blob = await response.blob();
+                zip.file(item.name, blob);
+              } catch (e) {
+                console.error("Gagal muat turun:", item.url);
+              }
+              count++;
+              let p = Math.round((count / allUrls.length) * 100);
+              document.getElementById("progressBar").style.width = p + "%";
+              document.getElementById("progressText").innerText = `${count} / ${allUrls.length} Resit dimuat turun`;
+            }));
+          }
         }
 
         document.getElementById("statusText").innerText = "Memampatkan fail ZIP... Sila tunggu.";

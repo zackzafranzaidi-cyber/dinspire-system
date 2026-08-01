@@ -1,7 +1,7 @@
 const { Parser } = require("json2csv");
 const supabase = require("../config/db");
 
-async function generateMonthlyCsv(targetMonth, targetYear) {
+async function generateMonthlyArchiveData(targetMonth, targetYear) {
   try {
     console.log(`Menjana Laporan Bulanan untuk: ${targetMonth}/${targetYear}`);
     
@@ -26,6 +26,7 @@ async function generateMonthlyCsv(targetMonth, targetYear) {
     ]);
 
     let allRawCsvData = [];
+    let imageUrls = [];
 
     const processData = (records, category) => {
       for (let r of (records || [])) {
@@ -34,9 +35,10 @@ async function generateMonthlyCsv(targetMonth, targetYear) {
         let staffName = r.staff?.username || r.staff_id || "-";
         let price = parseFloat(r.harga_rm || r.total_price || 0);
         let fee = parseFloat(r.service_fee || r.shipping_fee || 0);
+        let dateStr = new Date(r.created_at).toLocaleDateString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" });
 
         allRawCsvData.push({
-          Tarikh: new Date(r.created_at).toLocaleDateString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" }),
+          Tarikh: dateStr,
           Masa: new Date(r.created_at).toLocaleTimeString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" }),
           Kategori: category,
           No_Booking: r.no_booking || r.id,
@@ -47,6 +49,16 @@ async function generateMonthlyCsv(targetMonth, targetYear) {
           Total_RM: price + fee,
           Status: r.status
         });
+
+        // Simpan url gambar jika wujud
+        if (r.resit) {
+          const publicUrl = supabase.storage.from("receipts").getPublicUrl(r.resit).data.publicUrl;
+          // Format nama fail: Kategori_NoBooking_Tarikh.jpg
+          const cleanDate = dateStr.replace(/\//g, "-");
+          const ext = r.resit.split('.').pop() || "jpg";
+          const fileName = `${category}_${r.no_booking || r.id}_${cleanDate}.${ext}`;
+          imageUrls.push({ url: publicUrl, name: fileName });
+        }
       }
     };
 
@@ -60,7 +72,7 @@ async function generateMonthlyCsv(targetMonth, targetYear) {
     console.log("Menjana fail CSV...");
     let csvData = allRawCsvData.length > 0 ? new Parser().parse(allRawCsvData) : "Tiada Rekod Bulan Ini.";
     
-    return csvData;
+    return { csvData, imageUrls };
 
   } catch (error) {
     console.error("Ralat Laporan Bulanan:", error);
@@ -68,4 +80,4 @@ async function generateMonthlyCsv(targetMonth, targetYear) {
   }
 }
 
-module.exports = { generateMonthlyCsv };
+module.exports = { generateMonthlyArchiveData };

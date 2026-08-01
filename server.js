@@ -9,7 +9,7 @@ const schedule = require("node-schedule");
 const supabase = require("./config/db");
 const logger = require("./utils/logger"); // Import Winston logger
 const { sendSMS } = require("./utils/sms");
-const { runAnnualArchive, runMonthlyArchive, runDailyCleanup } = require("./utils/archiver");
+const { runAnnualArchive, generateMonthlyArchiveData, runDailyCleanup } = require("./utils/archiver");
 const app = express();
 require("events").EventEmitter.defaultMaxListeners = 50; // [DIBAIKI] Tingkatkan had event listeners untuk trafik tinggi
 
@@ -218,16 +218,14 @@ app.get("/api/owner/trigger-annual-archive", async (req, res) => {
   }
 });
 
-app.get("/api/owner/monthly-csv", async (req, res) => {
+app.get("/api/owner/monthly-archive-data", async (req, res) => {
   try {
     const { month, year } = req.query;
     if (!month || !year) {
       return res.status(400).send("Parameter month dan year diperlukan.");
     }
-    const csvData = await generateMonthlyCsv(month, year);
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="Laporan_Bulanan_${month}_${year}.csv"`);
-    res.send(csvData);
+    const archiveData = await generateMonthlyArchiveData(month, year);
+    res.json(archiveData);
   } catch (err) {
     res.status(500).json({ status: "error", message: err.message });
   }
