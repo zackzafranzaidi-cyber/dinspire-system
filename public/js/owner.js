@@ -1753,33 +1753,30 @@ function updateBarChart(bookings, orders, filterType) {
     inactiveGradient.addColorStop(1, `rgba(209, 213, 219, 0.0)`);
 
     Object.keys(branchDataPoints).forEach(br => {
-      // Abaikan cawangan jika tiada jualan langsung atau jika ia On-Call
+      // Abaikan cawangan On-Call
       if (br.toLowerCase().includes("on-call") || br.toLowerCase().includes("oncall")) return;
 
-      let totalSales = branchDataPoints[br].reduce((sum, val) => sum + val, 0);
-      if (totalSales > 0) {
-        let isFirst = (colorIndex === 0);
-        let baseColor = isFirst ? "#111827" : "#d1d5db";
-        let gradient = isFirst ? activeGradient : inactiveGradient;
+      let isFirst = (colorIndex === 0);
+      let baseColor = isFirst ? "#111827" : "#d1d5db";
+      let gradient = isFirst ? activeGradient : inactiveGradient;
 
-        datasets.push({
-          label: br,
-          data: branchDataPoints[br],
-          borderColor: baseColor,
-          backgroundColor: gradient,
-          fill: true,
-          tension: 0.4,
-          borderWidth: isFirst ? 3 : 2,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          order: isFirst ? 0 : 1,
-          customActiveColor: "#111827",
-          customInactiveColor: "#d1d5db",
-          customActiveGradient: activeGradient,
-          customInactiveGradient: inactiveGradient
-        });
-        colorIndex++;
-      }
+      datasets.push({
+        label: br,
+        data: branchDataPoints[br],
+        borderColor: baseColor,
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.4,
+        borderWidth: isFirst ? 3 : 2,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        order: isFirst ? 0 : 1,
+        customActiveColor: "#111827",
+        customInactiveColor: "#d1d5db",
+        customActiveGradient: activeGradient,
+        customInactiveGradient: inactiveGradient
+      });
+      colorIndex++;
     });
 
     branchLineChartObj.data.datasets = datasets;
