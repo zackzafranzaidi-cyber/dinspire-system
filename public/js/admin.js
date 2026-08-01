@@ -24,7 +24,7 @@ const SCHEMAS = {
   Haircuts: ["id", "name", "desc", "price"],
   Treatments: ["id", "name", "desc", "price"],
   Branches: ["id", "name", "location", "lat", "lng"],
-  Barbers: ["id", "name", "branch_id", "can_haircut", "can_treatment"],
+  Barbers: ["id", "name", "branch_id", "kemahiran"],
   OnCall: ["id", "name", "price"],
   OnCallBarbers: ["id", "name"],
   WalkInServices: ["id", "name", "price"],
@@ -368,7 +368,12 @@ async function saveAllData() {
     cleanData[tab] = (appData[tab] || []).map((item) => {
       let cleanItem = {};
       SCHEMAS[tab].forEach((col) => {
-        cleanItem[col] = item[col] || null;
+        if (tab === "Barbers" && col === "kemahiran") {
+          cleanItem.can_haircut = item.can_haircut;
+          cleanItem.can_treatment = item.can_treatment;
+        } else {
+          cleanItem[col] = item[col] || null;
+        }
       });
       return cleanItem;
     });
