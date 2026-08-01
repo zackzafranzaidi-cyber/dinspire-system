@@ -2580,10 +2580,10 @@ async function renderReportsTab() {
     const months = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
     months.forEach((m, i) => {
       html += `
-        <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50">
+        <div onclick="downloadMonthlyZip(${i + 1}, ${currentYear})" class="border border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50 cursor-pointer hover:bg-gray-100 hover:shadow-md transition">
           <i class="fas fa-folder-open text-3xl text-purple-400 mb-2"></i>
           <span class="font-bold text-gray-700">${m} ${currentYear}</span>
-          <span class="text-xs text-gray-500">Data Terperinci</span>
+          <span class="text-xs text-purple-600 mt-1"><i class="fas fa-download"></i> Muat Turun ZIP</span>
         </div>
       `;
     });
@@ -2626,6 +2626,70 @@ async function renderReportsTab() {
       console.error(err);
       container.innerHTML = '<p class="text-red-500 text-center mt-10">Gagal menyambung ke pelayan.</p>';
     }
+  }
+}
+
+async function downloadMonthlyZip(month, year) {
+  alert(`Sedang menjana ZIP untuk Bulan ${month} Tahun ${year}. Sila tunggu...`);
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/owner/monthly-archive-data?month=${month}&year=${year}&t=${Date.now()}`, {
+      credentials: "include"
+    });
+    
+    if (!res.ok) throw new Error("Gagal mengambil data");
+    
+    const data = await res.json();
+    if (!data || !data.rawData) {
+       alert("Tiada rekod untuk bulan ini.");
+       return;
+    }
+    
+    const zip = new JSZip();
+    const monthFolderName = `Bulan_${String(month).padStart(2, '0')}_${year}`;
+    const wb = XLSX.utils.book_new();
+    const sheetNames = Object.keys(data.rawData);
+    let hasData = false;
+    
+    sheetNames.forEach(sheetName => {
+      const sheetData = data.rawData[sheetName];
+      if (sheetData && sheetData.length > 0) {
+        hasData = true;
+        const ws = XLSX.utils.json_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      }
+    });
+
+    if (!hasData) {
+      alert("Tiada data wujud pada bulan tersebut.");
+      return;
+    }
+    
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    zip.file(`Laporan_${monthFolderName}.xlsx`, excelBuffer);
+    
+    // Download receipts
+    if (data.imageUrls && data.imageUrls.length > 0) {
+      const receiptFolder = zip.folder("Resit");
+      const fetchPromises = data.imageUrls.map(async (urlObj) => {
+        try {
+          const imgRes = await fetch(urlObj.url);
+          const blob = await imgRes.blob();
+          receiptFolder.file(urlObj.name, blob);
+        } catch (e) {
+          console.error("Gagal muat turun imej:", urlObj.name);
+        }
+      });
+      await Promise.all(fetchPromises);
+    }
+    
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, `Arkib_${monthFolderName}.zip`);
+    alert("Muat turun selesai!");
+    
+  } catch (err) {
+    console.error(err);
+    alert("Ralat menjana ZIP Bulanan.");
   }
 }
 
@@ -2697,9 +2761,9 @@ async function downloadYearlyArchive(year) {
           try {
             const imgRes = await fetch(urlObj.url);
             const blob = await imgRes.blob();
-            receiptFolder.file(urlObj.filename, blob);
+            receiptFolder.file(urlObj.name, blob);
           } catch (e) {
-            console.error("Gagal muat turun imej:", urlObj.filename);
+            console.error("Gagal muat turun imej:", urlObj.name);
           }
         });
         await Promise.all(fetchPromises);
