@@ -447,6 +447,13 @@ function calculateDashboardStats() {
   document.getElementById("dash-customers").innerText = monthlyCustomers;
   document.getElementById("dash-commission").innerText =
     `RM ${commission.toFixed(0)}`;
+    
+  let bones = commission > 1800 ? commission - 1800 : 0;
+  const bonesElement = document.getElementById("dash-bones");
+  if (bonesElement) {
+    bonesElement.innerText = `RM ${bones.toFixed(0)}`;
+  }
+
   document.getElementById("dash-cash").innerText =
     `RM ${cashOnHand.toFixed(0)}`;
 }
