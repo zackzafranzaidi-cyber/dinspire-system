@@ -1213,7 +1213,7 @@ function openCheckout(type) {
       titleEl.innerText = "Location Information";
 
     feeLabelEl.innerText = "Service Fee";
-    fee = shopData.Settings?.serviceFee || 0;
+    fee = type === "treatment" ? 0 : (shopData.Settings?.serviceFee || 0);
     subtotal = parseFloat(pendingBooking.price) || 0;
 
     let svcName = type === "oncall" ? "On-Call Service" : "In-Branch Service";
