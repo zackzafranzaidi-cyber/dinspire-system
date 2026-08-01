@@ -14,7 +14,7 @@ let masterData = {
   commissionPercent: 50,
 };
 let mapBarberBranch = {};
-let salesChartObj, demoChartObj, payChartObj, staffChartObj, branchChartObj, branchLineChartObj;
+let salesChartObj, demoChartObj, payChartObj, staffChartObj, branchLineChartObj;
 let hasAutoTriggeredAI = false;
 let currentInsightAbortController = null;
 let insightDebounceTimer = null;
@@ -824,22 +824,7 @@ function processData() {
     animateChartWhenVisible(staffChartObj, "staffChart");
   }
 
-  if (branchChartObj) {
-    let bNames = Object.keys(branchStats);
-    let totalBranchSales = bNames.reduce((sum, n) => sum + branchStats[n].sales, 0);
-    if (bNames.length > 0 && totalBranchSales > 0) {
-      branchChartObj.data.labels = bNames;
-      branchChartObj.data.datasets[0].data = bNames.map(n => branchStats[n].sales);
-      branchChartObj.data.datasets[0].backgroundColor = [
-        "#111827", "#374151", "#4b5563", "#6b7280", "#9ca3af", "#d1d5db"
-      ];
-    } else {
-      branchChartObj.data.labels = ["Tiada Data"];
-      branchChartObj.data.datasets[0].data = [1];
-      branchChartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
-    }
-    animateChartWhenVisible(branchChartObj, "branchChart");
-  }
+
 
   renderBranchTable(branchStats);
   renderStaffTable(staffStats);
@@ -1587,36 +1572,7 @@ function initChart() {
     },
   });
 
-  const ctx5 = document.getElementById("branchChart");
-  if (ctx5) {
-    branchChartObj = new Chart(ctx5.getContext("2d"), {
-      type: "bar",
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: "Jualan (RM)",
-            data: [],
-            backgroundColor: [
-              "#111827", "#374151", "#4b5563", "#6b7280", "#9ca3af", "#d1d5db",
-            ],
-            borderRadius: 4
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { precision: 0 }
-          }
-        }
-      },
-    });
-  }
+
 
   const ctx6 = document.getElementById("branchLineChart");
   if (ctx6) {

@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.7";
+      const CURRENT_APP_VERSION = "1.1.8";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -651,10 +651,6 @@
               </div>
             </div>
             
-            <button onclick="triggerEmailTest()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-2xl shadow-lg w-full mt-3 flex items-center justify-center gap-2 transition">
-              <i class="fas fa-file-archive"></i> Muat Turun Laporan & Arkib ZIP
-            </button>
-            
             <div
               class="card bg-gray-900 border border-gray-700 text-white !border-none flex flex-col justify-center !p-3 shadow-sm rounded-2xl"
             >
@@ -699,7 +695,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div class="card border border-gray-200 w-full max-w-full">
             <h3
               class="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide"
@@ -735,16 +731,7 @@
               <canvas id="staffChart" class="w-full h-full"></canvas>
             </div>
           </div>
-          <div class="card border border-gray-200 w-full max-w-full">
-            <h3
-              class="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide"
-            >
-              <i class="fas fa-building mr-2 text-gray-500"></i> Trafik Cawangan
-            </h3>
-            <div class="relative h-48 w-full mt-2">
-              <canvas id="branchChart" class="w-full h-full"></canvas>
-            </div>
-          </div>
+
         </div>
 
         <!-- JADUAL PRESTASI -->
@@ -1319,7 +1306,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=18"></script>
+    <script src="../js/owner.js?v=19"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>
@@ -1498,7 +1485,7 @@
         if ("serviceWorker" in navigator) {
           window.addEventListener("load", () => {
             navigator.serviceWorker
-              .register("/owner/sw.js?v=17");
+              .register("/owner/sw.js?v=18");
             });
         }
     </script>
