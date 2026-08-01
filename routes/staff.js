@@ -385,8 +385,9 @@ router.get("/my-leaves", authenticate, requireRole(["staff"]), async (req, res) 
   try {
     const { data: leaves } = await supabase
       .from("staff_leaves")
-      .select("tarikh")
-      .eq("staff_id", req.user.id);
+      .select("*")
+      .eq("staff_id", req.user.id)
+      .order("tarikh", { ascending: true });
     res.json({ status: "success", leaves: leaves || [] });
   } catch (err) {
     console.error("Ralat /my-leaves:", err);

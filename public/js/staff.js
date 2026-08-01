@@ -917,6 +917,41 @@ async function initLeaveSystem() {
      const takenLeaves = othersData.leaves ? othersData.leaves.map(l => l.tarikh) : [];
      const mySelectedLeaves = myData.leaves ? myData.leaves.map(l => l.tarikh) : [];
      
+     // Paparkan Jadual Cuti Saya
+     const leaveListContainer = document.getElementById("my-leave-list");
+     if (leaveListContainer) {
+       if (!myData.leaves || myData.leaves.length === 0) {
+         leaveListContainer.innerHTML = "Anda belum memohon sebarang cuti.";
+       } else {
+         let html = `<table style="width: 100%; border-collapse: collapse; text-align: left;">`;
+         html += `<tr style="border-bottom: 1px solid #eee; color: var(--primary-blue);">
+                    <th style="padding: 8px 4px;">Tarikh</th>
+                    <th style="padding: 8px 4px;">Jenis</th>
+                    <th style="padding: 8px 4px; text-align: right;">Status</th>
+                  </tr>`;
+         
+         // Susun ikut tarikh dari terbaru ke lama (optional, backend dah sort ASC)
+         let sortedLeaves = [...myData.leaves].sort((a, b) => new Date(b.tarikh) - new Date(a.tarikh));
+         
+         sortedLeaves.forEach(l => {
+           let statusColor = l.status === "Approved" ? "green" : (l.status === "Rejected" ? "red" : "orange");
+           let statusText = l.status || "Pending";
+           let jenis = l.jenis_cuti || "Biasa";
+           // Format tarikh ke format tempatan
+           let tParts = l.tarikh.split("-");
+           let formattedDate = tParts.length === 3 ? `${tParts[2]}/${tParts[1]}/${tParts[0]}` : l.tarikh;
+           
+           html += `<tr style="border-bottom: 1px solid #f9f9f9;">
+                      <td style="padding: 8px 4px;">${formattedDate}</td>
+                      <td style="padding: 8px 4px;">${jenis}</td>
+                      <td style="padding: 8px 4px; text-align: right; color: ${statusColor}; font-weight: bold;">${statusText}</td>
+                    </tr>`;
+         });
+         html += `</table>`;
+         leaveListContainer.innerHTML = html;
+       }
+     }
+     
      if (typeof flatpickr !== "undefined") {
        leavePicker = flatpickr("#leave-dates", {
           mode: "multiple",
