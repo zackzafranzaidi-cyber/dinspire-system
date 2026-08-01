@@ -306,7 +306,7 @@ async function fetchServicesForWalkin() {
     const res = await fetch(`${API_BASE_URL}/shop-data`);
     const data = await res.json();
     let allServices = [];
-    if (data.Haircuts) allServices = allServices.concat(data.Haircuts);
+    if (data.WalkInServices) allServices = allServices.concat(data.WalkInServices);
     if (data.Treatments) allServices = allServices.concat(data.Treatments);
     shopSettings.walkin = allServices;
 
