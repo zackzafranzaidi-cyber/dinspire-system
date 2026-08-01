@@ -720,24 +720,6 @@ async function processBookingSelesai(orderNo, price) {
   if (confirm(`Sahkan pelanggan (${orderNo}) ini telah selesai?`)) {
     executeBookingSelesai(orderNo, price, "QR", ""); // Guntingan biasanya dah bayar online
   }
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") {
-          showToast("Tempahan berjaya diselesaikan!");
-          loadDashboardData();
-        } else {
-          alert("Ralat: " + data.message);
-          if (originalBooking) {
-             staffData.bookings[bookingIndex] = originalBooking;
-             renderBookingList();
-             renderHistoryList();
-          }
-        }
-      })
-      .catch((err) => {
-         showToast("Sistem berada di luar talian. Data akan disegerakkan nanti.");
-      });
-  }
 }
 
 function cancelBooking(orderNo) {
