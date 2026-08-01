@@ -1753,8 +1753,9 @@ function updateBarChart(bookings, orders, filterType) {
     inactiveGradient.addColorStop(1, `rgba(209, 213, 219, 0.0)`);
 
     Object.keys(branchDataPoints).forEach(br => {
-      // Abaikan cawangan On-Call
-      if (br.toLowerCase().includes("on-call") || br.toLowerCase().includes("oncall")) return;
+      // Abaikan cawangan On-Call, In-Branch, dan Tidak Ditetapkan
+      let lowerBr = br.toLowerCase();
+      if (lowerBr.includes("on-call") || lowerBr.includes("oncall") || lowerBr === "in-branch" || lowerBr === "tidak ditetapkan") return;
 
       let isFirst = (colorIndex === 0);
       let baseColor = isFirst ? "#111827" : "#d1d5db";
