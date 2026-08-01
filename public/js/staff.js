@@ -625,42 +625,101 @@ async function verifyPayment(orderNo, action) {
   }
 }
 
-async function processBookingSelesai(orderNo, price) {
-    if (confirm(`Sahkan pelanggan (${orderNo}) ini telah selesai?`)) {
-      let finalPrice = price;
-      
-      // [DIBAIKI] Jika pelanggan menempah rawatan, minta harga sebenar
-      if (orderNo.startsWith("TR")) {
-        let input = prompt("Pelanggan ini menempah Rawatan.\nSila masukkan harga akhir sebenar yang dibayar di kedai (RM):", "");
-        if (input === null) return;
-        finalPrice = parseFloat(input);
-        if (isNaN(finalPrice) || finalPrice <= 0) {
-          alert("Sila masukkan harga yang sah.");
-          return;
-        }
-      }
+// Fungsi UI Modal
+window.toggleTrReceiptUpload = function() {
+  const payment = document.getElementById("tr-payment").value;
+  const receiptGroup = document.getElementById("tr-receipt-group");
+  if (payment === "QR") {
+    receiptGroup.style.display = "block";
+  } else {
+    receiptGroup.style.display = "none";
+  }
+};
 
-      // [DIBAIKI] Optimistic UI: Kemaskini skrin serta-merta
-      const bookingIndex = staffData.bookings.findIndex(b => (b.order_no || b.no_booking) === orderNo);
-      let originalBooking = null;
-      
-      if (bookingIndex > -1) {
-         originalBooking = {...staffData.bookings[bookingIndex]};
-         staffData.bookings[bookingIndex].status = "Selesai";
-         staffData.bookings[bookingIndex].final_price = finalPrice;
-         
-         calculateDashboardStats();
-         renderBookingList();
-         renderHistoryList();
-         showToast("Memproses di latar belakang...");
-      }
+window.closeTrModal = function() {
+  document.getElementById("modal-selesai-rawatan").style.display = "none";
+};
+
+window.submitTrModal = function() {
+  const orderNo = document.getElementById("tr-order-no").value;
+  const price = document.getElementById("tr-price").value;
+  const payment = document.getElementById("tr-payment").value;
+  const fileInput = document.getElementById("tr-receipt").files[0];
+
+  const finalPrice = parseFloat(price);
+  if (isNaN(finalPrice) || finalPrice <= 0) {
+    alert("Sila masukkan harga yang sah.");
+    return;
+  }
+  if (payment === "QR" && !fileInput) {
+    alert("Sila muat naik gambar resit transaksi DuitNow/QR sebelum tekan selesai!");
+    return;
+  }
+
+  if (fileInput) {
+    compressImage(fileInput, (base64Img) => {
+      executeBookingSelesai(orderNo, finalPrice, payment, base64Img);
+    });
+  } else {
+    executeBookingSelesai(orderNo, finalPrice, payment, "");
+  }
+};
+
+async function executeBookingSelesai(orderNo, finalPrice, paymentMethod, receiptBase64) {
+  closeTrModal();
+
+  // [DIBAIKI] Optimistic UI: Kemaskini skrin serta-merta
+  const bookingIndex = staffData.bookings.findIndex(b => (b.order_no || b.no_booking) === orderNo);
+  let originalBooking = null;
   
-      fetch(`${API_BASE_URL}/bookings/order/${orderNo}/complete`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ final_price: finalPrice, receipt_url: "" }),
-      })
+  if (bookingIndex > -1) {
+     originalBooking = {...staffData.bookings[bookingIndex]};
+     staffData.bookings[bookingIndex].status = "Selesai";
+     staffData.bookings[bookingIndex].final_price = finalPrice;
+     
+     calculateDashboardStats();
+     renderBookingList();
+     renderHistoryList();
+     showToast("Memproses di latar belakang...");
+  }
+
+  fetch(`${API_BASE_URL}/bookings/order/${orderNo}/complete`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ final_price: finalPrice, jenis_bayaran: paymentMethod, receipt_url: receiptBase64 }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.status === "success") {
+        showToast("Servis disahkan selesai.");
+      } else {
+        alert("Ralat: " + data.message);
+        loadDashboardData();
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Ralat pelayan memproses tempahan.");
+    });
+}
+
+async function processBookingSelesai(orderNo, price) {
+  // Jika pelanggan menempah rawatan, tunjuk modal
+  if (orderNo.startsWith("TR")) {
+    document.getElementById("tr-order-no").value = orderNo;
+    document.getElementById("tr-price").value = "";
+    document.getElementById("tr-payment").value = "Cash";
+    document.getElementById("tr-receipt").value = "";
+    toggleTrReceiptUpload();
+    document.getElementById("modal-selesai-rawatan").style.display = "flex";
+    return;
+  }
+
+  // Jika Guntingan biasa
+  if (confirm(`Sahkan pelanggan (${orderNo}) ini telah selesai?`)) {
+    executeBookingSelesai(orderNo, price, "QR", ""); // Guntingan biasanya dah bayar online
+  }
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") {

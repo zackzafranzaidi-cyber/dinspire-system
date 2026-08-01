@@ -126,16 +126,30 @@ router.get(
       const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000); // Waktu Malaysia
       const firstDayOfMonth = myTime.toISOString().substring(0, 8) + "01";
       
-      const { data: monthlyCashData } = await supabase
-        .from("walkin_records")
-        .select("harga_rm")
-        .eq("staff_id", staff_id)
-        .gte("tarikh", firstDayOfMonth)
-        .in("jenis_bayaran", ["Cash", "Tunai"]);
+      const [
+        { data: monthlyCashData },
+        { data: monthlyTreatmentCashData }
+      ] = await Promise.all([
+        supabase
+          .from("walkin_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .gte("tarikh", firstDayOfMonth)
+          .in("jenis_bayaran", ["Cash", "Tunai"]),
+        supabase
+          .from("treatment_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .gte("tarikh", firstDayOfMonth)
+          .in("jenis_bayaran", ["Cash", "Tunai"])
+      ]);
 
       let monthlyCashOnHand = 0;
       (monthlyCashData || []).forEach((w) => {
         monthlyCashOnHand += parseFloat(w.harga_rm) || 0;
+      });
+      (monthlyTreatmentCashData || []).forEach((t) => {
+        monthlyCashOnHand += parseFloat(t.harga_rm) || 0;
       });
 
       const { data: branchesData } = await supabase.from("branches").select("id, nama_cawangan");

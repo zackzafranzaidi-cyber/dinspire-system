@@ -87,7 +87,7 @@ router.get(
           Barber: t.staff ? t.staff.username : "-",
           Price: t.harga_rm,
           Fee: parseFloat(t.service_fee) || 0,
-          Type: "QR (Treatment)",
+          Type: t.jenis_bayaran || "QR (Treatment)",
           Category: "Treatment",
           Status: t.status,
           Timestamp: t.created_at,

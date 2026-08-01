@@ -342,7 +342,7 @@ router.put(
   async (req, res) => {
     let { orderNo } = req.params;
     orderNo = String(orderNo || "");
-    const { final_price, receipt_url } = req.body;
+    const { final_price, receipt_url, jenis_bayaran } = req.body;
 
     const parsedPrice = parseFloat(final_price);
     if (isNaN(parsedPrice) || parsedPrice < 0)
@@ -375,19 +375,15 @@ router.put(
         }
       }
 
+      let payload = { status: "Selesai", harga_rm: parsedPrice };
+      if (jenis_bayaran) payload.jenis_bayaran = jenis_bayaran;
+      if (finalReceiptUrl) payload.resit = finalReceiptUrl;
+
       let query = supabase
         .from(tableName)
-        .update({ status: "Selesai", harga_rm: parsedPrice })
+        .update(payload)
         .eq("no_booking", orderNo);
-      if (finalReceiptUrl)
-        query = supabase
-          .from(tableName)
-          .update({
-            status: "Selesai",
-            harga_rm: parsedPrice,
-            resit: finalReceiptUrl,
-          })
-          .eq("no_booking", orderNo);
+      
       if (req.user.role === "staff") query = query.eq("staff_id", req.user.id);
 
       const { error } = await query;

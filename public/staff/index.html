@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.1";
+      const CURRENT_APP_VERSION = "1.1.2";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -623,6 +623,33 @@
               ></i>
               Log Keluar
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL SELESAI RAWATAN -->
+      <div id="modal-selesai-rawatan" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+        <div style="background: #1e1e1e; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px;">
+          <h3 style="color: #fff; margin-top: 0; margin-bottom: 15px;">Selesaikan Rawatan</h3>
+          <input type="hidden" id="tr-order-no">
+          <div class="form-group">
+            <label style="color: #aaa;">Harga Akhir Sebenar (RM)</label>
+            <input type="number" id="tr-price" class="input-field" placeholder="0.00" />
+          </div>
+          <div class="form-group">
+            <label style="color: #aaa;">Kaedah Pembayaran</label>
+            <select id="tr-payment" class="input-field" onchange="toggleTrReceiptUpload()">
+              <option value="Cash">Tunai (Cash)</option>
+              <option value="QR">DuitNow / QR</option>
+            </select>
+          </div>
+          <div class="form-group" id="tr-receipt-group" style="display: none">
+            <label style="color: #aaa;">Muat Naik Resit (DuitNow/QR)</label>
+            <input type="file" id="tr-receipt" class="input-field" accept="image/*" />
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-secondary" style="flex: 1; padding: 12px; border-radius: 8px; border: none; background: #333; color: #fff;" onclick="closeTrModal()">Batal</button>
+            <button class="btn btn-primary" style="flex: 1; padding: 12px; border-radius: 8px; border: none; background: var(--primary-color); color: #000; font-weight: bold;" onclick="submitTrModal()">Sahkan</button>
           </div>
         </div>
       </div>
