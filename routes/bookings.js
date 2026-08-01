@@ -377,13 +377,14 @@ router.put(
 
       let query = supabase
         .from(tableName)
-        .update({ status: "Selesai" })
+        .update({ status: "Selesai", harga_rm: parsedPrice })
         .eq("no_booking", orderNo);
       if (finalReceiptUrl)
         query = supabase
           .from(tableName)
           .update({
             status: "Selesai",
+            harga_rm: parsedPrice,
             resit: finalReceiptUrl,
           })
           .eq("no_booking", orderNo);

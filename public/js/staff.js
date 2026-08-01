@@ -626,28 +626,41 @@ async function verifyPayment(orderNo, action) {
 }
 
 async function processBookingSelesai(orderNo, price) {
-  if (confirm(`Sahkan pelanggan (${orderNo}) ini telah selesai?`)) {
-    // [DIBAIKI] Optimistic UI: Kemaskini skrin serta-merta
-    const bookingIndex = staffData.bookings.findIndex(b => (b.order_no || b.no_booking) === orderNo);
-    let originalBooking = null;
-    
-    if (bookingIndex > -1) {
-       originalBooking = {...staffData.bookings[bookingIndex]};
-       staffData.bookings[bookingIndex].status = "Selesai";
-       staffData.bookings[bookingIndex].final_price = price;
-       
-       calculateDashboardStats();
-       renderBookingList();
-       renderHistoryList();
-       showToast("Memproses di latar belakang...");
-    }
+    if (confirm(`Sahkan pelanggan (${orderNo}) ini telah selesai?`)) {
+      let finalPrice = price;
+      
+      // [DIBAIKI] Jika pelanggan menempah rawatan, minta harga sebenar
+      if (orderNo.startsWith("TR")) {
+        let input = prompt("Pelanggan ini menempah Rawatan.\nSila masukkan harga akhir sebenar yang dibayar di kedai (RM):", "");
+        if (input === null) return;
+        finalPrice = parseFloat(input);
+        if (isNaN(finalPrice) || finalPrice <= 0) {
+          alert("Sila masukkan harga yang sah.");
+          return;
+        }
+      }
 
-    fetch(`${API_BASE_URL}/bookings/order/${orderNo}/complete`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ final_price: price, receipt_url: "" }),
-    })
+      // [DIBAIKI] Optimistic UI: Kemaskini skrin serta-merta
+      const bookingIndex = staffData.bookings.findIndex(b => (b.order_no || b.no_booking) === orderNo);
+      let originalBooking = null;
+      
+      if (bookingIndex > -1) {
+         originalBooking = {...staffData.bookings[bookingIndex]};
+         staffData.bookings[bookingIndex].status = "Selesai";
+         staffData.bookings[bookingIndex].final_price = finalPrice;
+         
+         calculateDashboardStats();
+         renderBookingList();
+         renderHistoryList();
+         showToast("Memproses di latar belakang...");
+      }
+  
+      fetch(`${API_BASE_URL}/bookings/order/${orderNo}/complete`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ final_price: finalPrice, receipt_url: "" }),
+      })
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") {
