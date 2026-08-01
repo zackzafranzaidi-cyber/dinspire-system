@@ -318,10 +318,10 @@ async function fetchServicesForWalkin() {
     wiSel.innerHTML =
       `<option value="" disabled selected>Pilih Jenis Potongan / Servis</option>` +
       shopSettings.walkin
-        .map(
-          (s) =>
-            `<option value="${s.id}" data-price="${s.price}">${escapeHTML(s.name)}</option>`,
-        )
+        .map((s) => {
+          const p = (s.price == 0) ? "" : s.price;
+          return `<option value="${s.id}" data-price="${p}">${escapeHTML(s.name)}</option>`;
+        })
         .join("");
   } catch (err) {}
 }

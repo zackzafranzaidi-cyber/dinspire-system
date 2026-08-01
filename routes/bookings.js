@@ -522,12 +522,14 @@ router.post(
         return res.status(400).json({ status: "error", message: "Tarikh Walk-in tidak boleh menggunakan tarikh semalam." });
       }
 
-      // [DIBAIKI] Server-Side Price Trust (dengan pengecualian Rawatan)
-      // Untuk rawatan, staf menaip harga manual. Untuk guntingan, ambil dari pangkalan data.
+      // [DIBAIKI] Server-Side Price Trust (dengan pengecualian Harga 0)
       let hargaSebenar = parseFloat(price) || 0.0; 
       const { data: svcData } = await supabase.from("haircuts").select("harga").eq("id", service_id).maybeSingle();
       if (svcData) {
-        hargaSebenar = parseFloat(svcData.harga);
+        let dbPrice = parseFloat(svcData.harga) || 0;
+        if (dbPrice > 0) {
+          hargaSebenar = dbPrice; // Paksa harga dari DB jika ia lebih dari 0
+        }
       }
       
       const parsedPrice = hargaSebenar;
