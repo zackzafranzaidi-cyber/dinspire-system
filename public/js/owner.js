@@ -839,6 +839,7 @@ function processData() {
   renderPunchTable(filteredPunch);
   renderLeavesTable(filteredLeaves);
   renderEmergencyLeavesTable(filteredLeaves);
+  renderReportsTab();
   
   if (salesChartObj)
     updateBarChart(filteredBookings, filteredOrders, filterType);
@@ -2472,3 +2473,380 @@ async function triggerEmailTest() {
   // Buka tab baharu untuk mulakan proses muat turun arkib (CSV + Imej)
   window.open(`/owner/archive-download.html?month=${targetMonth}&year=${targetYear}`, '_blank');
 }
+
+// ==========================================
+// [BAHARU] FUNGSI LAPORAN & ARKIB JUALAN
+// ==========================================
+
+async function renderReportsTab() {
+  const filterType = document.getElementById("timeFilter").value;
+  const container = document.getElementById("reports-dynamic-content");
+  const actionContainer = document.getElementById("reports-header-action");
+  
+  if (!container) return;
+
+  container.innerHTML = '<p class="text-gray-500 text-center mt-10">Sila tunggu, sedang memuat turun data laporan...</p>';
+  actionContainer.innerHTML = '';
+
+  const targetDate = currentReferenceDate;
+  
+  if (filterType === "daily" || filterType === "weekly" || filterType === "monthly") {
+    // Generate start & end date based on filter
+    let startDate, endDate;
+    if (filterType === "daily") {
+      startDate = new Date(targetDate);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(targetDate);
+      endDate.setHours(23, 59, 59, 999);
+    } else if (filterType === "weekly") {
+      const day = targetDate.getDay();
+      const diff = targetDate.getDate() - day + (day == 0 ? -6: 1); // adjust when day is sunday
+      startDate = new Date(targetDate.setDate(diff));
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+      endDate.setHours(23, 59, 59, 999);
+    } else if (filterType === "monthly") {
+      startDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), 1);
+      endDate = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0);
+      endDate.setHours(23, 59, 59, 999);
+      
+      // Jika ini adalah bulan lepas atau bulan sebelum tahun semasa,
+      // kita tak benarkan view detailed bulan lepas. "data tahun sebelumnya tidak akan disimpan."
+      // Tapi untuk bulan tahun semasa, boleh je view.
+    }
+
+    try {
+      const token = localStorage.getItem("din_token_sys");
+      const res = await fetch(`/api/owner/reports-data?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      
+      if (!data || !data.rawData) {
+        container.innerHTML = '<p class="text-red-500 text-center mt-10">Ralat memuatkan data.</p>';
+        return;
+      }
+      
+      let tableHTML = `
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-gray-500 bg-gray-100 sticky top-0 shadow-sm uppercase tracking-wider">
+            <tr>
+              <th class="py-3 px-4">Kategori</th>
+              <th class="py-3 px-4">ID Transaksi / Pelanggan</th>
+              <th class="py-3 px-4">Harga (RM)</th>
+              <th class="py-3 px-4">Nama Resit</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+      `;
+      
+      let totalRows = 0;
+      Object.keys(data.rawData).forEach(kategori => {
+         const list = data.rawData[kategori];
+         list.forEach(row => {
+            totalRows++;
+            tableHTML += `
+              <tr class="hover:bg-gray-50 transition">
+                <td class="py-3 px-4 whitespace-nowrap"><span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-md text-xs font-bold">${kategori}</span></td>
+                <td class="py-3 px-4 font-medium text-gray-800">${row.Pelanggan || row.No_Booking || row.No_Tempahan || row.ID}</td>
+                <td class="py-3 px-4 font-bold text-green-600">RM ${row.Harga_RM || row.Harga || 0}</td>
+                <td class="py-3 px-4 text-gray-500 text-xs">${row.Nama_Resit || '-'}</td>
+              </tr>
+            `;
+         });
+      });
+      
+      if (totalRows === 0) {
+        tableHTML += '<tr><td colspan="4" class="text-center py-8 text-gray-400">Tiada rekod dijumpai untuk tarikh ini.</td></tr>';
+      }
+      
+      tableHTML += `</tbody></table>`;
+      container.innerHTML = tableHTML;
+
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '<p class="text-red-500 text-center mt-10">Gagal menyambung ke pelayan.</p>';
+    }
+
+  } else if (filterType === "yearly") {
+    // TAHUN INI
+    const currentYear = targetDate.getFullYear();
+    actionContainer.innerHTML = `<button onclick="downloadYearlyArchive(${currentYear})" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-md"><i class="fas fa-file-archive"></i> Muat Turun ZIP Lengkap Tahunan</button>`;
+    
+    let html = `
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+    `;
+    const months = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+    months.forEach((m, i) => {
+      html += `
+        <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50">
+          <i class="fas fa-folder-open text-3xl text-purple-400 mb-2"></i>
+          <span class="font-bold text-gray-700">${m} ${currentYear}</span>
+          <span class="text-xs text-gray-500">Data Terperinci</span>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+
+  } else if (filterType === "all") {
+    // SEMUA REKOD (Historical Sales)
+    try {
+      const token = localStorage.getItem("din_token_sys");
+      const res = await fetch(`/api/owner/historical-years`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const years = await res.json();
+      
+      if (!years || years.length === 0) {
+         container.innerHTML = '<p class="text-gray-500 text-center mt-10">Tiada arkib tahun-tahun lepas dijumpai.</p>';
+         return;
+      }
+      
+      let html = `<div class="w-full flex flex-col gap-3 max-w-2xl mx-auto">`;
+      years.forEach(yr => {
+         html += `
+          <div class="border border-gray-200 rounded-xl p-4 flex justify-between items-center bg-gray-50 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center gap-4">
+              <div class="bg-blue-100 text-blue-600 p-3 rounded-full"><i class="fas fa-archive"></i></div>
+              <div>
+                <h4 class="font-bold text-lg text-gray-800">Arkib Mampat ${yr.tahun}</h4>
+                <p class="text-xs text-gray-500">Rekod Bulanan Dikompres</p>
+              </div>
+            </div>
+            <button onclick="downloadCompressedArchive(${yr.tahun})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2"><i class="fas fa-download"></i> Muat Turun</button>
+          </div>
+         `;
+      });
+      html += `</div>`;
+      container.innerHTML = html;
+      
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '<p class="text-red-500 text-center mt-10">Gagal menyambung ke pelayan.</p>';
+    }
+  }
+}
+
+async function downloadYearlyArchive(year) {
+  showToast(`Sedang menjana ZIP Tahunan ${year}. Sila tunggu, proses ini mungkin mengambil masa lebih 1 minit...`);
+  
+  try {
+    const token = localStorage.getItem("din_token_sys");
+    const zip = new JSZip();
+    
+    // Create master excel workbook for yearly summary
+    const masterWb = XLSX.utils.book_new();
+    let hasMasterData = false;
+    
+    // Fetch data for all 12 months sequentially
+    for (let month = 1; month <= 12; month++) {
+      const res = await fetch(`/api/owner/monthly-archive-data?month=${month}&year=${year}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      
+      if (!res.ok) continue;
+      
+      const data = await res.json();
+      if (!data || !data.rawData) continue;
+      
+      const monthFolderName = `Bulan_${String(month).padStart(2, '0')}_${year}`;
+      const monthFolder = zip.folder(monthFolderName);
+      
+      // Create Month Excel
+      const wb = XLSX.utils.book_new();
+      const sheetNames = Object.keys(data.rawData);
+      let hasData = false;
+      
+      let allMonthRows = []; // To combine for master compressed sheet
+      
+      sheetNames.forEach(sheetName => {
+        const sheetData = data.rawData[sheetName];
+        if (sheetData && sheetData.length > 0) {
+          hasData = true;
+          hasMasterData = true;
+          const ws = XLSX.utils.json_to_sheet(sheetData);
+          XLSX.utils.book_append_sheet(wb, ws, sheetName);
+          
+          // Inject month property for master sheet
+          sheetData.forEach(row => {
+            allMonthRows.push({ Bulan: month, Kategori: sheetName, ...row });
+          });
+        }
+      });
+
+      if (!hasData) {
+        const ws = XLSX.utils.json_to_sheet([{ Nota: "Tiada Rekod" }]);
+        XLSX.utils.book_append_sheet(wb, ws, "Kosong");
+      }
+      
+      // Append to Master workbook as a separate sheet for that month (e.g., "Bulan 1")
+      if (allMonthRows.length > 0) {
+         const masterWs = XLSX.utils.json_to_sheet(allMonthRows);
+         XLSX.utils.book_append_sheet(masterWb, masterWs, `Bulan_${month}`);
+      }
+
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      monthFolder.file(`Laporan_${monthFolderName}.xlsx`, excelBuffer);
+      
+      // Download receipts for this month
+      if (data.imageUrls && data.imageUrls.length > 0) {
+        const receiptFolder = monthFolder.folder("Resit");
+        const fetchPromises = data.imageUrls.map(async (urlObj) => {
+          try {
+            const imgRes = await fetch(urlObj.url);
+            const blob = await imgRes.blob();
+            receiptFolder.file(urlObj.filename, blob);
+          } catch (e) {
+            console.error("Gagal muat turun imej:", urlObj.filename);
+          }
+        });
+        await Promise.all(fetchPromises);
+      }
+    }
+    
+    // Add 1 extra sheet for "Compressed 12 months" summary (Weekly Sales grouped)
+    // For simplicity, we just fetch from historical_sales if it exists, or generate a placeholder
+    // since the raw data is already split into the 12 sheets.
+    if (hasMasterData) {
+       const summaryRes = await fetch(`/api/owner/historical-data?year=${year}`, { headers: { "Authorization": `Bearer ${token}` } });
+       if (summaryRes.ok) {
+           const summaryData = await summaryRes.json();
+           if (summaryData && summaryData.length > 0) {
+               const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+               XLSX.utils.book_append_sheet(masterWb, summaryWs, "Ringkasan_Tahunan_Mampat");
+           }
+       }
+       const masterBuffer = XLSX.write(masterWb, { bookType: 'xlsx', type: 'array' });
+       zip.file(`Laporan_Lengkap_${year}.xlsx`, masterBuffer);
+    }
+    
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, `Arkib_Lengkap_${year}.zip`);
+    showToast("Muat turun selesai!");
+    
+  } catch (err) {
+    console.error(err);
+    showToast("Ralat menjana ZIP Tahunan.");
+  }
+}
+
+async function downloadCompressedArchive(year) {
+  showToast(`Sedang menjana laporan mampat untuk tahun ${year}...`);
+  try {
+    const token = localStorage.getItem("din_token_sys");
+    const res = await fetch(`/api/owner/historical-data?year=${year}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    
+    if (!res.ok) throw new Error("Gagal");
+    const data = await res.json();
+    
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, `Sales_${year}`);
+    
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, `Laporan_Mampat_${year}.xlsx`);
+    
+    showToast("Muat turun selesai!");
+  } catch (e) {
+    console.error(e);
+    showToast("Ralat menjana laporan mampat.");
+  }
+}
+
+// Check for Reminders on Login/Load
+function checkArchivingReminders() {
+  const now = new Date();
+  const date = now.getDate();
+  const month = now.getMonth(); // 0 = Jan, 1 = Feb
+  const year = now.getFullYear();
+
+  // Awal bulan (Hari 1-5): Peringatan muat turun bulan lepas
+  if (date >= 1 && date <= 5) {
+     const lastMonth = month === 0 ? 12 : month;
+     const lastMonthYear = month === 0 ? year - 1 : year;
+     
+     // Elakkan popup spam berulang kali dalam 1 session
+     if (!sessionStorage.getItem("monthly_reminder_shown")) {
+        showReminderPopup(
+          `Laporan jualan bagi bulan lepas sedia untuk dimuat turun. Sila muat turun salinan anda sekarang.`, 
+          `Muat Turun Laporan Bulan ${lastMonth}/${lastMonthYear}`, 
+          () => {
+             // Arahkan ke /owner/archive-download.html
+             window.open(`/owner/archive-download.html?month=${lastMonth}&year=${lastMonthYear}`, '_blank');
+          }
+        );
+        sessionStorage.setItem("monthly_reminder_shown", "true");
+     }
+  }
+  
+  // Hujung Januari (Hari 27-31): Peringatan muat turun Laporan Lengkap Tahun Lepas
+  if (month === 0 && date >= 27 && date <= 31) {
+     const lastYear = year - 1;
+     
+     if (!sessionStorage.getItem("yearly_reminder_shown")) {
+        showReminderPopup(
+          `PERHATIAN: Data laporan mentah dan resit untuk tahun ${lastYear} akan DIPADAM KEKAL pada 1 Februari. Sila muat turun Laporan Lengkap Tahunan anda dengan segera!`, 
+          `Muat Turun ZIP Tahunan ${lastYear}`, 
+          () => {
+             downloadYearlyArchive(lastYear);
+          },
+          true // isDanger
+        );
+        sessionStorage.setItem("yearly_reminder_shown", "true");
+     }
+  }
+}
+
+function showReminderPopup(message, btnText, callback, isDanger = false) {
+   // Buat div overlay
+   const overlay = document.createElement("div");
+   overlay.className = "fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm";
+   
+   const card = document.createElement("div");
+   card.className = "bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center transform transition-all scale-100";
+   
+   const icon = document.createElement("div");
+   icon.className = `text-5xl mb-4 ${isDanger ? 'text-red-500' : 'text-blue-500'}`;
+   icon.innerHTML = isDanger ? '<i class="fas fa-exclamation-triangle"></i>' : '<i class="fas fa-bell"></i>';
+   
+   const title = document.createElement("h3");
+   title.className = "font-black text-xl text-gray-800 mb-2";
+   title.innerText = isDanger ? "Tindakan Diperlukan!" : "Peringatan Sistem";
+   
+   const text = document.createElement("p");
+   text.className = "text-sm text-gray-600 mb-6";
+   text.innerText = message;
+   
+   const btnPrimary = document.createElement("button");
+   btnPrimary.className = `w-full py-3 rounded-xl font-bold text-white mb-2 shadow-md transition ${isDanger ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`;
+   btnPrimary.innerText = btnText;
+   btnPrimary.onclick = () => {
+      callback();
+      overlay.remove();
+   };
+   
+   const btnSkip = document.createElement("button");
+   btnSkip.className = "w-full py-2 text-gray-400 font-semibold text-sm hover:text-gray-600 transition";
+   btnSkip.innerText = "Tutup";
+   btnSkip.onclick = () => overlay.remove();
+   
+   card.appendChild(icon);
+   card.appendChild(title);
+   card.appendChild(text);
+   card.appendChild(btnPrimary);
+   card.appendChild(btnSkip);
+   
+   overlay.appendChild(card);
+   document.body.appendChild(overlay);
+}
+
+// Invoke checkArchivingReminders() on load
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(checkArchivingReminders, 2000);
+});
+

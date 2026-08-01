@@ -9,7 +9,7 @@ const schedule = require("node-schedule");
 const supabase = require("./config/db");
 const logger = require("./utils/logger"); // Import Winston logger
 const { sendSMS } = require("./utils/sms");
-const { runAnnualArchive, generateMonthlyArchiveData, runDailyCleanup } = require("./utils/archiver");
+const { pruneYearlyData, generateMonthlyArchiveData, generateArchiveDataByDateRange, runDailyCleanup } = require("./utils/archiver");
 const app = express();
 require("events").EventEmitter.defaultMaxListeners = 50; // [DIBAIKI] Tingkatkan had event listeners untuk trafik tinggi
 
@@ -80,14 +80,14 @@ schedule.scheduleJob({ rule: "0 0 1 * *", tz: "Asia/Kuala_Lumpur" }, async () =>
 });
 
 // ========================================================
-// [BAHARU] Cron Job: Pengarkiban Data Tahunan (Setiap 31 Disember, 11:59 Malam)
+// [BAHARU] Cron Job: Pembersihan & Kompresi Tahunan (Setiap 1 Februari, 12:00 Tengah Malam)
 // ========================================================
-schedule.scheduleJob({ rule: "59 23 31 12 *", tz: "Asia/Kuala_Lumpur" }, async () => {
+schedule.scheduleJob({ rule: "0 0 1 2 *", tz: "Asia/Kuala_Lumpur" }, async () => {
   try {
-    console.log("CRON: Memulakan rutin Pengarkiban Data Tahunan...");
-    await runAnnualArchive(false); // Produksi (Gunakan emel .env jika ada)
+    console.log("CRON: Memulakan rutin Pembersihan Data Tahunan (Pruning)...");
+    await pruneYearlyData();
   } catch (err) {
-    console.error("CRON ERROR: Gagal menjalankan Pengarkiban Tahunan", err);
+    console.error("CRON ERROR: Gagal menjalankan Pruning Tahunan", err);
   }
 });
 
@@ -209,10 +209,10 @@ app.use("/api/admin", adminRoutes);
 // ========================================================
 // [BAHARU] API Tersembunyi (Test Trigger) Untuk Pengarkiban Tahunan
 // ========================================================
-app.get("/api/owner/trigger-annual-archive", async (req, res) => {
+app.get("/api/owner/trigger-pruning", async (req, res) => {
   try {
-    const result = await runAnnualArchive(true, "zafran.zaidi@gmail.com");
-    res.json({ status: "success", message: "Proses pengarkiban berjaya disimulasikan.", data: result });
+    await pruneYearlyData();
+    res.json({ status: "success", message: "Proses pembersihan & kompresi (pruning) berjaya disimulasikan." });
   } catch (err) {
     res.status(500).json({ status: "error", message: err.message });
   }
@@ -226,6 +226,41 @@ app.get("/api/owner/monthly-archive-data", async (req, res) => {
     }
     const archiveData = await generateMonthlyArchiveData(month, year);
     res.json(archiveData);
+  } catch (err) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+app.get("/api/owner/reports-data", async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      return res.status(400).send("Parameter startDate dan endDate diperlukan.");
+    }
+    const archiveData = await generateArchiveDataByDateRange(startDate, endDate);
+    res.json(archiveData);
+  } catch (err) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+app.get("/api/owner/historical-years", async (req, res) => {
+  try {
+    const { data } = await supabase.from("historical_sales").select("tahun").order("tahun", { ascending: false });
+    if (!data) return res.json([]);
+    const uniqueYears = [...new Set(data.map(item => item.tahun))];
+    res.json(uniqueYears.map(y => ({ tahun: y })));
+  } catch (err) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+app.get("/api/owner/historical-data", async (req, res) => {
+  try {
+    const { year } = req.query;
+    if (!year) return res.status(400).send("Parameter year diperlukan");
+    const { data } = await supabase.from("historical_sales").select("*").eq("tahun", year).order("bulan", { ascending: true });
+    res.json(data || []);
   } catch (err) {
     res.status(500).json({ status: "error", message: err.message });
   }

@@ -57,6 +57,9 @@
     <!-- [BAHARU] Masukkan Library Marked.js untuk membaca format Markdown AI -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
     <link rel="stylesheet" href="../css/owner.css?v=28" />
     <link rel="stylesheet" href="../css/loader.css?v=2" />
@@ -200,6 +203,14 @@
           class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800"
           ><i class="fas fa-fingerprint w-5"></i>
           <span data-i18n="nav-gps">Kehadiran GPS</span></a
+        >
+        <a
+          href="#"
+          onclick="switchTab('reports')"
+          id="nav-reports"
+          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800 hidden md:flex"
+          ><i class="fas fa-file-archive w-5"></i>
+          <span data-i18n="nav-reports">Laporan & Resit</span></a
         >
       </nav>
 
@@ -1089,6 +1100,21 @@
               </thead>
               <tbody id="table-emergency-leaves" class="divide-y divide-gray-100"></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: LAPORAN & RESIT -->
+      <div id="tab-reports" class="tab-content hidden w-full max-w-full">
+        <div class="card flex flex-col border border-gray-200 p-0 overflow-hidden w-full max-w-full mb-6">
+          <div class="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50">
+            <h4 class="font-bold text-lg text-gray-800" id="reports-header-title">Laporan & Arkib Jualan</h4>
+            <div id="reports-header-action"></div>
+          </div>
+          <div class="overflow-auto table-container min-h-[50vh] flex flex-col bg-white">
+            <div id="reports-dynamic-content" class="p-4 w-full h-full flex-1">
+               <p class="text-gray-500 text-center mt-10">Sila tunggu...</p>
+            </div>
           </div>
         </div>
       </div>
