@@ -51,11 +51,14 @@ async function generateMonthlyArchiveData(targetMonth, targetYear) {
         });
 
         // Simpan url gambar jika wujud
-        if (r.resit) {
-          const publicUrl = supabase.storage.from("receipts").getPublicUrl(r.resit).data.publicUrl;
+        // Simpan url gambar jika wujud dan merupakan pautan sah (abaikan token FPX_PAID)
+        if (r.resit && typeof r.resit === 'string' && r.resit.startsWith('http')) {
+          const publicUrl = r.resit; // Ia sudah pun URL penuh di pangkalan data
           // Format nama fail: Kategori_NoBooking_Tarikh.jpg
           const cleanDate = dateStr.replace(/\//g, "-");
-          const ext = r.resit.split('.').pop() || "jpg";
+          // Kita cuba dapatkan extension dari hujung URL
+          let ext = r.resit.split('.').pop() || "jpg";
+          if (ext.length > 4) ext = "jpg"; // fallback jika tiada extension dalam URL
           const fileName = `${category}_${r.no_booking || r.id}_${cleanDate}.${ext}`;
           imageUrls.push({ url: publicUrl, name: fileName });
         }
