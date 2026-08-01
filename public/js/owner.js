@@ -305,6 +305,10 @@ function applyLanguage() {
   });
   document.getElementById("lang-indicator").innerText =
     currentLang.toUpperCase();
+  const mobIndicator = document.getElementById("lang-indicator-mob");
+  if (mobIndicator) {
+    mobIndicator.innerText = `Bahasa (${currentLang.toUpperCase()})`;
+  }
 }
 
 function toggleLanguage() {
