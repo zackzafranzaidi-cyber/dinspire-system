@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.11";
+      const CURRENT_APP_VERSION = "1.1.12";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -629,7 +629,7 @@
           </div>
           <div class="flex flex-col gap-3">
             <div
-              class="card bg-purple-50 border border-purple-200 text-purple-900 !border-none flex flex-col justify-center !p-3 shadow-sm rounded-2xl"
+              class="card bg-purple-50 border border-purple-200 text-purple-900 !border-none flex-1 flex flex-col justify-center !p-3 shadow-sm"
             >
               <h3
                 class="text-[9px] md:text-xs text-purple-600/80 font-bold tracking-wider uppercase mb-2"
@@ -654,7 +654,7 @@
             </div>
             
             <div
-              class="card bg-gray-900 border border-gray-700 text-white !border-none flex flex-col justify-center !p-3 shadow-sm rounded-2xl"
+              class="card bg-gray-900 border border-gray-700 text-white !border-none flex-1 flex flex-col justify-center !p-3 shadow-sm"
             >
               <h3
                 class="text-[9px] md:text-xs text-blue-300 font-bold tracking-wider uppercase mb-2"
@@ -1308,7 +1308,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=22"></script>
+    <script src="../js/owner.js?v=23"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>
@@ -1487,7 +1487,7 @@
         if ("serviceWorker" in navigator) {
           window.addEventListener("load", () => {
             navigator.serviceWorker
-              .register("/owner/sw.js?v=21");
+              .register("/owner/sw.js?v=22");
             });
         }
     </script>
