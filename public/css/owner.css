@@ -428,40 +428,39 @@ body {
   }
 }
 
- . t o a s t   { 
-     p o s i t i o n :   f i x e d ; 
-     t o p :   2 0 p x ; 
-     r i g h t :   2 0 p x ; 
-     b a c k g r o u n d - c o l o r :   # 1 f 2 9 3 7 ; 
-     c o l o r :   # f f f ; 
-     p a d d i n g :   1 2 p x   2 4 p x ; 
-     b o r d e r - r a d i u s :   8 p x ; 
-     f o n t - s i z e :   1 4 p x ; 
-     f o n t - w e i g h t :   5 0 0 ; 
-     b o x - s h a d o w :   0   4 p x   6 p x   - 1 p x   r g b a ( 0 ,   0 ,   0 ,   0 . 1 ) ,   0   2 p x   4 p x   - 1 p x   r g b a ( 0 ,   0 ,   0 ,   0 . 0 6 ) ; 
-     z - i n d e x :   9 9 9 9 ; 
-     o p a c i t y :   0 ; 
-     v i s i b i l i t y :   h i d d e n ; 
-     t r a n s f o r m :   t r a n s l a t e Y ( - 2 0 p x ) ; 
-     t r a n s i t i o n :   a l l   0 . 3 s   e a s e - i n - o u t ; 
- } 
- . t o a s t . s h o w   { 
-     o p a c i t y :   1 ; 
-     v i s i b i l i t y :   v i s i b l e ; 
-     t r a n s f o r m :   t r a n s l a t e Y ( 0 ) ; 
- } 
- @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   { 
-     . t o a s t   { 
-         t o p :   a u t o ; 
-         b o t t o m :   2 0 p x ; 
-         r i g h t :   5 0 % ; 
-         t r a n s f o r m :   t r a n s l a t e X ( 5 0 % )   t r a n s l a t e Y ( 2 0 p x ) ; 
-         w i d t h :   9 0 % ; 
-         t e x t - a l i g n :   c e n t e r ; 
-     } 
-     . t o a s t . s h o w   { 
-         t r a n s f o r m :   t r a n s l a t e X ( 5 0 % )   t r a n s l a t e Y ( 0 ) ; 
-     } 
- } 
-  
- 
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #1f2937;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-20px);
+  transition: all 0.3s ease-in-out;
+}
+.toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+@media (max-width: 768px) {
+  .toast {
+    top: auto;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    width: 90%;
+    text-align: center;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+

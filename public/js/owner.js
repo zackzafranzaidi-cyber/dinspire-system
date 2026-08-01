@@ -2910,3 +2910,15 @@ function showReminderPopup(message, btnText, callback, isDanger = false) {
 // Invoke checkArchivingReminders() on load
 setTimeout(checkArchivingReminders, 2500);
 
+
+// Close 3-dots mobile menu when clicking outside
+document.addEventListener('click', function(event) {
+  const menu = document.getElementById('mobile-header-menu');
+  if (menu && !menu.classList.contains('hidden')) {
+    const button = menu.previousElementSibling;
+    if (!menu.contains(event.target) && !button.contains(event.target)) {
+      menu.classList.add('hidden');
+    }
+  }
+});
+
