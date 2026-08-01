@@ -1,4 +1,3 @@
-const { Parser } = require("json2csv");
 const supabase = require("../config/db");
 
 async function generateMonthlyArchiveData(targetMonth, targetYear) {
@@ -25,7 +24,13 @@ async function generateMonthlyArchiveData(targetMonth, targetYear) {
       supabase.from("product_orders").select("*").gte("created_at", startDate).lt("created_at", endDate),
     ]);
 
-    let allRawCsvData = [];
+    let rawData = {
+      Booking: [],
+      WalkIn: [],
+      OnCall: [],
+      Treatment: [],
+      Produk: []
+    };
     let imageUrls = [];
 
     const processData = (records, category) => {
@@ -37,7 +42,23 @@ async function generateMonthlyArchiveData(targetMonth, targetYear) {
         let fee = parseFloat(r.service_fee || r.shipping_fee || 0);
         let dateStr = new Date(r.created_at).toLocaleDateString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" });
 
-        allRawCsvData.push({
+        let receiptName = "Tiada Resit";
+
+        // Simpan url gambar jika wujud dan merupakan pautan sah (abaikan token FPX_PAID)
+        if (r.resit && typeof r.resit === 'string' && r.resit.startsWith('http')) {
+          const publicUrl = r.resit; // Ia sudah pun URL penuh di pangkalan data
+          // Format nama fail: Kategori_NoBooking_Tarikh.jpg
+          const cleanDate = dateStr.replace(/\//g, "-");
+          // Kita cuba dapatkan extension dari hujung URL
+          let ext = r.resit.split('.').pop() || "jpg";
+          if (ext.length > 4) ext = "jpg"; // fallback jika tiada extension dalam URL
+          receiptName = `${category}_${r.no_booking || r.id}_${cleanDate}.${ext}`;
+          imageUrls.push({ url: publicUrl, name: receiptName });
+        } else if (r.resit && typeof r.resit === 'string' && r.resit.startsWith('FPX')) {
+          receiptName = "Transaksi FPX";
+        }
+
+        rawData[category].push({
           Tarikh: dateStr,
           Masa: new Date(r.created_at).toLocaleTimeString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" }),
           Kategori: category,
@@ -47,35 +68,20 @@ async function generateMonthlyArchiveData(targetMonth, targetYear) {
           Harga_RM: price,
           Yuran_RM: fee,
           Total_RM: price + fee,
-          Status: r.status
+          Status: r.status,
+          Nama_Resit: receiptName
         });
-
-        // Simpan url gambar jika wujud
-        // Simpan url gambar jika wujud dan merupakan pautan sah (abaikan token FPX_PAID)
-        if (r.resit && typeof r.resit === 'string' && r.resit.startsWith('http')) {
-          const publicUrl = r.resit; // Ia sudah pun URL penuh di pangkalan data
-          // Format nama fail: Kategori_NoBooking_Tarikh.jpg
-          const cleanDate = dateStr.replace(/\//g, "-");
-          // Kita cuba dapatkan extension dari hujung URL
-          let ext = r.resit.split('.').pop() || "jpg";
-          if (ext.length > 4) ext = "jpg"; // fallback jika tiada extension dalam URL
-          const fileName = `${category}_${r.no_booking || r.id}_${cleanDate}.${ext}`;
-          imageUrls.push({ url: publicUrl, name: fileName });
-        }
       }
     };
 
-    console.log("Memproses data menjadi CSV...");
+    console.log("Memproses data laporan...");
     processData(bookings, "Booking");
-    processData(walkins, "Walk-In");
-    processData(oncalls, "On-Call");
+    processData(walkins, "WalkIn");
+    processData(oncalls, "OnCall");
     processData(treatments, "Treatment");
     processData(products, "Produk");
-
-    console.log("Menjana fail CSV...");
-    let csvData = allRawCsvData.length > 0 ? new Parser().parse(allRawCsvData) : "Tiada Rekod Bulan Ini.";
     
-    return { csvData, imageUrls };
+    return { rawData, imageUrls };
 
   } catch (error) {
     console.error("Ralat Laporan Bulanan:", error);
