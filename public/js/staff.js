@@ -353,10 +353,17 @@ async function loadBranchOptions() {
 function autoFillPrice() {
   const sel = document.getElementById("wi-service");
   const opt = sel.options[sel.selectedIndex];
+  const priceInput = document.getElementById("wi-price");
   if (opt && opt.dataset.price) {
-    document.getElementById("wi-price").value = opt.dataset.price;
+    priceInput.value = opt.dataset.price;
+    priceInput.readOnly = true;
+    priceInput.style.backgroundColor = "#f3f4f6";
+    priceInput.style.color = "var(--text-muted)";
   } else {
-    document.getElementById("wi-price").value = "";
+    priceInput.value = "";
+    priceInput.readOnly = false;
+    priceInput.style.backgroundColor = "#ffffff";
+    priceInput.style.color = "#111827";
   }
 }
 function toggleReceiptUpload() {
