@@ -2519,7 +2519,7 @@ async function renderReportsTab() {
     try {
       const token = localStorage.getItem("din_token_sys");
       const res = await fetch(`${API_BASE_URL}/owner/reports-data?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&t=${Date.now()}`, {
-        headers: { "Authorization": `Bearer ${token}` }
+        credentials: "include"
       });
       const data = await res.json();
       
@@ -2595,7 +2595,7 @@ async function renderReportsTab() {
     try {
       const token = localStorage.getItem("din_token_sys");
       const res = await fetch(`${API_BASE_URL}/owner/historical-years?t=${Date.now()}`, {
-        headers: { "Authorization": `Bearer ${token}` }
+        credentials: "include"
       });
       const years = await res.json();
       
@@ -2643,7 +2643,7 @@ async function downloadYearlyArchive(year) {
     // Fetch data for all 12 months sequentially
     for (let month = 1; month <= 12; month++) {
       const res = await fetch(`${API_BASE_URL}/owner/monthly-archive-data?month=${month}&year=${year}&t=${Date.now()}`, {
-        headers: { "Authorization": `Bearer ${token}` }
+        credentials: "include"
       });
       
       if (!res.ok) continue;
@@ -2710,7 +2710,7 @@ async function downloadYearlyArchive(year) {
     // For simplicity, we just fetch from historical_sales if it exists, or generate a placeholder
     // since the raw data is already split into the 12 sheets.
     if (hasMasterData) {
-       const summaryRes = await fetch(`${API_BASE_URL}/owner/historical-data?year=${year}&t=${Date.now()}`, { headers: { "Authorization": `Bearer ${token}` } });
+       const summaryRes = await fetch(`${API_BASE_URL}/owner/historical-data?year=${year}&t=${Date.now()}`, { credentials: "include" });
        if (summaryRes.ok) {
            const summaryData = await summaryRes.json();
            if (summaryData && summaryData.length > 0) {
@@ -2737,7 +2737,7 @@ async function downloadCompressedArchive(year) {
   try {
     const token = localStorage.getItem("din_token_sys");
     const res = await fetch(`${API_BASE_URL}/owner/historical-data?year=${year}&t=${Date.now()}`, {
-      headers: { "Authorization": `Bearer ${token}` }
+      credentials: "include"
     });
     
     if (!res.ok) throw new Error("Gagal");
