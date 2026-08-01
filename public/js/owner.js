@@ -2709,6 +2709,18 @@ async function downloadMonthlyZip(month, year) {
 }
 
 async function downloadYearlyArchive(year) {
+  if (typeof Swal !== "undefined") {
+    const result = await Swal.fire({
+      title: 'Mula Muat Turun?',
+      text: `Menjana fail ZIP untuk tahun ${year} mungkin mengambil masa yang lama (lebih 1 minit) kerana ia memuat turun semua laporan dan fail resit untuk kesemua 12 bulan. Teruskan?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Teruskan',
+      cancelButtonText: 'Batal'
+    });
+    if (!result.isConfirmed) return;
+  }
+
   showToast(`Sedang menjana ZIP Tahunan ${year}. Sila tunggu, proses ini mungkin mengambil masa lebih 1 minit...`);
   
   try {
@@ -2812,6 +2824,18 @@ async function downloadYearlyArchive(year) {
 }
 
 async function downloadCompressedArchive(year) {
+  if (typeof Swal !== "undefined") {
+    const result = await Swal.fire({
+      title: 'Muat Turun Ringkasan?',
+      text: `Adakah anda ingin memuat turun laporan jualan ringkas (mampat) bagi tahun ${year}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Teruskan',
+      cancelButtonText: 'Batal'
+    });
+    if (!result.isConfirmed) return;
+  }
+
   showToast(`Sedang menjana laporan mampat untuk tahun ${year}...`);
   try {
     const token = localStorage.getItem("din_token_sys");
@@ -2855,8 +2879,7 @@ function checkArchivingReminders() {
           `Laporan jualan bagi bulan lepas sedia untuk dimuat turun. Sila muat turun salinan anda sekarang.`, 
           `Muat Turun Laporan Bulan ${lastMonth}/${lastMonthYear}`, 
           () => {
-             // Arahkan ke /owner/archive-download.html
-             window.open(`/owner/archive-download.html?month=${lastMonth}&year=${lastMonthYear}`, '_blank');
+             downloadMonthlyZip(lastMonth, lastMonthYear);
           }
         );
         sessionStorage.setItem("monthly_reminder_shown", "true");
