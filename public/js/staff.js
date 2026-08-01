@@ -307,7 +307,11 @@ async function fetchServicesForWalkin() {
     const data = await res.json();
     let allServices = [];
     if (data.WalkInServices) allServices = allServices.concat(data.WalkInServices);
-    if (data.Treatments) allServices = allServices.concat(data.Treatments);
+    if (data.Treatments) {
+      // Hilangkan harga untuk rawatan supaya tak auto-fill
+      const trs = data.Treatments.map(t => ({...t, price: ""}));
+      allServices = allServices.concat(trs);
+    }
     shopSettings.walkin = allServices;
 
     const wiSel = document.getElementById("wi-service");
@@ -349,8 +353,11 @@ async function loadBranchOptions() {
 function autoFillPrice() {
   const sel = document.getElementById("wi-service");
   const opt = sel.options[sel.selectedIndex];
-  if (opt && opt.dataset.price)
+  if (opt && opt.dataset.price) {
     document.getElementById("wi-price").value = opt.dataset.price;
+  } else {
+    document.getElementById("wi-price").value = "";
+  }
 }
 function toggleReceiptUpload() {
   const method = document.getElementById("wi-payment").value;
