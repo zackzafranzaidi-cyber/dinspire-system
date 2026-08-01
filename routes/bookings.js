@@ -522,17 +522,15 @@ router.post(
         return res.status(400).json({ status: "error", message: "Tarikh Walk-in tidak boleh menggunakan tarikh semalam." });
       }
 
-      // [DIBAIKI] Kecurian Tunai (Server-Side Price Trust)
-      let hargaSebenar = 0.0;
+      // [DIBAIKI] Server-Side Price Trust (dengan pengecualian Rawatan)
+      // Untuk rawatan, staf menaip harga manual. Untuk guntingan, ambil dari pangkalan data.
+      let hargaSebenar = parseFloat(price) || 0.0; 
       const { data: svcData } = await supabase.from("haircuts").select("harga").eq("id", service_id).maybeSingle();
       if (svcData) {
         hargaSebenar = parseFloat(svcData.harga);
-      } else {
-        const { data: trtData } = await supabase.from("treatments").select("harga").eq("id", service_id).maybeSingle();
-        if (trtData) hargaSebenar = parseFloat(trtData.harga);
       }
       
-      const parsedPrice = hargaSebenar; // Abaikan price dari frontend (req.body.price)
+      const parsedPrice = hargaSebenar;
 
       const receiptName = "WLK" + crypto.randomUUID().split("-")[0].toUpperCase();
     let finalReceiptUrl = await uploadReceiptToStorage(
