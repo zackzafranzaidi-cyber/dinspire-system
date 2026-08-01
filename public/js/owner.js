@@ -749,84 +749,57 @@ function processData() {
   }
   document.getElementById("val-top-branch").innerText = topBranch;
 
-  if (demoChartObj) {
-    let totalDemo =
-      countHcBooking + countHcWalkin + countTreatments + countOnCall;
-    if (totalDemo > 0) {
-      demoChartObj.data.labels = ["Gunting", "Rawatan", "OnCall"];
-      demoChartObj.data.datasets[0].data = [
-        countHcBooking + countHcWalkin,
-        countTreatments,
-        countOnCall,
-      ];
-      demoChartObj.data.datasets[0].backgroundColor = [
-        "#111827",
-        "#6b7280",
-        "#d1d5db",
-      ];
+  function sortAndColorDonut(chartObj, labels, dataArr, chartId) {
+    if (!chartObj) return;
+    let total = dataArr.reduce((sum, v) => sum + v, 0);
+    if (total > 0) {
+      let combined = [];
+      for (let i = 0; i < labels.length; i++) {
+        if (dataArr[i] > 0) {
+          combined.push({ label: labels[i], value: dataArr[i] });
+        }
+      }
+      if (combined.length === 0) combined.push({ label: "Tiada Data", value: 1 });
+      else combined.sort((a, b) => b.value - a.value);
+
+      chartObj.data.labels = combined.map(c => c.label);
+      chartObj.data.datasets[0].data = combined.map(c => c.value);
+
+      const allGrays = ["#111827", "#1f2937", "#374151", "#4b5563", "#6b7280", "#9ca3af", "#d1d5db", "#e5e7eb", "#f3f4f6"];
+      let count = combined.length;
+      let colors = [];
+      if (combined[0].label === "Tiada Data") {
+        colors = ["#e5e7eb"];
+      } else if (count === 1) colors = [allGrays[0]];
+      else if (count === 2) colors = [allGrays[0], allGrays[6]];
+      else if (count === 3) colors = [allGrays[0], allGrays[4], allGrays[6]];
+      else if (count === 4) colors = [allGrays[0], allGrays[3], allGrays[5], allGrays[7]];
+      else {
+        for (let i = 0; i < count; i++) {
+          let idx = Math.floor(i * (allGrays.length - 1) / (count - 1));
+          colors.push(allGrays[idx]);
+        }
+      }
+      chartObj.data.datasets[0].backgroundColor = colors;
     } else {
-      demoChartObj.data.labels = ["Tiada Data"];
-      demoChartObj.data.datasets[0].data = [1];
-      demoChartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
+      chartObj.data.labels = ["Tiada Data"];
+      chartObj.data.datasets[0].data = [1];
+      chartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
     }
-    animateChartWhenVisible(demoChartObj, "demoChart");
+    animateChartWhenVisible(chartObj, chartId);
   }
 
-  if (payChartObj) {
-    let totalPay = payData.cash + payData.qr + payData.fpx + payData.lain;
-    if (totalPay > 0) {
-      payChartObj.data.labels = ["Tunai (Cash)", "DuitNow QR", "FPX"];
-      if (payData.lain > 0) {
-        payChartObj.data.labels.push("Lain");
-      }
-      
-      let chartData = [payData.cash, payData.qr, payData.fpx];
-      if (payData.lain > 0) {
-        chartData.push(payData.lain);
-      }
-      
-      payChartObj.data.datasets[0].data = chartData;
-      
-      let chartColors = ["#111827", "#6b7280", "#d1d5db"];
-      if (payData.lain > 0) {
-        chartColors.push("#f3f4f6");
-      }
-      
-      payChartObj.data.datasets[0].backgroundColor = chartColors;
-    } else {
-      payChartObj.data.labels = ["Tiada Data"];
-      payChartObj.data.datasets[0].data = [1];
-      payChartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
-    }
-    animateChartWhenVisible(payChartObj, "payChart");
-  }
+  let demoLabels = ["Gunting", "Rawatan", "OnCall"];
+  let demoData = [countHcBooking + countHcWalkin, countTreatments, countOnCall];
+  sortAndColorDonut(demoChartObj, demoLabels, demoData, "demoChart");
 
-  if (staffChartObj) {
-    let sNames = Object.keys(staffStats);
-    let totalStaffSales = sNames.reduce(
-      (sum, n) => sum + staffStats[n].sales,
-      0,
-    );
-    if (sNames.length > 0 && totalStaffSales > 0) {
-      staffChartObj.data.labels = sNames;
-      staffChartObj.data.datasets[0].data = sNames.map(
-        (n) => staffStats[n].sales,
-      );
-      staffChartObj.data.datasets[0].backgroundColor = [
-        "#111827",
-        "#374151",
-        "#4b5563",
-        "#6b7280",
-        "#9ca3af",
-        "#d1d5db",
-      ];
-    } else {
-      staffChartObj.data.labels = ["Tiada Jualan"];
-      staffChartObj.data.datasets[0].data = [1];
-      staffChartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
-    }
-    animateChartWhenVisible(staffChartObj, "staffChart");
-  }
+  let payLabels = ["Tunai (Cash)", "DuitNow QR", "FPX", "Lain"];
+  let payDataArr = [payData.cash, payData.qr, payData.fpx, payData.lain];
+  sortAndColorDonut(payChartObj, payLabels, payDataArr, "payChart");
+
+  let sNames = Object.keys(staffStats);
+  let staffSalesData = sNames.map(n => staffStats[n].sales);
+  sortAndColorDonut(staffChartObj, sNames, staffSalesData, "staffChart");
 
 
 
@@ -1589,7 +1562,45 @@ function initChart() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "top", labels: { boxWidth: 10 } } },
+        plugins: { 
+          legend: { 
+            position: "top", 
+            labels: { boxWidth: 10 },
+            onClick: (e, legendItem, legend) => {
+              const idx = legendItem.datasetIndex;
+              const chart = legend.chart;
+              chart.data.datasets.forEach((ds, i) => {
+                if (i === idx) {
+                  ds.borderColor = ds.customActiveColor;
+                  ds.backgroundColor = ds.customActiveGradient;
+                  ds.borderWidth = 3;
+                } else {
+                  ds.borderColor = ds.customInactiveColor;
+                  ds.backgroundColor = ds.customInactiveGradient;
+                  ds.borderWidth = 2;
+                }
+              });
+              chart.update();
+            }
+          } 
+        },
+        onClick: (e, activeElements, chart) => {
+          if (activeElements.length > 0) {
+            let idx = activeElements[0].datasetIndex;
+            chart.data.datasets.forEach((ds, i) => {
+              if (i === idx) {
+                ds.borderColor = ds.customActiveColor;
+                ds.backgroundColor = ds.customActiveGradient;
+                ds.borderWidth = 3;
+              } else {
+                ds.borderColor = ds.customInactiveColor;
+                ds.backgroundColor = ds.customInactiveGradient;
+                ds.borderWidth = 2;
+              }
+            });
+            chart.update();
+          }
+        },
         scales: {
           y: {
             beginAtZero: true,
@@ -1723,25 +1734,27 @@ function updateBarChart(bookings, orders, filterType) {
 
   if (branchLineChartObj) {
     branchLineChartObj.data.labels = labels;
-    let bColors = ["#8b5cf6", "#3b82f6", "#ec4899", "#10b981", "#f59e0b", "#6366f1"];
     let datasets = [];
     let colorIndex = 0;
     
     const ctxChart = document.getElementById("branchLineChart").getContext("2d");
-    const hexToRgb = (hex) => {
-      let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : "0,0,0";
-    };
+    
+    // Gradients for black (active) and gray (inactive)
+    let activeGradient = ctxChart.createLinearGradient(0, 0, 0, 300);
+    activeGradient.addColorStop(0, `rgba(17, 24, 39, 0.5)`);
+    activeGradient.addColorStop(1, `rgba(17, 24, 39, 0.0)`);
+    
+    let inactiveGradient = ctxChart.createLinearGradient(0, 0, 0, 300);
+    inactiveGradient.addColorStop(0, `rgba(209, 213, 219, 0.5)`);
+    inactiveGradient.addColorStop(1, `rgba(209, 213, 219, 0.0)`);
 
     Object.keys(branchDataPoints).forEach(br => {
       // Abaikan cawangan jika tiada jualan langsung untuk jadikan graf kemas
       let totalSales = branchDataPoints[br].reduce((sum, val) => sum + val, 0);
       if (totalSales > 0) {
-        let baseColor = bColors[colorIndex % bColors.length];
-        let rgbColor = hexToRgb(baseColor);
-        let gradient = ctxChart.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, `rgba(${rgbColor}, 0.5)`);
-        gradient.addColorStop(1, `rgba(${rgbColor}, 0.0)`);
+        let isFirst = (colorIndex === 0);
+        let baseColor = isFirst ? "#111827" : "#d1d5db";
+        let gradient = isFirst ? activeGradient : inactiveGradient;
 
         datasets.push({
           label: br,
@@ -1750,9 +1763,13 @@ function updateBarChart(bookings, orders, filterType) {
           backgroundColor: gradient,
           fill: true,
           tension: 0.4,
-          borderWidth: 2,
+          borderWidth: isFirst ? 3 : 2,
           pointRadius: 0,
-          pointHoverRadius: 5
+          pointHoverRadius: 5,
+          customActiveColor: "#111827",
+          customInactiveColor: "#d1d5db",
+          customActiveGradient: activeGradient,
+          customInactiveGradient: inactiveGradient
         });
         colorIndex++;
       }
