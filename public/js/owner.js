@@ -2630,7 +2630,7 @@ async function renderReportsTab() {
 }
 
 async function downloadYearlyArchive(year) {
-  showToast(`Sedang menjana ZIP Tahunan ${year}. Sila tunggu, proses ini mungkin mengambil masa lebih 1 minit...`);
+  alert(`Sedang menjana ZIP Tahunan ${year}. Sila tunggu, proses ini mungkin mengambil masa lebih 1 minit...`);
   
   try {
     const token = localStorage.getItem("din_token_sys");
@@ -2724,16 +2724,16 @@ async function downloadYearlyArchive(year) {
     
     const content = await zip.generateAsync({ type: "blob" });
     saveAs(content, `Arkib_Lengkap_${year}.zip`);
-    showToast("Muat turun selesai!");
+    alert("Muat turun selesai!");
     
   } catch (err) {
     console.error(err);
-    showToast("Ralat menjana ZIP Tahunan.");
+    alert("Ralat menjana ZIP Tahunan.");
   }
 }
 
 async function downloadCompressedArchive(year) {
-  showToast(`Sedang menjana laporan mampat untuk tahun ${year}...`);
+  alert(`Sedang menjana laporan mampat untuk tahun ${year}...`);
   try {
     const token = localStorage.getItem("din_token_sys");
     const res = await fetch(`${API_BASE_URL}/owner/historical-data?year=${year}&t=${Date.now()}`, {
@@ -2751,10 +2751,10 @@ async function downloadCompressedArchive(year) {
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(blob, `Laporan_Mampat_${year}.xlsx`);
     
-    showToast("Muat turun selesai!");
+    alert("Muat turun selesai!");
   } catch (e) {
     console.error(e);
-    showToast("Ralat menjana laporan mampat.");
+    alert("Ralat menjana laporan mampat.");
   }
 }
 
