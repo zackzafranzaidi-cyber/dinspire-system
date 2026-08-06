@@ -154,6 +154,9 @@ router.get(
           WalkInServices: (hcData || [])
             .filter((h) => h.kategori === "Walk-in")
             .map((h) => ({ id: h.id, name: h.nama_potongan, price: h.harga })),
+          WalkInTreatments: (hcData || [])
+            .filter((h) => h.kategori === "Treatment Walk-in")
+            .map((h) => ({ id: h.id, name: h.nama_potongan, price: h.harga })),
           OnCall: (hcData || [])
             .filter((h) => h.kategori === "On-Call")
             .map((h) => ({ id: h.id, name: h.nama_potongan, price: h.harga })),
@@ -314,6 +317,10 @@ router.post(
           ...(data.WalkInServices || []).map((x) => ({
             ...x,
             kategori: "Walk-in",
+          })),
+          ...(data.WalkInTreatments || []).map((x) => ({
+            ...x,
+            kategori: "Treatment Walk-in",
           })),
           ...(data.OnCall || []).map((x) => ({ ...x, kategori: "On-Call" })),
         ],

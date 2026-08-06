@@ -37,7 +37,7 @@ router.get(
           .limit(200),
         supabase
           .from("walkin_records")
-          .select("*, staff(username), haircuts(nama_potongan)")
+          .select("*, staff(username), haircuts(nama_potongan, kategori)")
           .order("created_at", { ascending: false })
           .limit(200),
         supabase
@@ -109,7 +109,7 @@ router.get(
           Price: w.harga_rm,
           Fee: parseFloat(w.service_fee) || 0,
           Type: w.jenis_bayaran,
-          Category: "Walk-In",
+          Category: (w.haircuts && w.haircuts.kategori === "Treatment Walk-in") ? "Treatment" : "Walk-In",
           Status: "Selesai",
           Timestamp: w.created_at,
           ReceiptLink: w.resit || "",
