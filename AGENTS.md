@@ -108,3 +108,9 @@ AI dikunci tegar (Hard-Coded) untuk sentiasa membalas menggunakan struktur forma
 ---
 
 *Dokumentasi kejuruteraan ini merangkumi keseluruhan logik dan anatomi belakang tabir (*under-the-hood*) Sistem Dinspire untuk rujukan penyelenggaraan tahap Enterprise.*
+
+
+## 6. Polisi Pengurusan Pangkalan Data (Supabase Workflow)
+Setiap kali terdapat keperluan untuk menukar struktur jadual, menambah *Check Constraint*, atau sebarang perubahan skema pangkalan data, Ejen AI MESTI melakukan perkara berikut tanpa gagal:
+1. **Local Supabase:** Wajib mencipta fail *migration* SQL baru di dalam folder supabase/migrations/ dan kemaskini *baseline* jika perlu supaya repositori sentiasa segerak dengan perubahan baharu.
+2. **Cloud Supabase:** Memandangkan Ejen tiada akses terus ke *dashboard* Supabase Cloud pengguna, Ejen wajib memaparkan kod SQL yang lengkap dan tepat di dalam *chat*, beserta arahan langkah demi langkah untuk pengguna *copy-paste* dan *run* di dalam **SQL Editor** pada Supabase Cloud mereka.
