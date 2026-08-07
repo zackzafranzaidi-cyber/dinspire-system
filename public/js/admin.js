@@ -151,8 +151,8 @@ function switchTab(tabName, el) {
   if (el) el.classList.add("active");
 
   let titles = {
-    Haircuts: "Haircuts",
-    Treatments: "Treatments",
+    Haircuts: "Haircuts (Booking)",
+    Treatments: "Treatments (Booking)",
     Branches: "Branches",
     Barbers: "Barbers (Staff)",
     GeneralStaff: "General Staff",
