@@ -158,7 +158,7 @@ function switchTab(tabName, el) {
     GeneralStaff: "General Staff",
     OnCall: "On-Call Services",
     OnCallBarbers: "On-Call Barbers",
-    WalkInServices: "Walk-In Prices",
+    WalkInServices: "Walk-In Haircuts",
     WalkInTreatments: "Walk-In Treatments",
     Products: "Products",
     Posters: "Promotions (Posters)",
