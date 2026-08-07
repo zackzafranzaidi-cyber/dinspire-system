@@ -317,7 +317,7 @@ router.post(
            throw new Error("Anda sedang bercuti hari ini. Tidak dibenarkan Punch In.");
         }
 
-        const { data: existPunches } = await supabase.from("punch_cards").select("id, waktu_out").eq("staff_id", staff_id).eq("tarikh", tarikh);
+        const { data: existPunches } = await supabase.from("punch_cards").select("id, waktu_out, cawangan").eq("staff_id", staff_id).eq("tarikh", tarikh);
         
         if (existPunches && existPunches.length > 0) {
            if (isGeneral) {
@@ -325,8 +325,10 @@ router.post(
                  throw new Error("Anda telah memaksimumkan 2 kali Punch In hari ini.");
               }
               // Check if they have clocked out of the first one
-              if (!existPunches[0].waktu_out) {
-                 throw new Error("Anda belum Punch Out cawangan pertama.");
+              const pendingPunch = existPunches.find(p => !p.waktu_out);
+              if (pendingPunch) {
+                 const cawanganBelumOut = pendingPunch.cawangan || "pertama";
+                 throw new Error(`Anda belum Punch Out cawangan ${cawanganBelumOut}.`);
               }
            } else {
               throw new Error("Anda sudah Punch In hari ini.");
