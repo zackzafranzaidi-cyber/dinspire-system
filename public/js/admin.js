@@ -226,6 +226,11 @@ function renderTable(tabName) {
     return;
   }
 
+  if (tabName === "Products") {
+    renderProducts(appData[tabName] || [], container);
+    return;
+  }
+
   let dataArr = appData[tabName] || [];
   let cols = SCHEMAS[tabName];
 
@@ -325,6 +330,62 @@ function renderPosters(dataArr, container) {
       <div class="poster-add-card" onclick="addRow('Posters')">
         <i class="fas fa-plus-circle"></i>
         <span>Tambah Poster Baru</span>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+function renderProducts(dataArr, container) {
+  let html = `
+    <div class="page-heading">
+      <h3>Pengurusan Produk</h3>
+      <p>Muat naik produk E-Commerce. Ukuran imej disyorkan: <strong>500 x 500 px</strong> (nisbah 1:1). Tekan "Simpan ke Cloud" selepas selesai.</p>
+    </div>
+    <div class="products-grid">
+  `;
+
+  dataArr.forEach((row, index) => {
+    let currentImg = row.imageUrl || "https://via.placeholder.com/500x500?text=Upload+Produk";
+    html += `
+      <div class="product-card">
+        <div class="product-img-container">
+          <img src="${currentImg}" class="product-img" alt="Produk">
+          <label class="product-upload-btn" title="Tukar Imej">
+            <i class="fas fa-camera"></i>
+            <input type="file" class="product-upload-input" accept="image/*" onchange="handleAdminImageUpload(this, 'Products', ${index}, 'imageUrl')">
+          </label>
+        </div>
+        
+        <div class="product-info-container">
+          <div class="product-input-group">
+            <label>Nama Produk</label>
+            <input type="text" value="${escapeHTML(row.name || "")}" onchange="updateData('Products', ${index}, 'name', this.value)" placeholder="Cth: Pomade Suavecito">
+          </div>
+          
+          <div class="product-input-group">
+            <label>Harga (RM)</label>
+            <div class="product-price-input-wrapper">
+              <span>RM</span>
+              <input type="number" step="0.01" value="${escapeHTML(row.price || "")}" onchange="updateData('Products', ${index}, 'price', this.value)" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+
+        <div class="product-actions">
+          <button class="action-btn del" onclick="deleteRow('Products', ${index})" style="min-width:32px; height:32px; padding:0; display:flex; justify-content:center; align-items:center; background:#fee2e2; color:#ef4444;" title="Padam Produk">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+      <div class="product-add-card" onclick="addRow('Products')">
+        <i class="fas fa-plus-circle"></i>
+        <span>Tambah Produk Baru</span>
       </div>
     </div>
   `;
