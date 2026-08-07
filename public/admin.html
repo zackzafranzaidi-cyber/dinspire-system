@@ -59,33 +59,33 @@
       <div class="sidebar-header">CMS Panel</div>
       <div class="nav-list">
 
-        <div class="nav-label">Servis & Produk</div>
+        <div class="nav-label">Services & Products</div>
         <div class="nav-item active" onclick="switchTab('Haircuts', this)">
-          <i class="fas fa-cut"></i> Guntingan
+          <i class="fas fa-cut"></i> Haircuts
         </div>
         <div class="nav-item" onclick="switchTab('Treatments', this)">
-          <i class="fas fa-spa"></i> Rawatan
+          <i class="fas fa-spa"></i> Treatments
         </div>
         <div class="nav-item" onclick="switchTab('WalkInServices', this)">
-          <i class="fas fa-walking"></i> Harga Walk-In
+          <i class="fas fa-walking"></i> Walk-In Prices
         </div>
         <div class="nav-item" onclick="switchTab('WalkInTreatments', this)">
-          <i class="fas fa-leaf"></i> Treatment Walk-In
+          <i class="fas fa-leaf"></i> Walk-In Treatments
         </div>
         <div class="nav-item" onclick="switchTab('OnCall', this)">
-          <i class="fas fa-mobile-alt"></i> Servis OnCall
+          <i class="fas fa-mobile-alt"></i> On-Call Services
         </div>
         <div class="nav-item" onclick="switchTab('Products', this)">
-          <i class="fas fa-box"></i> Produk
+          <i class="fas fa-box"></i> Products
         </div>
         <div class="nav-item" onclick="switchTab('Posters', this)">
-          <i class="fas fa-image"></i> Promosi (Poster)
+          <i class="fas fa-image"></i> Promotions (Posters)
         </div>
 
         <div class="nav-divider"></div>
-        <div class="nav-label">Pengurusan</div>
+        <div class="nav-label">Management</div>
         <div class="nav-item" onclick="switchTab('Branches', this)">
-          <i class="fas fa-store"></i> Cawangan
+          <i class="fas fa-store"></i> Branches
         </div>
         <div class="nav-item" onclick="switchTab('Barbers', this)">
           <i class="fas fa-user-tie"></i> Barbers (Staff)
@@ -94,16 +94,16 @@
           <i class="fas fa-users"></i> General Staff
         </div>
         <div class="nav-item" onclick="switchTab('OnCallBarbers', this)">
-          <i class="fas fa-motorcycle"></i> Barbers OnCall
+          <i class="fas fa-motorcycle"></i> On-Call Barbers
         </div>
 
         <div class="nav-divider"></div>
-        <div class="nav-label">Sistem</div>
+        <div class="nav-label">System</div>
         <div class="nav-item" onclick="switchTab('Settings', this)">
-          <i class="fas fa-cog"></i> Tetapan Sistem & Caj
+          <i class="fas fa-cog"></i> System Settings & Fees
         </div>
         <div class="nav-item" onclick="switchTab('ResetRequests', this)">
-          <i class="fas fa-key"></i> Permohonan Reset
+          <i class="fas fa-key"></i> Password Reset Requests
         </div>
 
       </div>
@@ -112,7 +112,7 @@
     <!-- Main Content -->
     <div class="main-content">
       <div class="topbar">
-        <h2 id="current-section-title">Pengurusan Guntingan</h2>
+        <h2 id="current-section-title">Manage Haircuts</h2>
         <div class="topbar-right">
           <button class="save-btn" id="main-save-btn" onclick="saveAllData()">
             <i class="fas fa-cloud-upload-alt"></i>
@@ -130,7 +130,7 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="js/admin.js?v=26"></script>
+    <script src="js/admin.js?v=27"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {

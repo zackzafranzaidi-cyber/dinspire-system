@@ -151,22 +151,22 @@ function switchTab(tabName, el) {
   if (el) el.classList.add("active");
 
   let titles = {
-    Haircuts: "Guntingan",
-    Treatments: "Rawatan",
-    Branches: "Cawangan",
+    Haircuts: "Haircuts",
+    Treatments: "Treatments",
+    Branches: "Branches",
     Barbers: "Barbers (Staff)",
     GeneralStaff: "General Staff",
-    OnCall: "Servis OnCall",
-    OnCallBarbers: "Barbers OnCall",
-    WalkInServices: "Harga Walk-In",
-    WalkInTreatments: "Senarai Treatment Walk-in",
-    Products: "Produk",
-    Posters: "Promosi (Poster)",
-    Settings: "Tetapan Sistem & Caj",
-    ResetRequests: "Permohonan Reset Kata Laluan",
+    OnCall: "On-Call Services",
+    OnCallBarbers: "On-Call Barbers",
+    WalkInServices: "Walk-In Prices",
+    WalkInTreatments: "Walk-In Treatments",
+    Products: "Products",
+    Posters: "Promotions (Posters)",
+    Settings: "System Settings & Fees",
+    ResetRequests: "Password Reset Requests",
   };
   document.getElementById("current-section-title").innerText =
-    "Pengurusan " + (titles[tabName] || tabName);
+    "Manage " + (titles[tabName] || tabName);
 
   renderTable(tabName);
 }
