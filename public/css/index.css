@@ -198,11 +198,16 @@ body {
 }
 .slider-track {
   display: flex;
-  padding: 0 10%;
-  gap: 15px;
+  gap: 16px;
+}
+.slider-track::before,
+.slider-track::after {
+  content: '';
+  flex: 0 0 calc(12.5% - 16px);
+  flex-shrink: 0;
 }
 .slide {
-  flex: 0 0 80%;
+  flex: 0 0 75%;
   scroll-snap-align: center;
   box-sizing: border-box;
 }
