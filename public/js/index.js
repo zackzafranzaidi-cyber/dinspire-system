@@ -866,12 +866,15 @@ async function fetchShopData() {
         ).join("");
       }
       
-      const viewport = document.querySelector(".slider-viewport");
+      const viewport = document.getElementById("dynamic-slider-track");
       
       // Sync dots on manual scroll
       if (viewport && paginationContainer) {
         viewport.onscroll = () => {
-          const index = Math.round(viewport.scrollLeft / viewport.clientWidth);
+          const firstSlide = viewport.querySelector('.slide');
+          if (!firstSlide) return;
+          const slideWidth = firstSlide.offsetWidth + 16; // 16px gap
+          const index = Math.round(viewport.scrollLeft / slideWidth);
           const dots = paginationContainer.querySelectorAll('.dot');
           dots.forEach((dot, i) => {
             if (i === index) dot.classList.add('active');
@@ -889,7 +892,11 @@ async function fetchShopData() {
           if (viewport.scrollLeft >= maxScroll - 10) {
             viewport.scrollTo({ left: 0, behavior: 'smooth' });
           } else {
-            viewport.scrollBy({ left: viewport.clientWidth, behavior: 'smooth' });
+            // Find current snapped slide
+            const firstSlide = viewport.querySelector('.slide');
+            const slideWidth = firstSlide ? firstSlide.offsetWidth + 16 : viewport.clientWidth;
+            const index = Math.round(viewport.scrollLeft / slideWidth);
+            viewport.scrollTo({ left: (index + 1) * slideWidth, behavior: 'smooth' });
           }
         }, 4000);
       }
