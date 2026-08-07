@@ -198,11 +198,12 @@ body {
 }
 .slider-track {
   display: flex;
+  padding: 0 7.5%;
 }
 .slide {
-  flex: 0 0 100%;
+  flex: 0 0 85%;
   scroll-snap-align: center;
-  padding: 0 20px;
+  padding: 0 8px;
   box-sizing: border-box;
 }
 .poster-card {
