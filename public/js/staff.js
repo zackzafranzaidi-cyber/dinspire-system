@@ -463,6 +463,11 @@ function calculateDashboardStats() {
   if (bonesElement) {
     bonesElement.innerText = `RM ${bones.toFixed(0)}`;
   }
+  
+  const bonesSubtitleElement = document.getElementById("dash-bones-subtitle");
+  if (bonesSubtitleElement) {
+    bonesSubtitleElement.innerText = `Komisen melebihi RM ${basicSalary.toLocaleString()}`;
+  }
 
   document.getElementById("dash-cash").innerText =
     `RM ${cashOnHand.toFixed(0)}`;
