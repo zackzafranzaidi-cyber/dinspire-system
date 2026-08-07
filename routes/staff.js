@@ -260,16 +260,17 @@ router.post(
         }
       } else if (type === "CLOCK OUT") {
          // Untuk clock out, kita cari punch card hari ini untuk mengetahui cawangan mana
-         const { data: existPunch } = await supabase
+         const { data: existPunches } = await supabase
           .from("punch_cards")
           .select("id, cawangan")
           .eq("staff_id", staff_id)
           .eq("tarikh", tarikh)
-          .single();
+          .is("waktu_out", null);
           
-         if (!existPunch) {
-            throw new Error("Anda belum Punch In hari ini.");
+         if (!existPunches || existPunches.length === 0) {
+            throw new Error("Anda belum Punch In hari ini atau sudah Punch Out.");
          }
+         const existPunch = existPunches[0];
          // Kita dapatkan branch_id berdasarkan nama cawangan (jika perlu)
          // Tetapi cara terbaik adalah mengambil cawangan terus.
          // Wait, to calculate distance, we need the branch's lat/lng. 
@@ -316,9 +317,20 @@ router.post(
            throw new Error("Anda sedang bercuti hari ini. Tidak dibenarkan Punch In.");
         }
 
-        const { data: existPunch } = await supabase.from("punch_cards").select("id").eq("staff_id", staff_id).eq("tarikh", tarikh).single();
-        if (existPunch) {
-          throw new Error("Anda sudah Punch In hari ini.");
+        const { data: existPunches } = await supabase.from("punch_cards").select("id, waktu_out").eq("staff_id", staff_id).eq("tarikh", tarikh);
+        
+        if (existPunches && existPunches.length > 0) {
+           if (isGeneral) {
+              if (existPunches.length >= 2) {
+                 throw new Error("Anda telah memaksimumkan 2 kali Punch In hari ini.");
+              }
+              // Check if they have clocked out of the first one
+              if (!existPunches[0].waktu_out) {
+                 throw new Error("Anda belum Punch Out cawangan pertama.");
+              }
+           } else {
+              throw new Error("Anda sudah Punch In hari ini.");
+           }
         }
 
         const { error } = await supabase.from("punch_cards").insert([
@@ -338,16 +350,18 @@ router.post(
           message: "Berjaya Punch In di " + namaCawangan,
         });
       } else if (type === "CLOCK OUT") {
-        const { data: existPunch } = await supabase
+        const { data: existPunches } = await supabase
           .from("punch_cards")
           .select("id")
           .eq("staff_id", staff_id)
           .eq("tarikh", tarikh)
-          .single();
+          .is("waktu_out", null);
 
-        if (!existPunch) {
-          return res.status(400).json({ status: "error", message: "Anda belum Punch In hari ini." });
+        if (!existPunches || existPunches.length === 0) {
+          return res.status(400).json({ status: "error", message: "Anda belum Punch In hari ini atau sudah Punch Out." });
         }
+        
+        const existPunch = existPunches[0];
 
         const { error } = await supabase
           .from("punch_cards")
