@@ -586,7 +586,7 @@ async function loadResetRequests() {
     if (result.data && result.data.length === 0) {
       container.innerHTML = `
         <div style="text-align:center; padding:60px 20px; background:#F9FAFB; border-radius:16px; border:2px dashed #E5E5EA;">
-          <div style="font-size:48px; margin-bottom:15px;">✅</div>
+          <div style="margin-bottom:15px;"><i class="fas fa-check-circle" style="font-size:48px; color:#22c55e;"></i></div>
           <h3 style="font-size:18px; font-weight:700; color:#1c1c1e;">Tiada Permohonan Reset</h3>
           <p style="font-size:13px; color:#8e8e93; margin-top:8px;">Semua kata laluan staf dalam keadaan baik. Tiada permintaan reset yang menunggu kelulusan.</p>
         </div>`;
