@@ -873,7 +873,7 @@ async function fetchShopData() {
         viewport.onscroll = () => {
           const firstSlide = viewport.querySelector('.slide');
           if (!firstSlide) return;
-          const slideWidth = firstSlide.offsetWidth + 16; // 16px gap
+          const slideWidth = firstSlide.offsetWidth + 12; // 12px gap
           const index = Math.round(viewport.scrollLeft / slideWidth);
           const dots = paginationContainer.querySelectorAll('.dot');
           dots.forEach((dot, i) => {
@@ -894,7 +894,7 @@ async function fetchShopData() {
           } else {
             // Find current snapped slide
             const firstSlide = viewport.querySelector('.slide');
-            const slideWidth = firstSlide ? firstSlide.offsetWidth + 16 : viewport.clientWidth;
+            const slideWidth = firstSlide ? firstSlide.offsetWidth + 12 : viewport.clientWidth;
             const index = Math.round(viewport.scrollLeft / slideWidth);
             viewport.scrollTo({ left: (index + 1) * slideWidth, behavior: 'smooth' });
           }
