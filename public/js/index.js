@@ -791,6 +791,7 @@ function renderScheduleTime() {
 }
 
 async function fetchShopData() {
+  showGlobalLoader();
   try {
     const timestamp = new Date().getTime();
     const res = await fetch(`${API_BASE_URL}/shop-data?t=${timestamp}`);
@@ -935,7 +936,13 @@ async function fetchShopData() {
         }),
       );
   } catch (err) {
-    console.error("Gagal muat data kedai");
+    console.error("Gagal load shop data:", err);
+  } finally {
+    hideGlobalLoader();
+    setTimeout(() => {
+      const loading = document.getElementById("loading");
+      if (loading) loading.style.display = "none";
+    }, 800);
   }
 }
 
@@ -1652,20 +1659,25 @@ function toggleAccordion(id) {
     .forEach((w) => w.classList.remove("active"));
   if (!isActive) card.classList.add("active");
 }
-function showGlobalLoader(ms = 800) {
+function showGlobalLoader() {
   const preloader = document.getElementById('preloader');
   if (preloader) {
       preloader.style.visibility = 'visible';
       preloader.style.opacity = '1';
-      setTimeout(() => {
-          preloader.style.opacity = '0';
-          setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
-      }, ms);
+  }
+}
+
+function hideGlobalLoader() {
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+      preloader.style.opacity = '0';
+      setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
   }
 }
 
 function switchView(id) {
-  showGlobalLoader(400); // slightly faster for customer tabs
+  showGlobalLoader();
+  setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
 
   document
     .querySelectorAll(".view-section")

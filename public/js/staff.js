@@ -173,8 +173,9 @@ async function loginStaffSystem() {
     }
   } catch (err) {
     alert("Gagal menyambung ke pelayan.");
+  } finally {
+    btn.innerText = "Log Masuk";
   }
-  btn.innerText = "Log Masuk";
 }
 
 // [DIBAIKI] Fungsi Penukaran Kata Laluan Wajib
@@ -289,20 +290,25 @@ function showDashboard() {
   initLeaveSystem();
 }
 
-function showGlobalLoader(ms = 800) {
+function showGlobalLoader() {
   const preloader = document.getElementById('preloader');
   if (preloader) {
       preloader.style.visibility = 'visible';
       preloader.style.opacity = '1';
-      setTimeout(() => {
-          preloader.style.opacity = '0';
-          setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
-      }, ms);
+  }
+}
+
+function hideGlobalLoader() {
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+      preloader.style.opacity = '0';
+      setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
   }
 }
 
 function switchView(id) {
-  showGlobalLoader(500);
+  showGlobalLoader();
+  setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
 
   document
     .querySelectorAll(".view-section")
@@ -351,11 +357,7 @@ async function loadBranchOptions() {
   } catch (e) {
     console.error("Failed to load branches", e);
   } finally {
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-        preloader.style.opacity = '0';
-        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
-    }
+    hideGlobalLoader();
   }
 }
 
@@ -382,7 +384,11 @@ function toggleReceiptUpload() {
 }
 
 async function loadDashboardData() {
-  if (!loggedInStaff) return;
+  showGlobalLoader();
+  if (!loggedInStaff) {
+    hideGlobalLoader();
+    return;
+  }
   
   // [DIBAIKI] Caching Tempatan (Optimistic Load)
   const cachedData = localStorage.getItem("din_staff_dashboard");
@@ -432,7 +438,9 @@ async function loadDashboardData() {
       renderBookingList();
       renderHistoryList();
     }
-  } catch (err) {}
+  } catch (err) {} finally {
+    hideGlobalLoader();
+  }
 }
 
 function calculateDashboardStats() {
@@ -761,83 +769,80 @@ function cancelBooking(orderNo) {
 }
 
 function submitWalkIn() {
-  const name = document.getElementById("wi-name").value.trim();
-  const phone = document.getElementById("wi-phone") ? document.getElementById("wi-phone").value.trim() : "";
-  const service_id = document.getElementById("wi-service").value;
-  const payment = document.getElementById("wi-payment").value;
-  const price = document.getElementById("wi-price").value;
+  const form = document.getElementById("walkin-form");
+  const phone = document.getElementById("walkin-phone").value.trim();
+  const serviceId = document.getElementById("walkin-service").value;
+  const paymentMethod = document.getElementById("walkin-payment").value;
   const fileInput = document.getElementById("wi-receipt").files[0];
 
-  if (!name || !service_id || !price || !payment) {
-    alert("Sila isikan semua maklumat yang wajib.");
-    return;
+  if (!phone || !serviceId || !paymentMethod) {
+    return alert("Sila lengkapkan semua maklumat Walk-In.");
   }
-  if (payment === "QR" && !fileInput) {
-    alert(
-      "Sila muat naik gambar resit transaksi DuitNow/QR sebelum tekan selesai!",
-    );
-    return;
+  if (!phone.startsWith("01") || phone.length < 10) {
+    return alert("Sila masukkan no telefon sah (mula 01...).");
+  }
+  if (paymentMethod === "QR" && !fileInput) {
+    return alert("Sila muat naik gambar resit transaksi DuitNow/QR sebelum tekan selesai!");
   }
 
-  const btn = document.getElementById("btn-submit-walkin");
-  btn.innerText = "Memproses...";
-  btn.disabled = true;
+  showGlobalLoader();
+  try {
+    compressImage(fileInput, (base64) => {
+      const now = new Date();
+      const payload = {
+        customer_name: document.getElementById("wi-name").value.trim(),
+        no_phone: phone,
+        service_id: serviceId,
+        booking_date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
+        booking_time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+        price: parseFloat(document.getElementById("wi-price").value),
+        payment_method: paymentMethod,
+        receipt_url: base64,
+      };
 
-  compressImage(fileInput, (base64) => {
-    const now = new Date();
-    const payload = {
-      customer_name: name,
-      no_phone: phone,
-      service_id: service_id,
-      booking_date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
-      booking_time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
-      price: parseFloat(price),
-      payment_method: payment,
-      receipt_url: base64,
-    };
+      const handleSuccess = (msg) => {
+        showToast(msg);
+        document.getElementById("wi-name").value = "";
+        document.getElementById("wi-phone").value = "";
+        document.getElementById("wi-service").value = "";
+        document.getElementById("wi-price").value = "";
+        document.getElementById("wi-receipt").value = "";
+        document.getElementById("wi-receipt-group").style.display = "none";
+        document.getElementById("wi-payment").value = "Cash";
+        switchView("dashboard");
+        if (typeof loadDashboardData === "function") loadDashboardData();
+        hideGlobalLoader();
+      };
 
-    const handleSuccess = (msg) => {
-      showToast(msg);
-      document.getElementById("wi-name").value = "";
-      if(document.getElementById("wi-phone")) document.getElementById("wi-phone").value = "";
-      document.getElementById("wi-service").value = "";
-      document.getElementById("wi-price").value = "";
-      document.getElementById("wi-receipt").value = "";
-      document.getElementById("wi-receipt-group").style.display = "none";
-      document.getElementById("wi-payment").value = "Cash";
-      switchView("dashboard");
-      if (typeof loadDashboardData === "function") loadDashboardData();
-    };
-
-    if (!navigator.onLine) {
-      OfflineSyncManager.saveToQueue(`${API_BASE_URL}/bookings/walkin`, "POST", payload, "Rekod Walk-In Berjaya Disimpan!");
-      handleSuccess("Tersimpan di Luar Talian (Offline)");
-      btn.innerText = "Sahkan Walk-In";
-      btn.disabled = false;
-      return;
-    }
-
-    fetch(`${API_BASE_URL}/bookings/walkin`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") {
-          handleSuccess("Rekod Walk-In Berjaya Disimpan!");
-        } else alert("Ralat: " + data.message);
-        btn.innerText = "Sahkan Walk-In";
-        btn.disabled = false;
-      })
-      .catch((err) => {
+      if (!navigator.onLine) {
         OfflineSyncManager.saveToQueue(`${API_BASE_URL}/bookings/walkin`, "POST", payload, "Rekod Walk-In Berjaya Disimpan!");
-        handleSuccess("Gagal berhubung. Data disimpan offline.");
-        btn.innerText = "Sahkan Walk-In";
-        btn.disabled = false;
-      });
-  });
+        handleSuccess("Tersimpan di Luar Talian (Offline)");
+        return;
+      }
+
+      fetch(`${API_BASE_URL}/bookings/walkin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === "success") {
+            handleSuccess("Rekod Walk-In Berjaya Disimpan!");
+          } else {
+             alert("Ralat: " + data.message);
+             hideGlobalLoader();
+          }
+        })
+        .catch((err) => {
+          OfflineSyncManager.saveToQueue(`${API_BASE_URL}/bookings/walkin`, "POST", payload, "Rekod Walk-In Berjaya Disimpan!");
+          handleSuccess("Gagal berhubung. Data disimpan offline.");
+        });
+    });
+  } catch (err) {
+    hideGlobalLoader();
+  }
 }
 
 function compressImage(file, callback) {
@@ -1093,7 +1098,9 @@ async function initLeaveSystem() {
        }
      }
   } catch (err) {
-     console.error("Gagal memuatkan sistem cuti", err);
+     console.error("Gagal load data staf", err);
+  } finally {
+    hideGlobalLoader();
   }
 }
 

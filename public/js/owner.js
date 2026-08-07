@@ -416,22 +416,24 @@ function closeLoading() {
       preloader.style.opacity = '0';
       setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
   }
-}
-
-function showGlobalLoader(ms = 800) {
+function showGlobalLoader() {
   const preloader = document.getElementById('preloader');
   if (preloader) {
       preloader.style.visibility = 'visible';
       preloader.style.opacity = '1';
-      setTimeout(() => {
-          preloader.style.opacity = '0';
-          setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
-      }, ms);
+  }
+}
+function hideGlobalLoader() {
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+      preloader.style.opacity = '0';
+      setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
   }
 }
 
 function switchTab(tabName, element = null) {
-  showGlobalLoader(500);
+  showGlobalLoader();
+  setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
 
   currentActiveTab = tabName;
   document
@@ -538,13 +540,12 @@ function togglePunchTab(type) {
     document.getElementById("punch-cuti-view").classList.add("block");
   } else if (type === 'kecemasan') {
     document.getElementById("punch-kecemasan-view").classList.remove("hidden");
-    document.getElementById("punch-kecemasan-view").classList.add("block");
+document.getElementById("punch-kecemasan-view").classList.add("block");
   }
 }
 
 async function fetchOwnerDashboardData() {
-  document.getElementById("loading-overlay").classList.add("flex");
-  document.getElementById("loading-overlay").classList.remove("hidden");
+  showGlobalLoader();
 
   // [DIBAIKI] Caching Tempatan (Optimistic Load) untuk PWA
   const cachedData = localStorage.getItem("din_owner_dashboard");
@@ -589,7 +590,7 @@ async function fetchOwnerDashboardData() {
   } catch (err) {
     console.error("Fetch err:", err);
   } finally {
-    closeLoading();
+    hideGlobalLoader();
   }
 }
 
@@ -884,6 +885,7 @@ async function fetchDashboardInsights(
 
   if (insightDebounceTimer) clearTimeout(insightDebounceTimer);
   insightDebounceTimer = setTimeout(async () => {
+    showGlobalLoader();
     try {
       const res = await fetch(`${API_BASE_URL}/owner/ai-insights`, {
       method: "POST",
@@ -919,8 +921,26 @@ async function fetchDashboardInsights(
       "text-[9px] md:text-[10px] text-rose-400 font-bold tracking-widest uppercase bg-rose-900/50 px-2 py-1 rounded-full border border-rose-500/30 whitespace-nowrap";
     document.getElementById("ai-insights-content").innerHTML =
       `<p class="text-rose-400 text-xs md:text-sm font-semibold break-words whitespace-normal">Ralat: ${escapeHTML(err.message)}</p>`;
+  } finally {
+    hideGlobalLoader();
   }
   }, 1000);
+}
+
+function showGlobalLoader() {
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+    preloader.style.visibility = 'visible';
+    preloader.style.opacity = '1';
+  }
+}
+
+function hideGlobalLoader() {
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+    preloader.style.opacity = '0';
+    setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -1858,6 +1878,7 @@ async function askAI(isHidden = false) {
   promptInput.disabled = true;
   sendBtn.disabled = true;
 
+  showGlobalLoader();
   try {
     const timeFilter = document.getElementById("timeFilter").value;
     const res = await fetch(`${API_BASE_URL}/owner/ai-insights`, {
@@ -1973,6 +1994,7 @@ async function askAI(isHidden = false) {
     sendBtn.disabled = false;
     if (!isHidden) promptInput.focus();
     chatBox.scrollTop = chatBox.scrollHeight;
+    hideGlobalLoader();
   }
 }
 
@@ -2053,6 +2075,7 @@ function renderEmergencyLeavesTable(leavesData) {
 }
 
 async function approveEmergencyLeave(id) {
+  showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/owner/approve-emergency-leave`, {
       method: "POST",
@@ -2076,12 +2099,15 @@ async function approveEmergencyLeave(id) {
   } catch (err) {
     console.error(err);
     alert("Ralat! Gagal menghubungi pelayan.");
+  } finally {
+    hideGlobalLoader();
   }
 }
 
 async function rejectEmergencyLeave(id) {
   if (!confirm("Adakah anda pasti untuk TOLAK cuti kecemasan ini?")) return;
 
+  showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/owner/approve-emergency-leave`, {
       method: "POST",
@@ -2102,6 +2128,8 @@ async function rejectEmergencyLeave(id) {
   } catch (err) {
     console.error(err);
     alert("Ralat! Gagal menghubungi pelayan.");
+  } finally {
+    hideGlobalLoader();
   }
 }
 
@@ -2183,6 +2211,7 @@ async function submitReassign(no_booking, table_name) {
   const new_staff_id = document.getElementById('reassignStaffSelect').value;
   if (!new_staff_id) return alert("Sila pilih staf ganti.");
   
+  showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/owner/reassign-booking`, {
       method: "POST",
@@ -2223,10 +2252,13 @@ async function submitReassign(no_booking, table_name) {
     }
   } catch(err) {
     alert("Gagal menghubungi pelayan.");
+  } finally {
+    hideGlobalLoader();
   }
 }
 
 async function submitCancelAndWhatsApp(no_booking, table_name) {
+  showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/owner/cancel-booking-admin`, {
       method: "POST",
@@ -2262,10 +2294,13 @@ async function submitCancelAndWhatsApp(no_booking, table_name) {
     }
   } catch(err) {
     alert("Gagal membatalkan tempahan.");
+  } finally {
+    hideGlobalLoader();
   }
 }
 
 async function forceApproveLeave() {
+  showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/owner/approve-emergency-leave`, {
       method: "POST",
@@ -2282,6 +2317,8 @@ async function forceApproveLeave() {
     }
   } catch(err) {
     alert("Ralat kelulusan akhir.");
+  } finally {
+    hideGlobalLoader();
   }
 }
 
@@ -2303,6 +2340,7 @@ function toggleRevTab(tab) {
 let marketingCustomers = [];
 
 async function fetchMarketingData() {
+  showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/owner/marketing-customers`, {
       method: "GET",
@@ -2315,6 +2353,8 @@ async function fetchMarketingData() {
   } catch (err) {
     console.error(err);
     document.getElementById("table-marketing").innerHTML = `<div class="text-center p-4 text-red-500">Gagal memuat turun data pelanggan.</div>`;
+  } finally {
+    hideGlobalLoader();
   }
 }
 

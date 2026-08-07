@@ -110,7 +110,8 @@ function logoutAdmin() {
     });
 }
 
-async function loadData() {
+async function loadAdminData() {
+  showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/admin/data`, {
       credentials: "include",
@@ -133,30 +134,31 @@ async function loadData() {
       renderTable(currentTab);
     }
   } catch (err) {
-    console.error(err);
+    console.error("Gagal memuatkan data admin:", err);
   } finally {
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-        preloader.style.opacity = '0';
-        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
-    }
+    hideGlobalLoader();
   }
 }
 
-function showGlobalLoader(ms = 800) {
+function showGlobalLoader() {
   const preloader = document.getElementById('preloader');
   if (preloader) {
       preloader.style.visibility = 'visible';
       preloader.style.opacity = '1';
-      setTimeout(() => {
-          preloader.style.opacity = '0';
-          setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
-      }, ms);
+  }
+}
+
+function hideGlobalLoader() {
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+      preloader.style.opacity = '0';
+      setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
   }
 }
 
 function switchTab(tabName, el) {
-  showGlobalLoader(500);
+  showGlobalLoader();
+  setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
 
   currentTab = tabName;
   document
@@ -521,6 +523,7 @@ function updateData(tabName, index, col, value) {
 }
 
 async function saveAllData() {
+  showGlobalLoader();
   const btn = document.getElementById("main-save-btn");
   btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Menyimpan...";
   btn.disabled = true;
@@ -570,7 +573,8 @@ async function saveAllData() {
         text: "Semua data telah dikemas kini di Cloud Supabase.",
         confirmButtonText: "Selesai",
       });
-      loadData();
+      alert("Data telah disimpan dan diselaraskan ke semua cawangan!");
+      loadAdminData();
     } else {
       Swal.fire({
         icon: "error",
@@ -579,16 +583,15 @@ async function saveAllData() {
       });
     }
   } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Ralat Pelayan",
-      text: "Gagal menyambung ke pelayan Node.js.",
-    });
+    console.error("Gagal sync:", err);
+    alert("Ralat semasa menyimpan ke database.");
+  } finally {
+    btn.innerHTML = `<i class="fas fa-save"></i> Simpan Data Master`;
+    btn.disabled = false;
+    hideGlobalLoader();
   }
-
-  btn.innerHTML = "<i class='fas fa-cloud-upload-alt'></i> Simpan ke Cloud";
-  btn.disabled = false;
 }
+
 async function loadResetRequests() {
   const container = document.getElementById("dynamic-content");
   container.innerHTML = `<div style="text-align:center;padding:40px;color:#8e8e93;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i><p style="margin-top:10px;">Memuatkan senarai...</p></div>`;
