@@ -618,7 +618,7 @@ body {
 
 .poster-img-container {
   width: 100%;
-  aspect-ratio: 3/4;
+  aspect-ratio: 16/9;
   background: #f3f4f6;
   position: relative;
 }

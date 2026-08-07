@@ -296,13 +296,13 @@ function renderPosters(dataArr, container) {
   let html = `
     <div class="page-heading">
       <h3>Promosi (Poster)</h3>
-      <p>Muat naik poster promosi (nisbah 3:4). Tekan "Simpan ke Cloud" selepas selesai untuk kemaskini.</p>
+      <p>Muat naik poster promosi. Ukuran yang disyorkan: <strong>800 x 450 px</strong> (nisbah 16:9). Tekan "Simpan ke Cloud" selepas selesai untuk kemaskini.</p>
     </div>
     <div class="posters-grid">
   `;
 
   dataArr.forEach((row, index) => {
-    let currentImg = row.imageUrl || "https://via.placeholder.com/400x533?text=Sila+Upload+Gambar";
+    let currentImg = row.imageUrl || "https://via.placeholder.com/800x450?text=Sila+Upload+Gambar";
     html += `
       <div class="poster-card">
         <div class="poster-img-container">
