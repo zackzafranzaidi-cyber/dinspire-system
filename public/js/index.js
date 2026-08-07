@@ -1435,8 +1435,8 @@ function renderNotifications() {
       '<div style="text-align:center; padding: 40px 20px; color:var(--text-muted); font-size:13px;">Sila Log Masuk untuk melihat status pesanan.</div>';
     return;
   }
-  container.innerHTML =
-    '<div style="text-align:center; padding: 20px; color:var(--text-muted); font-size:13px;">Memuat turun notifikasi...</div>';
+  container.innerHTML = '';
+  showGlobalLoader();
   fetchWithAuth(`${API_BASE_URL}/bookings/my-orders`)
     .then((res) => (res ? res.json() : null))
     .then((data) => {
@@ -1528,6 +1528,13 @@ function renderNotifications() {
       }
 
       container.innerHTML = finalHtml;
+    })
+    .catch((err) => {
+      container.innerHTML =
+        '<div style="text-align:center; padding: 20px; color:var(--text-muted); font-size:13px;">Gagal memuat turun.</div>';
+    })
+    .finally(() => {
+      hideGlobalLoader();
     });
 }
 function confirmOrderReceived(id) {

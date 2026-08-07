@@ -594,8 +594,8 @@ async function saveAllData() {
 
 async function loadResetRequests() {
   const container = document.getElementById("dynamic-content");
-  container.innerHTML = `<div style="text-align:center;padding:40px;color:#8e8e93;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i><p style="margin-top:10px;">Memuatkan senarai...</p></div>`;
-
+  container.innerHTML = ``;
+  showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/admin/staff/reset-requests`, { credentials: "include" });
     const result = await res.json();
@@ -651,6 +651,8 @@ async function loadResetRequests() {
     container.innerHTML = html;
   } catch (err) {
     container.innerHTML = `<div style="text-align:center;padding:40px;color:#FF3B30;"><i class="fas fa-exclamation-circle" style="font-size:24px;"></i><p style="margin-top:10px;">Gagal memuatkan senarai. Sila refresh halaman.</p></div>`;
+  } finally {
+    hideGlobalLoader();
   }
 }
 
