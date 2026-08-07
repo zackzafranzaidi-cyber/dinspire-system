@@ -196,13 +196,18 @@ body {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   gap: 12px;
-  padding: 0 7.5%;
+}
+.slider-track::before,
+.slider-track::after {
+  content: '';
+  flex: 0 0 calc(10% - 12px);
+  flex-shrink: 0;
 }
 .slider-track::-webkit-scrollbar {
   display: none;
 }
 .slide {
-  flex: 0 0 85%;
+  flex: 0 0 80%;
   scroll-snap-align: center;
   box-sizing: border-box;
 }
