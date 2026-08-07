@@ -187,28 +187,37 @@ function renderTable(tabName) {
   if (tabName === "Settings") {
     let s = appData.Settings || {};
     container.innerHTML = `
-          <div style="background:var(--bg-surface); padding:30px; border-radius:12px; max-width:550px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
-              <div class="form-group" style="margin-bottom:20px;">
-                  <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--text-main); font-size:14px;"><i class="fas fa-truck" style="margin-right:5px; color:var(--primary-blue);"></i> Caj Penghantaran Produk (Shipping Fee) - RM</label>
-                  <input type="number" class="input-field" value="${s.shipping_fee || 0}" onchange="updateSetting('shipping_fee', this.value)" style="width:100%; padding:12px 15px; border:1px solid var(--border-color); border-radius:8px; font-size:16px; background:#FAFAFC;">
-              </div>
-              <div class="form-group" style="margin-bottom:20px;">
-                  <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--text-main); font-size:14px;"><i class="fas fa-server" style="margin-right:5px; color:var(--primary-blue);"></i> Caj Penyelenggaraan Servis (Service Fee) - RM</label>
-                  <input type="number" class="input-field" value="${s.service_fee || 0}" onchange="updateSetting('service_fee', this.value)" style="width:100%; padding:12px 15px; border:1px solid var(--border-color); border-radius:8px; font-size:16px; background:#FAFAFC;">
-              </div>
-              <div class="form-group" style="margin-bottom:20px; border-top:1px dashed var(--border-color); padding-top:20px;">
-                  <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--text-main); font-size:14px;"><i class="fas fa-percentage" style="margin-right:5px; color:#FFC107;"></i> Peratus Komisen Staf (%)</label>
-                  <input type="number" class="input-field" value="${s.peratus_komisen || 50}" onchange="updateSetting('peratus_komisen', this.value)" style="width:100%; padding:12px 15px; border:1px solid var(--border-color); border-radius:8px; font-size:16px; background:#FAFAFC;">
-              </div>
-              <div class="form-group" style="margin-bottom:20px;">
-                  <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--text-main); font-size:14px;"><i class="fas fa-money-bill-wave" style="margin-right:5px; color:#4CAF50;"></i> Gaji Asas / Threshold Bonus (RM)</label>
-                  <input type="number" class="input-field" value="${s.gaji_asas || 1800}" onchange="updateSetting('gaji_asas', this.value)" style="width:100%; padding:12px 15px; border:1px solid var(--border-color); border-radius:8px; font-size:16px; background:#FAFAFC;">
-              </div>
-              <div style="background:#F0F4FF; border-radius:8px; padding:15px; border-left:4px solid var(--primary-blue); margin-top:25px;">
-                  <p style="font-size:12px; color:var(--primary-blue); margin:0;">*Tekan butang <strong>"Simpan ke Cloud"</strong> di penjuru kanan atas untuk mengemas kini sistem pelanggan serta-merta.</p>
-              </div>
-          </div>
-      `;
+      <div class="page-heading">
+        <h3>Tetapan Sistem & Caj</h3>
+        <p>Konfigurasi harga, komisen dan gaji. Tekan "Simpan ke Cloud" untuk menyimpan.</p>
+      </div>
+      <div class="settings-grid">
+        <div class="setting-card">
+          <label><i class="fas fa-truck" style="margin-right:6px; color:#2d6df6;"></i>Caj Penghantaran (Shipping Fee)</label>
+          <input type="number" value="${s.shipping_fee || 0}" onchange="updateSetting('shipping_fee', this.value)" placeholder="0" min="0" />
+          <p style="font-size:12px; color:#6b7280; margin-top:8px;">Dikenakan pada pembelian produk secara penghantaran (RM)</p>
+        </div>
+        <div class="setting-card">
+          <label><i class="fas fa-receipt" style="margin-right:6px; color:#2d6df6;"></i>Yuran Tempahan (Service Fee)</label>
+          <input type="number" value="${s.service_fee || 0}" onchange="updateSetting('service_fee', this.value)" placeholder="0" min="0" />
+          <p style="font-size:12px; color:#6b7280; margin-top:8px;">Yuran penyelenggaraan tempahan dalam talian (RM)</p>
+        </div>
+        <div class="setting-card">
+          <label><i class="fas fa-percentage" style="margin-right:6px; color:#f59e0b;"></i>Peratus Komisen Staf</label>
+          <input type="number" value="${s.peratus_komisen || 50}" onchange="updateSetting('peratus_komisen', this.value)" placeholder="50" min="0" max="100" />
+          <p style="font-size:12px; color:#6b7280; margin-top:8px;">Peratusan jualan yang dikira sebagai komisen staf (%)</p>
+        </div>
+        <div class="setting-card">
+          <label><i class="fas fa-money-bill-wave" style="margin-right:6px; color:#22c55e;"></i>Gaji Asas / Threshold Bonus</label>
+          <input type="number" value="${s.gaji_asas || 1800}" onchange="updateSetting('gaji_asas', this.value)" placeholder="1800" min="0" />
+          <p style="font-size:12px; color:#6b7280; margin-top:8px;">Bonus dikira apabila komisen melebihi nilai ini (RM)</p>
+        </div>
+      </div>
+      <div style="margin-top:20px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
+        <i class="fas fa-info-circle" style="color:#2d6df6; font-size:16px;"></i>
+        <p style="font-size:13px; color:#1e40af; margin:0;">Tekan butang <strong>"Simpan ke Cloud"</strong> di bahagian atas untuk menyimpan semua perubahan.</p>
+      </div>
+    `;
     return;
   }
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>CMS - Dinspire</title>
-    <link rel="stylesheet" href="css/admin.css?v=18" />
+    <link rel="stylesheet" href="css/admin.css?v=19" />
     <link rel="stylesheet" href="css/loader.css?v=2" />
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -20,8 +20,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#ffffff">
-</head>
+    <meta name="theme-color" content="#1a1d23">
+  </head>
   <body>
     <!-- Area Loading -->
     <div class="loading-wrapper" id="preloader">
@@ -45,110 +45,101 @@
         </div>
         <div class="loading-text">TRIMMING</div>
     </div>
+
+    <!-- Login Overlay -->
     <div id="login-overlay">
       <div class="login-box">
         <h2>Akses Pentadbir</h2>
-        <p>Sila masukkan butiran untuk mengurus data</p>
-
-        <input
-          type="text"
-          id="sys-username"
-          placeholder="Nama Pengguna (Username)"
-        />
+        <p>Sila masukkan butiran untuk mengurus data sistem</p>
+        <input type="text" id="sys-username" placeholder="Nama Pengguna (Username)" />
         <input type="password" id="sys-password" placeholder="Kata Laluan" />
-
         <button onclick="loginAdmin(['admin', 'owner'])">Log Masuk CMS</button>
       </div>
     </div>
 
+    <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">CMS Panel</div>
       <div class="nav-list">
+
+        <div class="nav-label">Servis & Produk</div>
         <div class="nav-item active" onclick="switchTab('Haircuts', this)">
-          Guntingan
+          <i class="fas fa-cut"></i> Guntingan
         </div>
         <div class="nav-item" onclick="switchTab('Treatments', this)">
-          Rawatan
-        </div>
-        <div class="nav-item" onclick="switchTab('Branches', this)">
-          Cawangan
-        </div>
-        <div class="nav-item" onclick="switchTab('Barbers', this)">
-          Barbers (Staff)
-        </div>
-        <div class="nav-item" onclick="switchTab('GeneralStaff', this)">
-          General Staff
-        </div>
-        <div class="nav-item" onclick="switchTab('OnCall', this)">
-          Servis OnCall
-        </div>
-        <div class="nav-item" onclick="switchTab('OnCallBarbers', this)">
-          Barbers OnCall
+          <i class="fas fa-spa"></i> Rawatan
         </div>
         <div class="nav-item" onclick="switchTab('WalkInServices', this)">
-          Harga Walk-In
+          <i class="fas fa-walking"></i> Harga Walk-In
         </div>
         <div class="nav-item" onclick="switchTab('WalkInTreatments', this)">
-          Treatment Walk-In
+          <i class="fas fa-leaf"></i> Treatment Walk-In
         </div>
-        <div class="nav-item" onclick="switchTab('Products', this)">Produk</div>
+        <div class="nav-item" onclick="switchTab('OnCall', this)">
+          <i class="fas fa-mobile-alt"></i> Servis OnCall
+        </div>
+        <div class="nav-item" onclick="switchTab('Products', this)">
+          <i class="fas fa-box"></i> Produk
+        </div>
         <div class="nav-item" onclick="switchTab('Posters', this)">
-          Promosi (Poster)
+          <i class="fas fa-image"></i> Promosi (Poster)
         </div>
-        <div
-          class="nav-item"
-          onclick="switchTab('Settings', this)"
-          style="
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 10px;
-            padding-top: 15px;
-            color: #1877f2;
-            font-weight: bold;
-          "
-        >
-          <i class="fas fa-cog" style="margin-right: 8px"></i> Tetapan Sistem &
-          Caj
+
+        <div class="nav-divider"></div>
+        <div class="nav-label">Pengurusan</div>
+        <div class="nav-item" onclick="switchTab('Branches', this)">
+          <i class="fas fa-store"></i> Cawangan
         </div>
-        <div
-          class="nav-item"
-          onclick="switchTab('ResetRequests', this)"
-          style="
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 5px;
-            padding-top: 12px;
-            color: #E65100;
-            font-weight: bold;
-          "
-        >
-          <i class="fas fa-key" style="margin-right: 8px"></i> Permohonan Reset
+        <div class="nav-item" onclick="switchTab('Barbers', this)">
+          <i class="fas fa-user-tie"></i> Barbers (Staff)
         </div>
+        <div class="nav-item" onclick="switchTab('GeneralStaff', this)">
+          <i class="fas fa-users"></i> General Staff
+        </div>
+        <div class="nav-item" onclick="switchTab('OnCallBarbers', this)">
+          <i class="fas fa-motorcycle"></i> Barbers OnCall
+        </div>
+
+        <div class="nav-divider"></div>
+        <div class="nav-label">Sistem</div>
+        <div class="nav-item" onclick="switchTab('Settings', this)">
+          <i class="fas fa-cog"></i> Tetapan Sistem & Caj
+        </div>
+        <div class="nav-item" onclick="switchTab('ResetRequests', this)">
+          <i class="fas fa-key"></i> Permohonan Reset
+        </div>
+
       </div>
     </div>
 
+    <!-- Main Content -->
     <div class="main-content">
       <div class="topbar">
         <h2 id="current-section-title">Pengurusan Guntingan</h2>
-        <button class="save-btn" id="main-save-btn" onclick="saveAllData()">
-          <i class="fas fa-cloud-upload-alt" style="margin-right: 8px"></i>
-          Simpan ke Cloud
-        </button>
+        <div class="topbar-right">
+          <button class="save-btn" id="main-save-btn" onclick="saveAllData()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            Simpan ke Cloud
+          </button>
+        </div>
       </div>
       <div class="content-area" id="dynamic-content">
-        <div style="text-align: center; margin-top: 50px; color: #888">
+        <div style="text-align: center; margin-top: 60px; color: #aaa;">
+          <i class="fas fa-spinner fa-spin" style="font-size:28px; margin-bottom:12px; display:block;"></i>
           Memuat turun data...
         </div>
       </div>
     </div>
 
-    <!-- [DIBAIKI] Masukkan Library SweetAlert2 dari CDN -->
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="js/admin.js?v=21"></script>
-      <script>
-        if ("serviceWorker" in navigator) {
-            window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/sw.js?v=3");
-            });
-        }
+    <script src="js/admin.js?v=22"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js?v=3");
+        });
+      }
     </script>
-</body>
+  </body>
 </html>
