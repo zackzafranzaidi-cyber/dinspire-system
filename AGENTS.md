@@ -46,10 +46,10 @@ Pelayan menjalankan beberapa tugas berjadual secara automatik:
 Bagi menjamin ketelusan komisen pekerja dan mengelakkan manipulasi harga oleh penggodam, sistem Dinspire mempunyai mekanisme kewangan yang sangat ketat di dalam `routes/bookings.js`:
 
 - **Anti-Manipulasi Harga (Anti-Tampering):** Nilai `total_price` yang dihantar dari *Frontend* (UI pelanggan) akan **diabaikan secara mutlak**. *Backend* Node.js akan mengkuiri (*query*) jadual Supabase (`haircuts`, `treatments`, `products`) berdasarkan ID yang dihantar untuk mendapatkan nilai `harga_rm` sebenar. Ini menjadikan sebarang cubaan menggodam harga (F12/Inspect Element) menjadi sia-sia.
-- **`harga_rm` (Harga Asas):** Merupakan harga tulen perkhidmatan. Staf dibayar komisen berdasarkan harga ini sahaja.
-- **`service_fee` (Yuran Servis):** Yuran tempahan yang dikenakan khas untuk *Haircuts*, *Treatments*, dan *On-Call*. Untuk pelanggan *Walk-in*, nilainya secara automatik dipintas dan ditetapkan kepada `0`.
+- **`harga_rm` (Harga Asas & Tempahan):** Bermula asalnya sebagai harga perkhidmatan sahaja, tetapi setelah staf menekan butang "Selesai", **yuran tempahan (`service_fee`) akan dicampurkan secara automatik ke dalam `harga_rm`** atas permintaan pemilik. Ini bermaksud staf akan turut menerima komisen daripada yuran tempahan pelanggan (Booking Fee) kerana komisen dikira berdasarkan nilai `harga_rm` yang telah disatukan ini.
+- **`service_fee` (Yuran Servis):** Yuran tempahan asal. Ia tetap direkodkan berasingan pada permulaan tempahan, namun akan digabungkan ke dalam `harga_rm` pada penghujung servis.
 - **`shipping_fee` (Yuran Penghantaran):** Yuran tetap (`setting_value`) yang hanya dicampur ke atas pembelian barangan (E-Commerce) yang menggunakan kaedah *Delivery*.
-- **Pembentangan Analitik:** Pada *Owner Dashboard*, *Total Revenue* (hasil asas) dan *Collected Fees* (yuran sistem/caj tambahan) dipaparkan dan dikira secara berasingan untuk tujuan perakaunan syarikat yang 100% tepat.
+- **Pembentangan Analitik:** Pada *Owner Dashboard*, *Total Revenue* kini merangkumi kedua-dua harga perkhidmatan dan yuran tempahan disebabkan penggabungan di atas.
 
 ---
 

@@ -363,9 +363,11 @@ router.put(
       if (orderNo.startsWith("TR")) tableName = "treatment_records";
       else if (orderNo.startsWith("DBC")) tableName = "oncall_records";
 
+      // Fetch the booking data to get time and service_fee
+      const { data: bData } = await supabase.from(tableName).select("tarikh, masa, service_fee").eq("no_booking", orderNo).maybeSingle();
+
       // [DIBAIKI] Time-Check: Selesai hanya boleh ditekan selepas masa berlalu
       if (tableName !== "oncall_records") { // walkin tiada masa depan, oncall bergantung
-        const { data: bData } = await supabase.from(tableName).select("tarikh, masa").eq("no_booking", orderNo).maybeSingle();
         if (bData && bData.tarikh && bData.masa) {
           const bookingDateTime = new Date(`${bData.tarikh}T${bData.masa}+08:00`);
           if (bookingDateTime > new Date()) {
@@ -375,7 +377,11 @@ router.put(
         }
       }
 
-      let payload = { status: "Selesai", harga_rm: parsedPrice };
+      // Campurkan yuran booking ke dalam harga servis akhir (atas permintaan pengguna)
+      let existingServiceFee = bData ? parseFloat(bData.service_fee || 0) : 0;
+      let finalTotalHarga = parsedPrice + existingServiceFee;
+
+      let payload = { status: "Selesai", harga_rm: finalTotalHarga };
       if (jenis_bayaran) payload.jenis_bayaran = jenis_bayaran;
       if (finalReceiptUrl) payload.resit_selesai = finalReceiptUrl;
 
