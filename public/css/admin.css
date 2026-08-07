@@ -836,3 +836,23 @@ body {
 .product-add-card i {
   font-size: 32px;
 }
+
+/* ===== TABLE PRICE WRAPPER ===== */
+.table-price-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.table-price-wrapper span {
+  position: absolute;
+  left: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-sub);
+  pointer-events: none;
+}
+.table-price-wrapper input {
+  width: 100%;
+  padding-left: 36px !important;
+}

@@ -284,6 +284,13 @@ function renderTable(tabName) {
             </button>
           </div>
         </td>`;
+      } else if (c === "price") {
+        html += `<td>
+          <div class="input-row table-price-wrapper">
+            <span>RM</span>
+            <input type="number" step="0.01" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)" placeholder="0.00">
+          </div>
+        </td>`;
       } else {
         html += `<td><div class="input-row"><input type="text" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)"></div></td>`;
       }
