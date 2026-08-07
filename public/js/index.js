@@ -1684,7 +1684,6 @@ function hideGlobalLoader() {
 
 function switchView(id) {
   showGlobalLoader();
-  setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
 
   document
     .querySelectorAll(".view-section")
@@ -1697,6 +1696,8 @@ function switchView(id) {
   window.scrollTo(0, 0);
   if (id === "notifications") {
     renderNotifications();
+  } else {
+    setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
   }
 }
 

@@ -158,7 +158,6 @@ function hideGlobalLoader() {
 
 function switchTab(tabName, el) {
   showGlobalLoader();
-  setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
 
   currentTab = tabName;
   document
@@ -184,7 +183,9 @@ function switchTab(tabName, el) {
   document.getElementById("current-section-title").innerText =
     "Manage " + (titles[tabName] || tabName);
 
-  renderTable(tabName);
+  renderTable(tabName); if (tabName !== "ResetRequests") {
+    setTimeout(hideGlobalLoader, 300);
+  }
 }
 
 function updateSetting(key, val) {
