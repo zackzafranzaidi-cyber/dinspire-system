@@ -866,7 +866,7 @@ async function fetchShopData() {
         ).join("");
       }
       
-      const viewport = document.getElementById("dynamic-slider-track");
+      const viewport = document.querySelector(".slider-viewport");
       
       // Sync dots on manual scroll
       if (viewport && paginationContainer) {

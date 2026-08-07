@@ -186,15 +186,18 @@ body {
 
 .slider-viewport {
   width: 100%;
-  margin-top: 10px;
-}
-.slider-track {
-  display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  margin-top: 10px;
+}
+.slider-viewport::-webkit-scrollbar {
+  display: none;
+}
+.slider-track {
+  display: flex;
   gap: 12px;
 }
 .slider-track::before,
@@ -203,9 +206,7 @@ body {
   flex: 0 0 calc(10% - 12px);
   flex-shrink: 0;
 }
-.slider-track::-webkit-scrollbar {
-  display: none;
-}
+
 .slide {
   flex: 0 0 80%;
   scroll-snap-align: center;
