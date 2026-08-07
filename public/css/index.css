@@ -192,19 +192,18 @@ body {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   margin-top: 10px;
-  scroll-padding-left: 20px;
 }
 .slider-viewport::-webkit-scrollbar {
   display: none;
 }
 .slider-track {
   display: flex;
-  padding: 0 20px;
-  gap: 14px;
+  padding: 0 10%;
+  gap: 15px;
 }
 .slide {
-  flex: 0 0 85%;
-  scroll-snap-align: start;
+  flex: 0 0 80%;
+  scroll-snap-align: center;
   box-sizing: border-box;
 }
 .poster-card {
