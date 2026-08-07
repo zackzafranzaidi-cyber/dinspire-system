@@ -289,7 +289,21 @@ function showDashboard() {
   initLeaveSystem();
 }
 
+function showGlobalLoader(ms = 800) {
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+      preloader.style.visibility = 'visible';
+      preloader.style.opacity = '1';
+      setTimeout(() => {
+          preloader.style.opacity = '0';
+          setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
+      }, ms);
+  }
+}
+
 function switchView(id) {
+  showGlobalLoader(500);
+
   document
     .querySelectorAll(".view-section")
     .forEach((s) => s.classList.remove("active"));
