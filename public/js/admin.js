@@ -221,13 +221,22 @@ function renderTable(tabName) {
     return;
   }
 
+  if (tabName === "Posters") {
+    renderPosters(appData[tabName] || [], container);
+    return;
+  }
+
   let dataArr = appData[tabName] || [];
   let cols = SCHEMAS[tabName];
 
   let html = `<table class="data-table"><thead><tr>`;
   cols.forEach((c) => {
     if (tabName === "Branches" && (c === "lat" || c === "lng")) return;
-    html += `<th>${c.toUpperCase()}</th>`;
+    if (c === "id") {
+      html += `<th style="display:none;">${c.toUpperCase()}</th>`;
+    } else {
+      html += `<th>${c.toUpperCase()}</th>`;
+    }
   });
   html += `<th style="width: 60px;">TINDAKAN</th></tr></thead><tbody>`;
 
@@ -236,7 +245,9 @@ function renderTable(tabName) {
     cols.forEach((c) => {
       if (tabName === "Branches" && (c === "lat" || c === "lng")) return;
       
-      if (c === "imageUrl") {
+      if (c === "id") {
+        html += `<td style="display:none;"><input type="hidden" value="${escapeHTML(row[c] || "")}"></td>`;
+      } else if (c === "imageUrl") {
         let currentImg = row[c] || "https://via.placeholder.com/40?text=IMG";
         html += `<td><div style="display:flex; align-items:center; gap:10px;"><img src="${currentImg}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid #ccc;"><input type="file" accept="image/*" onchange="handleAdminImageUpload(this, '${tabName}', ${index}, '${c}')" style="font-size: 11px; width: 160px;"></div></td>`;
       } else if (c === "branch_id" && tabName === "Barbers") {
@@ -277,6 +288,46 @@ function renderTable(tabName) {
 
   html += `</tbody></table>`;
   html += `<div style="margin-top:20px;"><button class="action-btn add" onclick="addRow('${tabName}')"><i class="fas fa-plus" style="margin-right:8px;"></i> Tambah Rekod Baru</button></div>`;
+
+  container.innerHTML = html;
+}
+
+function renderPosters(dataArr, container) {
+  let html = `
+    <div class="page-heading">
+      <h3>Promosi (Poster)</h3>
+      <p>Muat naik poster promosi (nisbah 3:4). Tekan "Simpan ke Cloud" selepas selesai untuk kemaskini.</p>
+    </div>
+    <div class="posters-grid">
+  `;
+
+  dataArr.forEach((row, index) => {
+    let currentImg = row.imageUrl || "https://via.placeholder.com/400x533?text=Sila+Upload+Gambar";
+    html += `
+      <div class="poster-card">
+        <div class="poster-img-container">
+          <img src="${currentImg}" class="poster-img" alt="Poster Promosi">
+        </div>
+        <div class="poster-actions">
+          <label class="poster-upload-btn">
+            <i class="fas fa-camera"></i> Tukar Imej
+            <input type="file" class="poster-upload-input" accept="image/*" onchange="handleAdminImageUpload(this, 'Posters', ${index}, 'imageUrl')">
+          </label>
+          <button class="action-btn del" onclick="deleteRow('Posters', ${index})" style="min-width:32px; height:32px; padding:0; display:flex; justify-content:center; align-items:center;" title="Padam Poster">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+      <div class="poster-add-card" onclick="addRow('Posters')">
+        <i class="fas fa-plus-circle"></i>
+        <span>Tambah Poster Baru</span>
+      </div>
+    </div>
+  `;
 
   container.innerHTML = html;
 }
