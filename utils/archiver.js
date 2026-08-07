@@ -35,6 +35,7 @@ async function generateArchiveDataByDateRange(startDate, endDate) {
         let dateStr = new Date(r.created_at).toLocaleDateString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" });
 
         let receiptName = "Tiada Resit";
+        let receiptSelesaiName = "Tiada Resit Selesai";
 
         // Simpan url gambar jika wujud dan merupakan pautan sah (abaikan token FPX_PAID)
         if (r.resit && typeof r.resit === 'string' && r.resit.startsWith('http')) {
@@ -44,10 +45,19 @@ async function generateArchiveDataByDateRange(startDate, endDate) {
           // Kita cuba dapatkan extension dari hujung URL
           let ext = r.resit.split('.').pop() || "jpg";
           if (ext.length > 4) ext = "jpg"; // fallback jika tiada extension dalam URL
-          receiptName = `${category}_${r.no_booking || r.id}_${cleanDate}.${ext}`;
+          receiptName = `${category}_Booking_${r.no_booking || r.id}_${cleanDate}.${ext}`;
           imageUrls.push({ url: publicUrl, name: receiptName });
         } else if (r.resit && typeof r.resit === 'string' && r.resit.startsWith('FPX')) {
           receiptName = "Transaksi FPX";
+        }
+
+        if (r.resit_selesai && typeof r.resit_selesai === 'string' && r.resit_selesai.startsWith('http')) {
+          const publicUrl = r.resit_selesai;
+          const cleanDate = dateStr.replace(/\//g, "-");
+          let ext = r.resit_selesai.split('.').pop() || "jpg";
+          if (ext.length > 4) ext = "jpg";
+          receiptSelesaiName = `${category}_Selesai_${r.no_booking || r.id}_${cleanDate}.${ext}`;
+          imageUrls.push({ url: publicUrl, name: receiptSelesaiName });
         }
 
         rawData[category].push({
@@ -61,7 +71,8 @@ async function generateArchiveDataByDateRange(startDate, endDate) {
           Yuran_RM: fee,
           Total_RM: price + fee,
           Status: r.status,
-          Nama_Resit: receiptName
+          Nama_Resit: receiptName,
+          Nama_Resit_Selesai: receiptSelesaiName
         });
       }
     };
@@ -162,11 +173,9 @@ async function pruneYearlyData() {
     
     for (const tbl of tables) {
        const { data: records } = await supabase.from(tbl)
-           .select("resit")
+           .select("resit, resit_selesai")
            .gte("created_at", startYear)
-           .lt("created_at", endYear)
-           .neq("resit", "TIADA")
-           .not("resit", "is", null);
+           .lt("created_at", endYear);
        
        if (records && records.length > 0) {
            for (const rec of records) {
@@ -174,8 +183,14 @@ async function pruneYearlyData() {
                    const parts = rec.resit.split("/");
                    const filename = parts[parts.length - 1];
                    if (filename) filesToDelete.push(filename);
-               } else if (rec.resit && !rec.resit.startsWith("FPX")) {
+               } else if (rec.resit && !rec.resit.startsWith("FPX") && rec.resit !== "TIADA") {
                    filesToDelete.push(rec.resit);
+               }
+               
+               if (rec.resit_selesai && rec.resit_selesai.startsWith("http")) {
+                   const parts = rec.resit_selesai.split("/");
+                   const filename = parts[parts.length - 1];
+                   if (filename) filesToDelete.push(filename);
                }
            }
        }

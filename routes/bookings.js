@@ -377,7 +377,7 @@ router.put(
 
       let payload = { status: "Selesai", harga_rm: parsedPrice };
       if (jenis_bayaran) payload.jenis_bayaran = jenis_bayaran;
-      if (finalReceiptUrl) payload.resit = finalReceiptUrl;
+      if (finalReceiptUrl) payload.resit_selesai = finalReceiptUrl;
 
       let query = supabase
         .from(tableName)
