@@ -25,9 +25,8 @@ router.get(
       ] = await Promise.all([
         supabase
           .from("settings")
-          .select("setting_value")
-          .eq("setting_key", "peratus_komisen")
-          .single(),
+          .select("setting_key, setting_value")
+          .in("setting_key", ["peratus_komisen", "gaji_asas"]),
         supabase
           .from("booking_records")
           .select("*, haircuts(nama_potongan)")
@@ -53,9 +52,15 @@ router.get(
           .order("created_at", { ascending: false })
           .limit(100),
       ]);
-      const commissionPercent = settingData
-        ? parseFloat(settingData.setting_value)
-        : 50;
+      ]);
+      
+      let commissionPercent = 50;
+      let basicSalary = 1800;
+      
+      (settingData || []).forEach(s => {
+        if (s.setting_key === 'peratus_komisen') commissionPercent = parseFloat(s.setting_value) || 50;
+        if (s.setting_key === 'gaji_asas') basicSalary = parseFloat(s.setting_value) || 1800;
+      });
 
       let allBookings = [];
 
@@ -158,6 +163,7 @@ router.get(
         status: "success",
         bookings: allBookings,
         commissionPercent: commissionPercent,
+        basicSalary: basicSalary,
         monthlyCashOnHand: monthlyCashOnHand,
         reviews: [],
         branches: branchesData || [],

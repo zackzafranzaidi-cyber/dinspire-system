@@ -118,7 +118,7 @@ router.get(
       ]);
 
       let posters = [];
-      let settings = { shipping_fee: 0, service_fee: 0, peratus_komisen: 50 };
+      let settings = { shipping_fee: 0, service_fee: 0, peratus_komisen: 50, gaji_asas: 1800 };
 
       (setAll || []).forEach((s) => {
         if (s.setting_key === "posters") {
@@ -131,6 +131,8 @@ router.get(
           settings.service_fee = parseFloat(s.setting_value) || 0;
         } else if (s.setting_key === "peratus_komisen") {
           settings.peratus_komisen = parseFloat(s.setting_value) || 50;
+        } else if (s.setting_key === "gaji_asas") {
+          settings.gaji_asas = parseFloat(s.setting_value) || 1800;
         }
       });
 
@@ -433,6 +435,7 @@ router.post(
           { key: "shipping_fee", val: Math.max(0, parseFloat(data.Settings.shipping_fee) || 0) },
           { key: "service_fee", val: Math.max(0, parseFloat(data.Settings.service_fee) || 0) },
           { key: "peratus_komisen", val: Math.max(0, parseFloat(data.Settings.peratus_komisen) || 0) },
+          { key: "gaji_asas", val: Math.max(0, parseFloat(data.Settings.gaji_asas) || 0) },
         ];
 
         for (let s of settingKeys) {

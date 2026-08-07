@@ -128,6 +128,7 @@ async function loadData() {
           shipping_fee: 0,
           service_fee: 0,
           peratus_komisen: 50,
+          gaji_asas: 1800,
         };
       renderTable(currentTab);
     }
@@ -198,6 +199,10 @@ function renderTable(tabName) {
               <div class="form-group" style="margin-bottom:20px; border-top:1px dashed var(--border-color); padding-top:20px;">
                   <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--text-main); font-size:14px;"><i class="fas fa-percentage" style="margin-right:5px; color:#FFC107;"></i> Peratus Komisen Staf (%)</label>
                   <input type="number" class="input-field" value="${s.peratus_komisen || 50}" onchange="updateSetting('peratus_komisen', this.value)" style="width:100%; padding:12px 15px; border:1px solid var(--border-color); border-radius:8px; font-size:16px; background:#FAFAFC;">
+              </div>
+              <div class="form-group" style="margin-bottom:20px;">
+                  <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--text-main); font-size:14px;"><i class="fas fa-money-bill-wave" style="margin-right:5px; color:#4CAF50;"></i> Gaji Asas / Threshold Bonus (RM)</label>
+                  <input type="number" class="input-field" value="${s.gaji_asas || 1800}" onchange="updateSetting('gaji_asas', this.value)" style="width:100%; padding:12px 15px; border:1px solid var(--border-color); border-radius:8px; font-size:16px; background:#FAFAFC;">
               </div>
               <div style="background:#F0F4FF; border-radius:8px; padding:15px; border-left:4px solid var(--primary-blue); margin-top:25px;">
                   <p style="font-size:12px; color:var(--primary-blue); margin:0;">*Tekan butang <strong>"Simpan ke Cloud"</strong> di penjuru kanan atas untuk mengemas kini sistem pelanggan serta-merta.</p>

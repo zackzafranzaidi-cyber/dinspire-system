@@ -341,7 +341,7 @@ Panel CMS mempunyai **13 tab navigasi** dalam bentuk hamparan jadual yang boleh 
 9. **Treatment Walk-In** — Senarai rawatan walk-in (disimpan dalam jadual `haircuts` dengan `kategori = 'Treatment Walk-in'`)
 10. **Produk** — Katalog E-Commerce (dengan mampatan imej Canvas)
 11. **Promosi (Poster)** — Banner promosi (maks 3 poster)
-12. **Tetapan Sistem & Caj** — `shipping_fee`, `service_fee`, `peratus_komisen`
+12. **Tetapan Sistem & Caj** — `shipping_fee`, `service_fee`, `peratus_komisen`, `gaji_asas`
 13. **Permohonan Reset** — Senarai permohonan reset kata laluan staf
 
 ### 8.2 Portal Pelanggan (`customer/index.html`)
@@ -376,7 +376,7 @@ Suite analitik eksekutif dengan 6 tab:
 
 Portal mudah alih untuk operasi harian:
 
-1. **Dashboard** — KPI: Rating %, Jumlah Pelanggan, Komisen (RM), Bonus (RM untuk komisen > RM 1,800), Cash-on-Hand (RM)
+1. **Dashboard** — KPI: Rating %, Jumlah Pelanggan, Komisen (RM), Bonus (RM untuk komisen > tetapan `gaji_asas`), Cash-on-Hand (RM)
 2. **Walk-In** — Borang pendaftaran Walk-In (Nama, Telefon, Servis *dropdown*, Harga auto/manual, Cash/QR, muat naik resit wajib untuk QR)
 3. **Booking** — Senarai tempahan pelanggan. Modal penyelesaian untuk rekod harga akhir, mod bayaran, & resit QR
 4. **History** — Sejarah transaksi siap/batal
