@@ -112,12 +112,16 @@ app.use(helmet({
 }));
 app.use(compression({ level: 6 })); // [DIBAIKI] Mampatan Optimum Gzip/Brotli
 
-// [DIBAIKI] Menghalang Pelayar dari Menyimpan (Cache) Data Sensitif (JSON Leak)
+// [DIBAIKI] Menghalang Pelayar dari Menyimpan (Cache) Data Sensitif - hanya untuk API sahaja
 app.use((req, res, next) => {
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
-  res.setHeader("Surrogate-Control", "no-store");
+  // Kecualikan fail statik (font, css, js, gambar) dari no-cache header
+  const isStaticFile = /\.(woff2?|ttf|eot|svg|otf|css|js|png|jpg|jpeg|gif|ico|webp)(\?.*)?$/.test(req.path);
+  if (!isStaticFile) {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    res.setHeader("Surrogate-Control", "no-store");
+  }
   next();
 });
 
