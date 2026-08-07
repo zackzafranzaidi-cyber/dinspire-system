@@ -52,7 +52,6 @@ router.get(
           .order("created_at", { ascending: false })
           .limit(100),
       ]);
-      ]);
       
       let commissionPercent = 50;
       let basicSalary = 1800;

@@ -430,6 +430,7 @@ router.post(
       }
 
       // SIMPAN FEE KE JADUAL SETTINGS
+      console.log("RECEIVED SETTINGS:", data.Settings);
       if (data.Settings) {
         const settingKeys = [
           { key: "shipping_fee", val: Math.max(0, parseFloat(data.Settings.shipping_fee) || 0) },
