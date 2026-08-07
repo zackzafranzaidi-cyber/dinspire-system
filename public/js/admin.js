@@ -338,7 +338,20 @@ function addRow(tabName) {
 
   let newObj = {};
   SCHEMAS[tabName].forEach((col) => (newObj[col] = ""));
-  newObj.id = crypto.randomUUID ? crypto.randomUUID() : "id_" + Date.now();
+  
+  if (tabName === "Branches") {
+    let maxNum = 0;
+    (appData[tabName] || []).forEach(b => {
+      if (b.id && b.id.startsWith("BBR")) {
+        let num = parseInt(b.id.substring(3), 10);
+        if (!isNaN(num) && num > maxNum) maxNum = num;
+      }
+    });
+    newObj.id = "BBR" + String(maxNum + 1).padStart(4, "0");
+  } else {
+    newObj.id = crypto.randomUUID ? crypto.randomUUID() : "id_" + Date.now();
+  }
+  
   appData[tabName].push(newObj);
   renderTable(tabName);
 }
