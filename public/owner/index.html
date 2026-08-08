@@ -88,8 +88,6 @@
     </style>
       <link rel="manifest" href="/owner/manifest_owner.json?v=7">
     <meta name="theme-color" content="#ffffff">
-    <!-- LIQUID NAV MOBILE CSS -->
-    <link rel="stylesheet" href="../css/mobile-liquid-nav.css">
 </head>
   <body class="flex h-screen overflow-hidden bg-[#f3f4f6]">
 
@@ -296,7 +294,7 @@
     </div>
 
     <main
-      class="flex-1 w-full overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-[#f3f4f6] relative main-content-wrapper pb-32 h-full"
+      class="flex-1 w-full overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-[#f3f4f6] relative main-content-wrapper pb-24 h-full"
       style="padding-top: 65px !important; padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));"
     >
     <!-- GLOBAL PRELOADER MESIN CLIPPER (MOVED TO MAIN WRAPPER) -->
@@ -939,7 +937,7 @@
           <div class="flex justify-end mb-2 pr-4">
             <button onclick="exportTableToCSV('table-tx-servis', 'Senarai_Servis')" class="text-xs bg-indigo-500 text-white px-3 py-1.5 rounded hover:bg-indigo-600 transition shadow-sm font-bold"><i class="fas fa-download mr-1"></i> Export CSV</button>
           </div>
-          <div class="overflow-y-auto table-container flex-1 pb-32 w-full">
+          <div class="overflow-y-auto table-container flex-1 pb-24 w-full">
             <table class="w-full text-sm text-left">
               <tbody id="table-tx-servis" class="block w-full"></tbody>
             </table>
@@ -953,7 +951,7 @@
           <div class="flex justify-end mb-2 pr-4">
             <button onclick="exportTableToCSV('table-tx-produk', 'Pesanan_Produk')" class="text-xs bg-indigo-500 text-white px-3 py-1.5 rounded hover:bg-indigo-600 transition shadow-sm font-bold"><i class="fas fa-download mr-1"></i> Export CSV</button>
           </div>
-          <div class="overflow-y-auto table-container flex-1 pb-32 w-full">
+          <div class="overflow-y-auto table-container flex-1 pb-24 w-full">
             <table class="w-full text-sm text-left">
               <tbody id="table-tx-produk" class="block w-full"></tbody>
             </table>
@@ -1225,50 +1223,69 @@
       </style>
     </main>
 
-    <!-- NAVIGATION BAWAH (MOBILE LIQUID MENU) -->
-    <div class="md:hidden navigation-wrapper">
-        <div class="navigation">
-            <ul>
-                <!-- 1. Analisis -->
-                <li class="nav-item active" id="mob-nav-dashboard" onclick="switchTab('dashboard')">
-                    <a href="#">
-                        <span class="icon"><i class="fas fa-chart-pie"></i></span>
-                        <span class="text" data-i18n="mob-nav-sales">Analisis</span>
-                    </a>
-                </li>
-                <!-- 2. Pesanan -->
-                <li class="nav-item" id="mob-nav-transactions" onclick="switchTab('transactions')">
-                    <a href="#">
-                        <span class="icon"><i class="fas fa-exchange-alt"></i></span>
-                        <span class="text" data-i18n="mob-nav-orders">Pesanan</span>
-                    </a>
-                </li>
-                <!-- 3. AI -->
-                <li class="nav-item" id="mob-nav-ai" onclick="switchTab('ai')">
-                    <a href="#">
-                        <span class="icon"><i class="fas fa-brain"></i></span>
-                        <span class="text" data-i18n="mob-nav-ai">AI</span>
-                    </a>
-                </li>
-                <!-- 4. Ulasan -->
-                <li class="nav-item" id="mob-nav-reviews" onclick="switchTab('reviews')">
-                    <a href="#">
-                        <span class="icon"><i class="fas fa-star"></i></span>
-                        <span class="text" data-i18n="mob-nav-reviews">Ulasan</span>
-                    </a>
-                </li>
-                <!-- 5. Hadir -->
-                <li class="nav-item" id="mob-nav-punch" onclick="switchTab('punch')">
-                    <a href="#">
-                        <span class="icon"><i class="fas fa-fingerprint"></i></span>
-                        <span class="text" data-i18n="mob-nav-gps">Hadir</span>
-                    </a>
-                </li>
-                <!-- Bulatan Penunjuk (Indicator) -->
-                <div class="indicator"></div>
-            </ul>
-        </div>
-    </div>
+    <!-- NAVIGATION BAWAH (MOBILE) -->
+    <nav
+      class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-950 text-gray-500 flex justify-around items-center shadow-[0_-4px_20px_rgba(0,0,0,0.5)] z-50 border-t border-gray-800 rounded-t-2xl"
+      style="height: calc(65px + env(safe-area-inset-bottom, 0px)) !important; padding-bottom: env(safe-area-inset-bottom, 0px) !important;"
+    >
+      <a
+        href="#"
+        onclick="switchTab('dashboard')"
+        class="nav-item flex flex-col items-center justify-center w-full h-full text-white active"
+        ><i class="fas fa-chart-pie text-lg mb-1"></i
+        ><span
+          class="text-[9px] font-bold tracking-wider"
+          data-i18n="mob-nav-sales"
+          >Analisis</span
+        ></a
+      >
+      <a
+        href="#"
+        onclick="switchTab('transactions')"
+        class="nav-item flex flex-col items-center justify-center w-full h-full hover:text-white transition"
+        ><i class="fas fa-exchange-alt text-lg mb-1"></i
+        ><span
+          class="text-[9px] font-bold tracking-wider"
+          data-i18n="mob-nav-orders"
+          >Pesanan</span
+        ></a
+      >
+      <a
+        href="#"
+        onclick="switchTab('ai')"
+        id="mob-nav-ai"
+        class="nav-item flex flex-col items-center justify-center w-full h-full text-purple-400 hover:text-purple-300 transition"
+        style="color: #a855f7"
+        ><i class="fas fa-brain text-lg mb-1"></i
+        ><span
+          class="text-[9px] font-bold tracking-wider"
+          data-i18n="mob-nav-ai"
+          >AI</span
+        ></a
+      >
+      <a
+        href="#"
+        onclick="switchTab('reviews')"
+        class="nav-item flex flex-col items-center justify-center w-full h-full hover:text-white transition"
+        ><i class="fas fa-star text-lg mb-1"></i
+        ><span
+          class="text-[9px] font-bold tracking-wider"
+          data-i18n="mob-nav-reviews"
+          >Ulasan</span
+        ></a
+      >
+      <a
+        href="#"
+        onclick="switchTab('punch')"
+        class="nav-item flex flex-col items-center justify-center w-full h-full hover:text-white transition"
+        ><i class="fas fa-fingerprint text-lg mb-1"></i
+        ><span
+          class="text-[9px] font-bold tracking-wider"
+          data-i18n="mob-nav-gps"
+          >Hadir</span
+        ></a
+      >
+    </nav>
 
     <!-- MODAL RESIT -->
     <div
@@ -1309,7 +1326,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=38"></script>
+    <script src="../js/owner.js?v=36"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>
