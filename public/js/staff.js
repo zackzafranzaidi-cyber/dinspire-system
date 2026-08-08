@@ -785,6 +785,11 @@ function submitWalkIn() {
     return alert("Sila muat naik gambar resit transaksi DuitNow/QR sebelum tekan selesai!");
   }
 
+  const priceInput = parseFloat(document.getElementById("wi-price").value);
+  if (isNaN(priceInput) || priceInput < 1) {
+    return alert("Sila masukkan harga yang sah (minimum RM1.00).");
+  }
+
   showGlobalLoader();
   try {
     compressImage(fileInput, (base64) => {
