@@ -495,13 +495,22 @@ function switchTab(tabName, element = null) {
       "active",
       "bg-gray-800",
       "text-white",
+      "bg-gradient-to-r",
+      "from-indigo-600",
+      "to-purple-600",
+      "shadow-purple-500/20",
+      "border",
+      "border-purple-500/30"
     );
     if (el.classList.contains("sidebar-nav-item")) {
       el.classList.add(
         "text-gray-400",
         "hover:text-white",
-        "hover:bg-gray-800",
+        "hover:bg-white/5",
+        "hover:translate-x-1"
       );
+      // Remove old hover classes if they exist
+      el.classList.remove("hover:bg-gray-800");
     }
   });
 
@@ -510,9 +519,20 @@ function switchTab(tabName, element = null) {
     activeSide.classList.remove(
       "text-gray-400",
       "hover:text-white",
+      "hover:bg-white/5",
       "hover:bg-gray-800",
+      "hover:translate-x-1"
     );
-    activeSide.classList.add("bg-gray-800", "text-white", "shadow-lg");
+    activeSide.classList.add(
+      "bg-gradient-to-r", 
+      "from-indigo-600", 
+      "to-purple-600", 
+      "text-white", 
+      "shadow-lg",
+      "shadow-purple-500/20",
+      "border",
+      "border-purple-500/30"
+    );
   }
 
   const activeMob = document.getElementById("mob-nav-" + tabName);

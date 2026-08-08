@@ -161,11 +161,11 @@
     <!-- SIDEBAR (DESKTOP) -->
     <aside
       class="sidebar w-[260px] text-white flex flex-col py-6 hidden md:flex h-full z-20 shrink-0 shadow-2xl relative overflow-hidden"
-      style="background: #000000;"
+      style="background: #0B0F19;"
     >
       <div class="flex items-center gap-3 mb-6 px-6 relative z-10">
         <div
-          class="bg-gray-800 p-2 rounded-lg border border-gray-700 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+          class="bg-gray-800/80 p-2 rounded-lg backdrop-blur-sm border border-gray-700 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
         >
           <i class="fas fa-crown text-purple-400"></i>
         </div>
@@ -181,7 +181,7 @@
           href="#"
           onclick="switchTab('dashboard')"
           id="nav-dashboard"
-          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800"
+          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"
           ><i class="fas fa-chart-pie w-5"></i>
           <span data-i18n="nav-sales">Analisis Jualan</span></a
         >
@@ -189,7 +189,7 @@
           href="#"
           onclick="switchTab('transactions')"
           id="nav-transactions"
-          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800"
+          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"
           ><i class="fas fa-exchange-alt w-5"></i>
           <span data-i18n="nav-orders">Aliran & Pesanan</span></a
         >
@@ -197,7 +197,7 @@
           href="#"
           onclick="switchTab('reviews')"
           id="nav-reviews"
-          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800"
+          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"
           ><i class="fas fa-star w-5"></i>
           <span data-i18n="nav-reviews">Ulasan Pelanggan</span></a
         >
@@ -205,7 +205,7 @@
           href="#"
           onclick="switchTab('punch')"
           id="nav-punch"
-          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800"
+          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"
           ><i class="fas fa-fingerprint w-5"></i>
           <span data-i18n="nav-gps">Kehadiran GPS</span></a
         >
@@ -213,7 +213,7 @@
           href="#"
           onclick="switchTab('reports')"
           id="nav-reports"
-          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800 hidden md:flex"
+          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1 hidden md:flex"
           ><i class="fas fa-file-archive w-5"></i>
           <span data-i18n="nav-reports">Laporan & Resit</span></a
         >
@@ -221,14 +221,14 @@
           href="#"
           onclick="switchTab('ai')"
           id="nav-ai"
-          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-purple-400 hover:text-purple-300 hover:bg-gray-800"
+          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-purple-400 hover:text-purple-300 hover:bg-white/5 hover:translate-x-1"
           ><i class="fas fa-brain w-5"></i>
           <span data-i18n="nav-ai">Dinspire AI</span></a
         >
         <a
           href="#"
           onclick="toggleLanguage()"
-          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800 hidden md:flex"
+          class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1 hidden md:flex"
           ><i class="fas fa-language w-5"></i>
           <span data-i18n="btn-change-lang">Bahasa</span> <span>(<span id="lang-indicator">EN</span>)</span></a
         >
@@ -305,7 +305,7 @@
         </div>
         <button
           onclick="toggleAIDrawer()"
-          class="text-gray-400 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-800"
+          class="text-gray-400 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/5 hover:translate-x-1"
         >
           <i class="fas fa-times"></i>
         </button>
@@ -1325,7 +1325,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=35"></script>
+    <script src="../js/owner.js?v=36"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>
