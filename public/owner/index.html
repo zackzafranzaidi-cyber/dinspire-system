@@ -90,33 +90,7 @@
     <meta name="theme-color" content="#ffffff">
 </head>
   <body class="flex h-screen overflow-hidden bg-[#f3f4f6]">
-    <!-- GLOBAL PRELOADER MESIN CLIPPER -->
-    <div class="loading-wrapper" id="preloader" style="--loader-color: #fbbf24; --loader-color-shadow: rgba(251, 191, 36, 0.4); --loader-color-shadow-light: rgba(251, 191, 36, 0.1);">
-        <div class="clipper-container">
-            <svg class="perfect-clipper" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <mask id="switch-mask-owner">
-                        <rect x="47" y="52" width="6" height="8" rx="2" fill="white" />
-                        <line x1="48" y1="54.5" x2="52" y2="54.5" stroke="black" stroke-width="1.2" />
-                        <line x1="48" y1="57.5" x2="52" y2="57.5" stroke="black" stroke-width="1.2" />
-                    </mask>
-                </defs>
-                <line x1="38" y1="22" x2="41" y2="24" class="hair hair-1" />
-                <line x1="60" y1="21" x2="58" y2="25" class="hair hair-2" />
-                <line x1="50" y1="20" x2="51" y2="23" class="hair hair-3" />
-                <g stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round">
-                    <path d="M 40,80 Q 40,50 46,35 L 54,35 Q 60,50 60,80 Q 50,86 40,80 Z" />
-                    <rect x="47" y="52" width="6" height="8" rx="2" fill="currentColor" mask="url(#switch-mask-owner)" stroke="none" />
-                    <path d="M 47,84 Q 47,91 50,91 Q 53,91 53,84" />
-                    <rect x="46" y="28" width="8" height="7" fill="currentColor" stroke="none" />
-                    <path d="M 32,28 L 68,28 L 68,25 Q 68,22 55,22 L 45,22 Q 32,22 32,25 Z" />
-                    <line x1="33" y1="21.5" x2="67" y2="21.5" stroke-width="1.5" stroke-dasharray="1.5, 1.5" />
-                </g>
-                <rect x="36" y="18.5" width="28" height="3" rx="1.5" fill="currentColor" class="vibrating-blade" />
-            </svg>
-        </div>
-        <div class="loading-text">TRIMMING</div>
-    </div>
+
     <div id="toast" class="toast"></div>
     <!-- SKRIN KUNCI -->
     <div id="login-overlay">
@@ -323,6 +297,33 @@
       class="flex-1 w-full overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-[#f3f4f6] relative main-content-wrapper pb-24 h-full"
       style="padding-top: 65px !important; padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));"
     >
+    <!-- GLOBAL PRELOADER MESIN CLIPPER (MOVED TO MAIN WRAPPER) -->
+    <div class="loading-wrapper" id="preloader" style="--loader-color: #fbbf24; --loader-color-shadow: rgba(251, 191, 36, 0.4); --loader-color-shadow-light: rgba(251, 191, 36, 0.1); position: absolute !important; height: 100% !important; z-index: 100; border-radius: inherit;">
+        <div class="clipper-container">
+            <svg class="perfect-clipper" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <mask id="switch-mask-owner">
+                        <rect x="47" y="52" width="6" height="8" rx="2" fill="white" />
+                        <line x1="48" y1="54.5" x2="52" y2="54.5" stroke="black" stroke-width="1.2" />
+                        <line x1="48" y1="57.5" x2="52" y2="57.5" stroke="black" stroke-width="1.2" />
+                    </mask>
+                </defs>
+                <line x1="38" y1="22" x2="41" y2="24" class="hair hair-1" />
+                <line x1="60" y1="21" x2="58" y2="25" class="hair hair-2" />
+                <line x1="50" y1="20" x2="51" y2="23" class="hair hair-3" />
+                <g stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round">
+                    <path d="M 40,80 Q 40,50 46,35 L 54,35 Q 60,50 60,80 Q 50,86 40,80 Z" />
+                    <rect x="47" y="52" width="6" height="8" rx="2" fill="currentColor" mask="url(#switch-mask-owner)" stroke="none" />
+                    <path d="M 47,84 Q 47,91 50,91 Q 53,91 53,84" />
+                    <rect x="46" y="28" width="8" height="7" fill="currentColor" stroke="none" />
+                    <path d="M 32,28 L 68,28 L 68,25 Q 68,22 55,22 L 45,22 Q 32,22 32,25 Z" />
+                    <line x1="33" y1="21.5" x2="67" y2="21.5" stroke-width="1.5" stroke-dasharray="1.5, 1.5" />
+                </g>
+                <rect x="36" y="18.5" width="28" height="3" rx="1.5" fill="currentColor" class="vibrating-blade" />
+            </svg>
+        </div>
+        <div class="loading-text">TRIMMING</div>
+    </div>
       <!-- HEADER -->
       <header
         class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 w-full"
