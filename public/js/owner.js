@@ -212,6 +212,11 @@ const i18n = {
     "punch-attendance": "Attendance",
     "punch-leaves": "Leave",
     "punch-emergency": "Emergency",
+    "reports-title": "Sales Report & Archive",
+    "th-category": "Category",
+    "th-tx-id": "Transaction ID / Customer",
+    "th-price-rm": "Price (RM)",
+    "th-receipt-name": "Receipt Name",
     "table-staff": '<i class="fas fa-users mr-2 text-indigo-500"></i> Staff Performance',
     "chart-demographic":
       '<i class="fas fa-chart-pie mr-2 text-gray-500"></i> Service Demographics',
@@ -282,6 +287,11 @@ const i18n = {
     "punch-attendance": "Kehadiran",
     "punch-leaves": "Cuti",
     "punch-emergency": "Kecemasan",
+    "reports-title": "Laporan & Arkib Jualan",
+    "th-category": "Kategori",
+    "th-tx-id": "ID Transaksi / Pelanggan",
+    "th-price-rm": "Harga (RM)",
+    "th-receipt-name": "Nama Resit",
     "table-staff": '<i class="fas fa-users mr-2 text-indigo-500"></i> Prestasi Staf',
     "chart-demographic":
       '<i class="fas fa-chart-pie mr-2 text-gray-500"></i> Demografi Servis',
@@ -2611,10 +2621,10 @@ async function renderReportsTab() {
         <table class="w-full text-sm text-left">
           <thead class="text-xs text-gray-500 bg-gray-100 sticky top-0 shadow-sm uppercase tracking-wider">
             <tr>
-              <th class="py-3 px-4">Kategori</th>
-              <th class="py-3 px-4">ID Transaksi / Pelanggan</th>
-              <th class="py-3 px-4">Harga (RM)</th>
-              <th class="py-3 px-4">Nama Resit</th>
+              <th class="py-3 px-4" data-i18n="th-category">${i18n[currentLang]["th-category"] || "Kategori"}</th>
+              <th class="py-3 px-4" data-i18n="th-tx-id">${i18n[currentLang]["th-tx-id"] || "ID Transaksi / Pelanggan"}</th>
+              <th class="py-3 px-4" data-i18n="th-price-rm">${i18n[currentLang]["th-price-rm"] || "Harga (RM)"}</th>
+              <th class="py-3 px-4" data-i18n="th-receipt-name">${i18n[currentLang]["th-receipt-name"] || "Nama Resit"}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
