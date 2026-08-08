@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isLogged = localStorage.getItem("din_admin_logged");
   if (isLogged) {
     document.getElementById("login-overlay").style.display = "none";
-    loadData();
+    loadAdminData();
   } else {
     const preloader = document.getElementById('preloader');
     if (preloader) {
@@ -77,7 +77,7 @@ async function loginAdmin(allowedRoles) {
     if (data.status === "success") {
       localStorage.setItem("din_admin_logged", "true");
       document.getElementById("login-overlay").style.display = "none";
-      loadData();
+      loadAdminData();
       Swal.fire({
         icon: "success",
         title: "Berjaya!",
