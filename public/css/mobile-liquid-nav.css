@@ -3,9 +3,9 @@
    ========================================= */
 
 :root {
-    --bg-color: #f3f4f6;       /* Tailwind bg-gray-100 */
-    --primary-bg: #0B0F19;     /* Deep dark matching PC sidebar */
-    --indicator-bg: #8b5cf6;   /* Purple-500 */
+    --bg-color: #f3f4f6;       /* Exact hex for Tailwind bg-gray-100 to match page */
+    --primary-bg: #111827;     /* Dark background */
+    --indicator-bg: #a855f7;   /* Purple active color */
 }
 
 .mobile-liquid-nav {
@@ -13,15 +13,16 @@
     background: var(--primary-bg);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Keep UL at the top, padding goes to bottom */
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    border-radius: 20px 20px 0 0;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     height: calc(70px + env(safe-area-inset-bottom, 0px));
 }
 
 .mobile-liquid-nav ul {
     display: flex;
-    width: 100%;
+    width: 350px; /* 5 items * 70px = exactly 350px (fits standard 375px mobile screens) */
     height: 70px;
     position: relative;
     padding: 0;
@@ -31,7 +32,7 @@
 .mobile-liquid-nav ul li {
     position: relative;
     list-style: none;
-    flex: 1; /* Evenly distribute 5 items = 20% each */
+    width: 70px; /* Fixed width to make liquid math work */
     height: 70px;
     z-index: 1;
 }
@@ -52,8 +53,8 @@
 .mobile-liquid-nav ul li a .icon {
     position: relative;
     display: block;
-    line-height: 70px;
-    font-size: 1.4em;
+    line-height: 75px;
+    font-size: 1.5em;
     text-align: center;
     transition: 0.5s;
     color: #9ca3af; /* Gray-400 */
@@ -63,8 +64,6 @@
 .mobile-liquid-nav ul li.active a .icon {
     transform: translateY(-32px);
     color: #fff;
-    /* Optional shadow effect on icon */
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
 }
 
 .mobile-liquid-nav ul li a .text {
@@ -87,15 +86,14 @@
 /* --- REKA BENTUK BULATAN LIQUID (INDICATOR) --- */
 .mobile-liquid-nav .indicator {
     position: absolute;
-    top: -35px;
+    top: -35px; /* Exactly half of 70px */
     width: 70px;
     height: 70px;
     background: var(--indicator-bg);
     border-radius: 50%;
-    border: 6px solid var(--bg-color);
+    border: 6px solid var(--bg-color); /* Blends perfectly into page background */
     transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    /* Center exactly on the first 20% block */
-    left: calc(10vw - 35px);
+    left: 0; /* Start at 0 */
 }
 
 /* Lengkung 'cecair' kiri */
@@ -124,9 +122,9 @@
     box-shadow: -1px -10px 0 0 var(--bg-color);
 }
 
-/* Logik Pergerakan Indicator berpandukan vw (Viewport Width) */
-.mobile-liquid-nav ul li:nth-child(1).active ~ .indicator { transform: translateX(0vw); }
-.mobile-liquid-nav ul li:nth-child(2).active ~ .indicator { transform: translateX(20vw); }
-.mobile-liquid-nav ul li:nth-child(3).active ~ .indicator { transform: translateX(40vw); }
-.mobile-liquid-nav ul li:nth-child(4).active ~ .indicator { transform: translateX(60vw); }
-.mobile-liquid-nav ul li:nth-child(5).active ~ .indicator { transform: translateX(80vw); }
+/* Logik Pergerakan Indicator berpandukan px tetap (Fixed Pixel Math) */
+.mobile-liquid-nav ul li:nth-child(1).active ~ .indicator { transform: translateX(calc(70px * 0)); }
+.mobile-liquid-nav ul li:nth-child(2).active ~ .indicator { transform: translateX(calc(70px * 1)); }
+.mobile-liquid-nav ul li:nth-child(3).active ~ .indicator { transform: translateX(calc(70px * 2)); }
+.mobile-liquid-nav ul li:nth-child(4).active ~ .indicator { transform: translateX(calc(70px * 3)); }
+.mobile-liquid-nav ul li:nth-child(5).active ~ .indicator { transform: translateX(calc(70px * 4)); }
