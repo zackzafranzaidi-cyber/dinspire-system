@@ -962,7 +962,7 @@ function renderBranchTable(stats) {
   tbody.innerHTML = sorted
     .map(
       (k) =>
-        `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800">${escapeHTML(k)}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[k].count}</td><td class="py-3 px-2 text-right text-gray-900">RM ${stats[k].sales.toFixed(2)}</td></tr>`,
+        `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800">${escapeHTML(k)}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[k].count}</td><td class="py-3 px-2 text-right font-bold text-gray-900">RM ${stats[k].sales.toFixed(2)}</td></tr>`,
     )
     .join("");
 }
@@ -979,7 +979,7 @@ function renderStaffTable(stats) {
     .map(
       (name) => {
         const comm = stats[name].sales * (masterData.commissionPercent / 100);
-        return `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">${escapeHTML(name).charAt(0)}</div>${escapeHTML(name)}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[name].count}</td><td class="py-3 px-2 text-right text-gray-900">RM ${stats[name].sales.toFixed(2)}</td><td class="py-3 px-2 text-right text-blue-600">RM ${comm.toFixed(2)}</td></tr>`;
+        return `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">${escapeHTML(name).charAt(0)}</div>${escapeHTML(name)}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[name].count}</td><td class="py-3 px-2 text-right font-bold text-gray-900">RM ${stats[name].sales.toFixed(2)}</td><td class="py-3 px-2 text-right font-bold text-blue-600">RM ${comm.toFixed(2)}</td></tr>`;
       }
     )
     .join("");
