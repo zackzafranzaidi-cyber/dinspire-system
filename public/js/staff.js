@@ -770,9 +770,9 @@ function cancelBooking(orderNo) {
 
 function submitWalkIn() {
   const form = document.getElementById("walkin-form");
-  const phone = document.getElementById("walkin-phone").value.trim();
-  const serviceId = document.getElementById("walkin-service").value;
-  const paymentMethod = document.getElementById("walkin-payment").value;
+  const phone = document.getElementById("wi-phone").value.trim();
+  const serviceId = document.getElementById("wi-service").value;
+  const paymentMethod = document.getElementById("wi-payment").value;
   const fileInput = document.getElementById("wi-receipt").files[0];
 
   if (!phone || !serviceId || !paymentMethod) {
