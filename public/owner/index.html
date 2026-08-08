@@ -1226,47 +1226,49 @@
     </main>
 
     <!-- NAVIGATION BAWAH (MOBILE LIQUID MENU) -->
-    <nav class="md:hidden mobile-liquid-nav fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl">
-        <ul>
-            <!-- 1. Analisis -->
-            <li class="nav-item active" id="mob-nav-dashboard" onclick="switchTab('dashboard')">
-                <a href="#">
-                    <span class="icon"><i class="fas fa-chart-pie"></i></span>
-                    <span class="text" data-i18n="mob-nav-sales">Analisis</span>
-                </a>
-            </li>
-            <!-- 2. Pesanan -->
-            <li class="nav-item" id="mob-nav-transactions" onclick="switchTab('transactions')">
-                <a href="#">
-                    <span class="icon"><i class="fas fa-exchange-alt"></i></span>
-                    <span class="text" data-i18n="mob-nav-orders">Pesanan</span>
-                </a>
-            </li>
-            <!-- 3. AI -->
-            <li class="nav-item" id="mob-nav-ai" onclick="switchTab('ai')">
-                <a href="#">
-                    <span class="icon" style="color: #a855f7;"><i class="fas fa-brain"></i></span>
-                    <span class="text" data-i18n="mob-nav-ai">AI</span>
-                </a>
-            </li>
-            <!-- 4. Ulasan -->
-            <li class="nav-item" id="mob-nav-reviews" onclick="switchTab('reviews')">
-                <a href="#">
-                    <span class="icon"><i class="fas fa-star"></i></span>
-                    <span class="text" data-i18n="mob-nav-reviews">Ulasan</span>
-                </a>
-            </li>
-            <!-- 5. Hadir -->
-            <li class="nav-item" id="mob-nav-punch" onclick="switchTab('punch')">
-                <a href="#">
-                    <span class="icon"><i class="fas fa-fingerprint"></i></span>
-                    <span class="text" data-i18n="mob-nav-gps">Hadir</span>
-                </a>
-            </li>
-            <!-- Bulatan Penunjuk (Indicator) -->
-            <div class="indicator"></div>
-        </ul>
-    </nav>
+    <div class="md:hidden mobile-liquid-nav-wrapper fixed bottom-0 left-0 right-0 z-50">
+        <nav class="mobile-liquid-nav">
+            <ul>
+                <!-- 1. Analisis -->
+                <li class="nav-item active" id="mob-nav-dashboard" onclick="switchTab('dashboard')">
+                    <a href="#">
+                        <span class="icon"><i class="fas fa-chart-pie"></i></span>
+                        <span class="text" data-i18n="mob-nav-sales">Analisis</span>
+                    </a>
+                </li>
+                <!-- 2. Pesanan -->
+                <li class="nav-item" id="mob-nav-transactions" onclick="switchTab('transactions')">
+                    <a href="#">
+                        <span class="icon"><i class="fas fa-exchange-alt"></i></span>
+                        <span class="text" data-i18n="mob-nav-orders">Pesanan</span>
+                    </a>
+                </li>
+                <!-- 3. AI -->
+                <li class="nav-item" id="mob-nav-ai" onclick="switchTab('ai')">
+                    <a href="#">
+                        <span class="icon" style="color: #a855f7;"><i class="fas fa-brain"></i></span>
+                        <span class="text" data-i18n="mob-nav-ai">AI</span>
+                    </a>
+                </li>
+                <!-- 4. Ulasan -->
+                <li class="nav-item" id="mob-nav-reviews" onclick="switchTab('reviews')">
+                    <a href="#">
+                        <span class="icon"><i class="fas fa-star"></i></span>
+                        <span class="text" data-i18n="mob-nav-reviews">Ulasan</span>
+                    </a>
+                </li>
+                <!-- 5. Hadir -->
+                <li class="nav-item" id="mob-nav-punch" onclick="switchTab('punch')">
+                    <a href="#">
+                        <span class="icon"><i class="fas fa-fingerprint"></i></span>
+                        <span class="text" data-i18n="mob-nav-gps">Hadir</span>
+                    </a>
+                </li>
+                <!-- Bulatan Penunjuk (Indicator) -->
+                <div class="indicator"></div>
+            </ul>
+        </nav>
+    </div>
 
     <!-- MODAL RESIT -->
     <div
@@ -1307,7 +1309,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=36"></script>
+    <script src="../js/owner.js?v=37"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>
