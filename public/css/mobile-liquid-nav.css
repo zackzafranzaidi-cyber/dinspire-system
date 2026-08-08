@@ -1,0 +1,132 @@
+/* =========================================
+   LIQUID NAVIGATION MENU (MOBILE)
+   ========================================= */
+
+:root {
+    --bg-color: #f3f4f6;       /* Tailwind bg-gray-100 */
+    --primary-bg: #0B0F19;     /* Deep dark matching PC sidebar */
+    --indicator-bg: #8b5cf6;   /* Purple-500 */
+}
+
+.mobile-liquid-nav {
+    width: 100%;
+    background: var(--primary-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(70px + env(safe-area-inset-bottom, 0px));
+}
+
+.mobile-liquid-nav ul {
+    display: flex;
+    width: 100%;
+    height: 70px;
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+.mobile-liquid-nav ul li {
+    position: relative;
+    list-style: none;
+    flex: 1; /* Evenly distribute 5 items = 20% each */
+    height: 70px;
+    z-index: 1;
+}
+
+.mobile-liquid-nav ul li a {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.mobile-liquid-nav ul li a .icon {
+    position: relative;
+    display: block;
+    line-height: 70px;
+    font-size: 1.4em;
+    text-align: center;
+    transition: 0.5s;
+    color: #9ca3af; /* Gray-400 */
+}
+
+/* Animasi apabila ikon aktif (bergerak ke atas) */
+.mobile-liquid-nav ul li.active a .icon {
+    transform: translateY(-32px);
+    color: #fff;
+    /* Optional shadow effect on icon */
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+.mobile-liquid-nav ul li a .text {
+    position: absolute;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.65em;
+    letter-spacing: 0.05em;
+    transition: 0.5s;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* Animasi teks muncul dari bawah */
+.mobile-liquid-nav ul li.active a .text {
+    opacity: 1;
+    transform: translateY(10px);
+}
+
+/* --- REKA BENTUK BULATAN LIQUID (INDICATOR) --- */
+.mobile-liquid-nav .indicator {
+    position: absolute;
+    top: -35px;
+    width: 70px;
+    height: 70px;
+    background: var(--indicator-bg);
+    border-radius: 50%;
+    border: 6px solid var(--bg-color);
+    transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Center exactly on the first 20% block */
+    left: calc(10vw - 35px);
+}
+
+/* Lengkung 'cecair' kiri */
+.mobile-liquid-nav .indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -22px;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border-top-right-radius: 20px;
+    box-shadow: 1px -10px 0 0 var(--bg-color);
+}
+
+/* Lengkung 'cecair' kanan */
+.mobile-liquid-nav .indicator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -22px;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border-top-left-radius: 20px;
+    box-shadow: -1px -10px 0 0 var(--bg-color);
+}
+
+/* Logik Pergerakan Indicator berpandukan vw (Viewport Width) */
+.mobile-liquid-nav ul li:nth-child(1).active ~ .indicator { transform: translateX(0vw); }
+.mobile-liquid-nav ul li:nth-child(2).active ~ .indicator { transform: translateX(20vw); }
+.mobile-liquid-nav ul li:nth-child(3).active ~ .indicator { transform: translateX(40vw); }
+.mobile-liquid-nav ul li:nth-child(4).active ~ .indicator { transform: translateX(60vw); }
+.mobile-liquid-nav ul li:nth-child(5).active ~ .indicator { transform: translateX(80vw); }
