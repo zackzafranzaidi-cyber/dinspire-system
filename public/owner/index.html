@@ -296,7 +296,7 @@
     </div>
 
     <main
-      class="flex-1 w-full overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-[#f3f4f6] relative main-content-wrapper pb-24 h-full"
+      class="flex-1 w-full overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-[#f3f4f6] relative main-content-wrapper pb-32 h-full"
       style="padding-top: 65px !important; padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));"
     >
     <!-- GLOBAL PRELOADER MESIN CLIPPER (MOVED TO MAIN WRAPPER) -->
@@ -939,7 +939,7 @@
           <div class="flex justify-end mb-2 pr-4">
             <button onclick="exportTableToCSV('table-tx-servis', 'Senarai_Servis')" class="text-xs bg-indigo-500 text-white px-3 py-1.5 rounded hover:bg-indigo-600 transition shadow-sm font-bold"><i class="fas fa-download mr-1"></i> Export CSV</button>
           </div>
-          <div class="overflow-y-auto table-container flex-1 pb-24 w-full">
+          <div class="overflow-y-auto table-container flex-1 pb-32 w-full">
             <table class="w-full text-sm text-left">
               <tbody id="table-tx-servis" class="block w-full"></tbody>
             </table>
@@ -953,7 +953,7 @@
           <div class="flex justify-end mb-2 pr-4">
             <button onclick="exportTableToCSV('table-tx-produk', 'Pesanan_Produk')" class="text-xs bg-indigo-500 text-white px-3 py-1.5 rounded hover:bg-indigo-600 transition shadow-sm font-bold"><i class="fas fa-download mr-1"></i> Export CSV</button>
           </div>
-          <div class="overflow-y-auto table-container flex-1 pb-24 w-full">
+          <div class="overflow-y-auto table-container flex-1 pb-32 w-full">
             <table class="w-full text-sm text-left">
               <tbody id="table-tx-produk" class="block w-full"></tbody>
             </table>
@@ -1226,8 +1226,8 @@
     </main>
 
     <!-- NAVIGATION BAWAH (MOBILE LIQUID MENU) -->
-    <div class="md:hidden mobile-liquid-nav-wrapper fixed bottom-0 left-0 right-0 z-50">
-        <nav class="mobile-liquid-nav">
+    <div class="md:hidden navigation-wrapper">
+        <div class="navigation">
             <ul>
                 <!-- 1. Analisis -->
                 <li class="nav-item active" id="mob-nav-dashboard" onclick="switchTab('dashboard')">
@@ -1246,7 +1246,7 @@
                 <!-- 3. AI -->
                 <li class="nav-item" id="mob-nav-ai" onclick="switchTab('ai')">
                     <a href="#">
-                        <span class="icon" style="color: #a855f7;"><i class="fas fa-brain"></i></span>
+                        <span class="icon"><i class="fas fa-brain"></i></span>
                         <span class="text" data-i18n="mob-nav-ai">AI</span>
                     </a>
                 </li>
@@ -1267,7 +1267,7 @@
                 <!-- Bulatan Penunjuk (Indicator) -->
                 <div class="indicator"></div>
             </ul>
-        </nav>
+        </div>
     </div>
 
     <!-- MODAL RESIT -->
@@ -1309,7 +1309,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=37"></script>
+    <script src="../js/owner.js?v=38"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>
