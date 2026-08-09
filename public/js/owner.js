@@ -495,12 +495,8 @@ function switchTab(tabName, element = null) {
       "active",
       "bg-gray-800",
       "text-white",
-      "bg-gradient-to-r",
-      "from-indigo-600",
-      "to-purple-600",
-      "shadow-purple-500/20",
-      "border",
-      "border-purple-500/30"
+      "[text-shadow:0_0_15px_rgba(255,255,255,0.7)]",
+      "scale-[1.02]"
     );
     if (el.classList.contains("sidebar-nav-item")) {
       el.classList.add(
@@ -524,14 +520,9 @@ function switchTab(tabName, element = null) {
       "hover:translate-x-1"
     );
     activeSide.classList.add(
-      "bg-gradient-to-r", 
-      "from-indigo-600", 
-      "to-purple-600", 
       "text-white", 
-      "shadow-lg",
-      "shadow-purple-500/20",
-      "border",
-      "border-purple-500/30"
+      "[text-shadow:0_0_15px_rgba(255,255,255,0.7)]",
+      "scale-[1.02]"
     );
   }
 
