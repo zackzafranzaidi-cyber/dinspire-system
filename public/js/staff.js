@@ -746,7 +746,7 @@ async function processBookingSelesai(orderNo, price) {
 
   // Jika Guntingan biasa
   if (confirm(`Sahkan pelanggan (${orderNo}) ini telah selesai?`)) {
-    executeBookingSelesai(orderNo, price, "QR", ""); // Guntingan biasanya dah bayar online
+    executeBookingSelesai(orderNo, price, "", ""); // Kosongkan paymentMethod supaya tidak overwrite FPX di backend
   }
 }
 

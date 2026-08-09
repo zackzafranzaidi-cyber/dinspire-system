@@ -703,7 +703,8 @@ function processData() {
       isWithinFilter(b.Date || b.Timestamp || b.created_at, filterType, now),
   );
   let filteredOrders = masterData.orders.filter((o) =>
-    isWithinFilter(o.tarikh || o.Timestamp || o.created_at, filterType, now),
+    isWithinFilter(o.tarikh || o.Timestamp || o.created_at, filterType, now) &&
+    o.status !== "Batal" && o.status !== "Pending Verification"
   );
   let filteredPunch = (masterData.punchCard || []).filter((p) =>
     isWithinFilter(
@@ -780,15 +781,17 @@ function processData() {
       for (let k in items) cost += items[k].qty * items[k].price;
       o._calculatedTotal = cost;
       productRev += cost;
-      totalShippingFees += parseFloat(o.shipping_fee) || 0;
+      let shippingFee = parseFloat(o.shipping_fee) || 0;
+      totalShippingFees += shippingFee;
       
       let resit = (o.resit || "").toLowerCase();
+      let totalPayment = cost + shippingFee; // Masukkan shipping fee ke dalam pecahan bayaran
       if (resit.includes("fpx")) {
-        payData.fpx += cost;
+        payData.fpx += totalPayment;
       } else if (resit.includes("http")) {
-        payData.qr += cost;
+        payData.qr += totalPayment;
       } else {
-        payData.lain += cost;
+        payData.lain += totalPayment;
       }
     } catch (e) {
       o._calculatedTotal = 0;

@@ -33,23 +33,19 @@ router.get(
         supabase
           .from("booking_records")
           .select("*, staff(username), haircuts(nama_potongan)")
-          .order("created_at", { ascending: false })
-          .limit(200),
+          .order("created_at", { ascending: false }),
         supabase
           .from("walkin_records")
           .select("*, staff(username), haircuts(nama_potongan, kategori)")
-          .order("created_at", { ascending: false })
-          .limit(200),
+          .order("created_at", { ascending: false }),
         supabase
           .from("oncall_records")
           .select("*, staff(username), haircuts(nama_potongan)")
-          .order("created_at", { ascending: false })
-          .limit(200),
+          .order("created_at", { ascending: false }),
         supabase
           .from("treatment_records")
           .select("*, staff(username), treatments(nama_rawatan)")
-          .order("created_at", { ascending: false })
-          .limit(200),
+          .order("created_at", { ascending: false }),
       ]);
       const commissionPercent = settingData
         ? parseFloat(settingData.setting_value)
@@ -68,7 +64,7 @@ router.get(
           Barber: b.staff ? b.staff.username : "-",
           Price: b.harga_rm,
           Fee: parseFloat(b.service_fee) || 0,
-          Type: "QR (Booking)",
+          Type: b.jenis_bayaran || (b.resit && b.resit.toLowerCase().includes("fpx") ? "FPX" : "QR"),
           Category: "Booking",
           Status: b.status,
           Timestamp: b.created_at,
@@ -87,7 +83,7 @@ router.get(
           Barber: t.staff ? t.staff.username : "-",
           Price: t.harga_rm,
           Fee: parseFloat(t.service_fee) || 0,
-          Type: t.jenis_bayaran || "QR (Treatment)",
+          Type: t.jenis_bayaran || (t.resit && t.resit.toLowerCase().includes("fpx") ? "FPX" : "QR"),
           Category: "Treatment",
           Status: t.status,
           Timestamp: t.created_at,
@@ -127,7 +123,7 @@ router.get(
           Barber: o.staff ? o.staff.username : "-",
           Price: o.harga_rm,
           Fee: parseFloat(o.service_fee) || 0,
-          Type: "QR (OnCall)",
+          Type: o.jenis_bayaran || (o.resit && o.resit.toLowerCase().includes("fpx") ? "FPX" : "QR"),
           Category: "On-Call",
           Status: o.status,
           Timestamp: o.created_at,
@@ -146,21 +142,18 @@ router.get(
         supabase
           .from("product_orders")
           .select("*")
-          .order("created_at", { ascending: false })
-          .limit(200),
+          .order("created_at", { ascending: false }),
         supabase
           .from("punch_cards")
           .select("*, staff(username)")
-          .order("tarikh", { ascending: false })
-          .limit(200),
+          .order("tarikh", { ascending: false }),
         supabase
           .from("reviews")
           .select("*")
-          .order("created_at", { ascending: false })
-          .limit(200),
+          .order("created_at", { ascending: false }),
         supabase.from("staff").select("username, jenis_staf, branch_id"),
         supabase.from("branches").select("id, nama_cawangan"),
-        supabase.from("staff_leaves").select("*, staff(username)").order("tarikh", { ascending: true }).limit(200),
+        supabase.from("staff_leaves").select("*, staff(username)").order("tarikh", { ascending: true }),
       ]);
 
       let mapBarberBranch = {};
