@@ -294,13 +294,24 @@
         <!-- Widget AI akan dipindahkan ke sini oleh Javascript -->
       </div>
     </div>
-
     <main
       class="flex-1 w-full overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-[#f3f4f6] relative main-content-wrapper pb-24 h-full"
       style="padding-top: 65px !important; padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));"
     >
     <!-- GLOBAL PRELOADER MESIN CLIPPER (MOVED TO MAIN WRAPPER) -->
-    <div class="loading-wrapper" id="preloader" style="--loader-color: #fbbf24; --loader-color-shadow: rgba(251, 191, 36, 0.4); --loader-color-shadow-light: rgba(251, 191, 36, 0.1); position: absolute !important; height: 100% !important; z-index: 100; border-radius: inherit;">
+        <style>
+          #preloader {
+            position: fixed !important;
+            top: 0; right: 0; bottom: 0; left: 0;
+            z-index: 100;
+          }
+          @media (min-width: 768px) {
+            #preloader {
+              left: 260px !important;
+            }
+          }
+        </style>
+        <div class="loading-wrapper" id="preloader" style="--loader-color: #fbbf24; --loader-color-shadow: rgba(251, 191, 36, 0.4); --loader-color-shadow-light: rgba(251, 191, 36, 0.1); border-radius: inherit;">
         <div class="clipper-container">
             <svg class="perfect-clipper" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <defs>
