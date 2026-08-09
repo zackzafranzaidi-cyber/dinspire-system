@@ -855,7 +855,27 @@ function processData() {
       chartObj.data.datasets[0].data = [1];
       chartObj.data.datasets[0].backgroundColor = ["#e5e7eb"];
     }
+    chartObj.options.onClick = (evt, activeElements, chart) => {
+      if (activeElements.length > 0) {
+        const idx = activeElements[0].index;
+        const lbl = chartObj.data.labels[idx];
+        const val = chartObj.data.datasets[0].data[idx];
+        const labelEl = document.getElementById(chartId + '-label');
+        if (labelEl) labelEl.innerText = lbl;
+        const valEl = document.getElementById(chartId + '-val');
+        if (valEl) animateValue(chartId + '-val', 0, val, 500, '', '');
+      } else {
+        const labelEl = document.getElementById(chartId + '-label');
+        if (labelEl) labelEl.innerText = 'Jumlah';
+        const valEl = document.getElementById(chartId + '-val');
+        if (valEl) animateValue(chartId + '-val', 0, total, 500, '', '');
+      }
+    };
     animateChartWhenVisible(chartObj, chartId);
+    const labelEl = document.getElementById(chartId + "-label");
+    if (labelEl) labelEl.innerText = "Jumlah";
+    const valEl = document.getElementById(chartId + "-val");
+    if (valEl) animateValue(chartId + "-val", 0, total, 500, "", "");
   }
 
   let demoLabels = ["Gunting", "Rawatan", "OnCall"];
@@ -1635,6 +1655,19 @@ function initChart() {
       maintainAspectRatio: false,
       plugins: { legend: { position: "right", labels: { boxWidth: 10 } } },
       cutout: "65%",
+      onClick: (evt, activeElements, chart) => {
+        if (activeElements.length > 0) {
+          const idx = activeElements[0].index;
+          const lbl = chart.data.labels[idx];
+          const val = chart.data.datasets[0].data[idx];
+          document.getElementById(chart.canvas.id + "-label").innerText = lbl;
+          animateValue(chart.canvas.id + "-val", 0, val, 500, "", "");
+        } else {
+          const total = chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+          document.getElementById(chart.canvas.id + "-label").innerText = "Jumlah";
+          animateValue(chart.canvas.id + "-val", 0, total, 500, "", "");
+        }
+      }
     },
   });
 
@@ -3055,6 +3088,7 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
 
 
 
