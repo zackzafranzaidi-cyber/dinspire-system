@@ -382,7 +382,8 @@ document.addEventListener("DOMContentLoaded", () => {
       initChart();
     } catch (e) {}
     fetchOwnerDashboardData();
-  } else {
+      switchTab(currentActiveTab);
+    } else {
     const preloader = document.getElementById('preloader');
     if (preloader) {
         preloader.style.opacity = '0';
@@ -423,6 +424,7 @@ async function loginSystem(allowedRoles) {
         initChart();
       } catch (e) {}
       fetchOwnerDashboardData();
+      switchTab(currentActiveTab);
     } else alert(data.message);
   } catch (err) {
     alert("Gagal menyambung ke pelayan.");
@@ -1317,6 +1319,7 @@ async function updateTracking(fullOrderId) {
         "Berjaya! Pesanan telah ditukar ke status 'Shipped'.\nPelanggan akan menerima notifikasi ini.",
       );
       fetchOwnerDashboardData();
+      switchTab(currentActiveTab);
     } else {
       alert("Ralat: " + data.message);
     }
@@ -2145,6 +2148,7 @@ async function approveEmergencyLeave(id) {
     } else if (data.status === "success") {
       alert("Berjaya! " + data.message);
       fetchOwnerDashboardData();
+      switchTab(currentActiveTab);
     } else {
       alert("Ralat! " + data.message);
     }
@@ -2174,6 +2178,7 @@ async function rejectEmergencyLeave(id) {
     if (data.status === "success") {
       alert("Ditolak! " + data.message);
       fetchOwnerDashboardData();
+      switchTab(currentActiveTab);
     } else {
       alert("Ralat! " + data.message);
     }
@@ -2364,6 +2369,7 @@ async function forceApproveLeave() {
     if (data.status === "success") {
       alert("Selesai! " + data.message);
       fetchOwnerDashboardData();
+      switchTab(currentActiveTab);
     } else {
       alert("Ralat! " + data.message);
     }
@@ -3049,4 +3055,6 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
+
 
