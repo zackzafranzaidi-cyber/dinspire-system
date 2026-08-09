@@ -1567,6 +1567,20 @@ function renderLeavesTable(leavesData) {
   }
 }
 
+Chart.register({
+  id: 'centerTextOffset',
+  afterDraw: function(chart) {
+    if (chart.config.type !== 'doughnut') return;
+    const overlay = document.getElementById(chart.canvas.id + '-overlay');
+    if (overlay) {
+      const centerX = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
+      const centerY = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2;
+      overlay.style.left = centerX + 'px';
+      overlay.style.top = centerY + 'px';
+    }
+  }
+});
+
 function initChart() {
   const ctx1 = document.getElementById("salesChart").getContext("2d");
   salesChartObj = new Chart(ctx1, {
@@ -3088,6 +3102,7 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
 
 
 

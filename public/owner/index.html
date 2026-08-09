@@ -739,11 +739,11 @@
               <i class="fas fa-chart-pie mr-2 text-gray-500"></i> Demografi
               Servis
             </h3>
-            <div class="relative h-48 w-full mt-2 flex items-center justify-center">
+            <div class="relative h-48 w-full mt-2">
               <canvas id="demoChart" class="w-full h-full relative z-10"></canvas>
-              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0 pb-8">
-                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center px-2 line-clamp-1" id="demoChart-label">Jumlah</span>
-                <span class="text-xl font-black text-gray-800" id="demoChart-val">0</span>
+              <div id="demoChart-overlay" class="absolute pointer-events-none flex flex-col items-center justify-center z-20 w-3/4" style="transform: translate(-50%, -50%); left: 50%; top: 50%;">
+                <span class="text-[10px] text-gray-400 uppercase tracking-wider text-center px-1 line-clamp-1" id="demoChart-label">Jumlah</span>
+                <span class="text-sm md:text-base text-gray-800 text-center font-medium leading-tight truncate w-full" id="demoChart-val">0</span>
               </div>
             </div>
           </div>
@@ -755,11 +755,11 @@
               <i class="fas fa-credit-card mr-2 text-gray-500"></i> Kaedah
               Bayaran
             </h3>
-            <div class="relative h-48 w-full mt-2 flex items-center justify-center">
+            <div class="relative h-48 w-full mt-2">
               <canvas id="payChart" class="w-full h-full relative z-10"></canvas>
-              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0 pb-8">
-                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center px-2 line-clamp-1" id="payChart-label">Jumlah</span>
-                <span class="text-xl font-black text-gray-800" id="payChart-val">0</span>
+              <div id="payChart-overlay" class="absolute pointer-events-none flex flex-col items-center justify-center z-20 w-3/4" style="transform: translate(-50%, -50%); left: 50%; top: 50%;">
+                <span class="text-[10px] text-gray-400 uppercase tracking-wider text-center px-1 line-clamp-1" id="payChart-label">Jumlah</span>
+                <span class="text-sm md:text-base text-gray-800 text-center font-medium leading-tight truncate w-full" id="payChart-val">0</span>
               </div>
             </div>
           </div>
@@ -770,11 +770,11 @@
             >
               Jualan Staf
             </h3>
-            <div class="relative h-48 w-full mt-2 flex items-center justify-center">
+            <div class="relative h-48 w-full mt-2">
               <canvas id="staffChart" class="w-full h-full relative z-10"></canvas>
-              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0 pb-8">
-                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center px-2 line-clamp-1" id="staffChart-label">Jumlah</span>
-                <span class="text-xl font-black text-gray-800" id="staffChart-val">0</span>
+              <div id="staffChart-overlay" class="absolute pointer-events-none flex flex-col items-center justify-center z-20 w-1/2" style="transform: translate(-50%, -50%); left: 50%; top: 50%;">
+                <span class="text-[10px] text-gray-400 uppercase tracking-wider text-center px-1 line-clamp-1" id="staffChart-label">Jumlah</span>
+                <span class="text-sm md:text-base text-gray-800 text-center font-medium leading-tight truncate w-full" id="staffChart-val">0</span>
               </div>
             </div>
           </div>
@@ -1538,3 +1538,4 @@
     </script>
 </body>
 </html>
+
