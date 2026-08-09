@@ -863,19 +863,19 @@ function processData() {
         const labelEl = document.getElementById(chartId + '-label');
         if (labelEl) labelEl.innerText = lbl;
         const valEl = document.getElementById(chartId + '-val');
-        if (valEl) animateValue(chartId + '-val', 0, val, 500, '', '');
+        if (valEl) animateNumber(chartId + "-val", val, (chartId === "payChart" || chartId === "staffChart") ? "RM " : "", "", (chartId === "payChart" || chartId === "staffChart") ? 2 : 0);
       } else {
         const labelEl = document.getElementById(chartId + '-label');
         if (labelEl) labelEl.innerText = 'Jumlah';
         const valEl = document.getElementById(chartId + '-val');
-        if (valEl) animateValue(chartId + '-val', 0, total, 500, '', '');
+        if (valEl) animateNumber(chartId + "-val", total, (chartId === "payChart" || chartId === "staffChart") ? "RM " : "", "", (chartId === "payChart" || chartId === "staffChart") ? 2 : 0);
       }
     };
     animateChartWhenVisible(chartObj, chartId);
     const labelEl = document.getElementById(chartId + "-label");
     if (labelEl) labelEl.innerText = "Jumlah";
     const valEl = document.getElementById(chartId + "-val");
-    if (valEl) animateValue(chartId + "-val", 0, total, 500, "", "");
+    if (valEl) animateNumber(chartId + "-val", total, (chartId === "payChart" || chartId === "staffChart") ? "RM " : "", "", (chartId === "payChart" || chartId === "staffChart") ? 2 : 0);
   }
 
   let demoLabels = ["Gunting", "Rawatan", "OnCall"];
@@ -1661,11 +1661,11 @@ function initChart() {
           const lbl = chart.data.labels[idx];
           const val = chart.data.datasets[0].data[idx];
           document.getElementById(chart.canvas.id + "-label").innerText = lbl;
-          animateValue(chart.canvas.id + "-val", 0, val, 500, "", "");
+          animateNumber(chart.canvas.id + "-val", val, (chart.canvas.id === "payChart" || chart.canvas.id === "staffChart") ? "RM " : "", "", (chart.canvas.id === "payChart" || chart.canvas.id === "staffChart") ? 2 : 0);
         } else {
           const total = chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
           document.getElementById(chart.canvas.id + "-label").innerText = "Jumlah";
-          animateValue(chart.canvas.id + "-val", 0, total, 500, "", "");
+          animateNumber(chart.canvas.id + "-val", total, (chart.canvas.id === "payChart" || chart.canvas.id === "staffChart") ? "RM " : "", "", (chart.canvas.id === "payChart" || chart.canvas.id === "staffChart") ? 2 : 0);
         }
       }
     },
@@ -3088,6 +3088,8 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
+
 
 
 
