@@ -21,6 +21,19 @@
   </head>
   <body>
     <!-- Area Loading -->
+    <style>
+      #preloader {
+        position: fixed !important;
+        top: 0; right: 0; bottom: 0; left: 0;
+        z-index: 100;
+      }
+      @media (min-width: 768px) {
+        #preloader {
+          left: 240px !important;
+          width: auto !important;
+        }
+      }
+    </style>
     <div class="loading-wrapper" id="preloader" style="--loader-color: #2d6df6; --loader-color-shadow: rgba(45, 109, 246, 0.4); --loader-color-shadow-light: rgba(45, 109, 246, 0.1);">
         <div class="clipper-container">
             <svg class="perfect-clipper" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -148,3 +161,4 @@
     </script>
   </body>
 </html>
+
