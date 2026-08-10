@@ -406,6 +406,8 @@ async function loadDashboardData() {
          staffData.reviews = data.reviews || [];
          staffData.commissionPercent = data.commissionPercent || 50;
          staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
+         staffData.monthlySales = data.monthlySales || 0;
+         staffData.monthlyCustomers = data.monthlyCustomers || 0;
          calculateDashboardStats();
          renderBookingList();
          renderHistoryList();
@@ -431,6 +433,8 @@ async function loadDashboardData() {
       staffData.reviews = data.reviews || [];
       staffData.commissionPercent = data.commissionPercent || 50;
       staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
+      staffData.monthlySales = data.monthlySales || 0;
+      staffData.monthlyCustomers = data.monthlyCustomers || 0;
       
       if (loggedInStaff.is_general) {
          document.getElementById("general-staff-branch-container").style.display = "block";
@@ -454,22 +458,9 @@ function calculateDashboardStats() {
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-  let monthlyCustomers = 0;
-  let monthlySales = 0;
+  let monthlyCustomers = staffData.monthlyCustomers || 0;
+  let monthlySales = staffData.monthlySales || 0;
   let cashOnHand = staffData.monthlyCashOnHand || 0;
-
-  staffData.bookings.forEach((b) => {
-    if (b.status === "Selesai") {
-      let bDate = new Date(b.booking_date);
-      if (
-        bDate.getMonth() === currentMonth &&
-        bDate.getFullYear() === currentYear
-      ) {
-        monthlyCustomers++;
-        monthlySales += parseFloat(b.price) || 0;
-      }
-    }
-  });
 
   let commission = monthlySales * (staffData.commissionPercent / 100);
   let ratingPct = 100;

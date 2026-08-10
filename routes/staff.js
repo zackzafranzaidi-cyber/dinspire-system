@@ -132,7 +132,11 @@ router.get(
       
       const [
         { data: monthlyCashData },
-        { data: monthlyTreatmentCashData }
+        { data: monthlyTreatmentCashData },
+        { data: monthlyBookingData },
+        { data: monthlyWalkinData },
+        { data: monthlyOncallData },
+        { data: monthlyTreatmentData }
       ] = await Promise.all([
         supabase
           .from("walkin_records")
@@ -144,8 +148,32 @@ router.get(
           .from("treatment_records")
           .select("harga_rm")
           .eq("staff_id", staff_id)
+          .eq("status", "Selesai")
           .gte("tarikh", firstDayOfMonth)
-          .in("jenis_bayaran", ["Cash", "Tunai"])
+          .in("jenis_bayaran", ["Cash", "Tunai"]),
+        supabase
+          .from("booking_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .eq("status", "Selesai")
+          .gte("tarikh", firstDayOfMonth),
+        supabase
+          .from("walkin_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .gte("tarikh", firstDayOfMonth),
+        supabase
+          .from("oncall_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .eq("status", "Selesai")
+          .gte("tarikh", firstDayOfMonth),
+        supabase
+          .from("treatment_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .eq("status", "Selesai")
+          .gte("tarikh", firstDayOfMonth)
       ]);
 
       let monthlyCashOnHand = 0;
@@ -156,6 +184,21 @@ router.get(
         monthlyCashOnHand += parseFloat(t.harga_rm) || 0;
       });
 
+      let monthlySales = 0;
+      let monthlyCustomers = 0;
+
+      const aggregateSales = (data) => {
+        (data || []).forEach(item => {
+           monthlySales += parseFloat(item.harga_rm) || 0;
+           monthlyCustomers++;
+        });
+      };
+
+      aggregateSales(monthlyBookingData);
+      aggregateSales(monthlyWalkinData);
+      aggregateSales(monthlyOncallData);
+      aggregateSales(monthlyTreatmentData);
+
       const { data: branchesData } = await supabase.from("branches").select("id, nama_cawangan");
       
       res.json({
@@ -164,6 +207,8 @@ router.get(
         commissionPercent: commissionPercent,
         basicSalary: basicSalary,
         monthlyCashOnHand: monthlyCashOnHand,
+        monthlySales: monthlySales,
+        monthlyCustomers: monthlyCustomers,
         reviews: [],
         branches: branchesData || [],
       });
