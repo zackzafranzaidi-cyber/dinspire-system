@@ -405,11 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchOwnerDashboardData();
       switchTab(currentActiveTab);
     } else {
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-        preloader.style.opacity = '0';
-        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
-    }
+    hideGlobalLoader();
   }
 });
 
@@ -470,16 +466,15 @@ function closeLoading() {
   document.getElementById("loading-overlay").style.display = "none";
   document.getElementById("loading-overlay").classList.remove("flex");
   
-  const preloader = document.getElementById('preloader');
-  if (preloader) {
-      preloader.style.opacity = '0';
-      setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
-  }
+  hideGlobalLoader();
 }
+
+let globalLoaderStartTime = Date.now();
 
 function showGlobalLoader() {
   const preloader = document.getElementById('preloader');
   if (preloader) {
+      globalLoaderStartTime = Date.now();
       preloader.style.visibility = 'visible';
       preloader.style.opacity = '1';
   }
@@ -487,8 +482,12 @@ function showGlobalLoader() {
 function hideGlobalLoader() {
   const preloader = document.getElementById('preloader');
   if (preloader) {
-      preloader.style.opacity = '0';
-      setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
+      const elapsed = Date.now() - globalLoaderStartTime;
+      const remaining = Math.max(0, 1000 - elapsed);
+      setTimeout(() => {
+        preloader.style.opacity = '0';
+        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
+      }, remaining);
   }
 }
 
@@ -1022,21 +1021,7 @@ async function fetchDashboardInsights(
   }, 1000);
 }
 
-function showGlobalLoader() {
-  const preloader = document.getElementById('preloader');
-  if (preloader) {
-    preloader.style.visibility = 'visible';
-    preloader.style.opacity = '1';
-  }
-}
 
-function hideGlobalLoader() {
-  const preloader = document.getElementById('preloader');
-  if (preloader) {
-    preloader.style.opacity = '0';
-    setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
-  }
-}
 
 window.addEventListener("DOMContentLoaded", () => {
   applyLanguage();
@@ -3130,6 +3115,7 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
 
 
 

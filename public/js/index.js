@@ -145,13 +145,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   renderHomeReviews();
   updateCartUI();
   
-  const preloader = document.getElementById('preloader');
-  if (preloader) {
-      setTimeout(() => {
-          preloader.style.opacity = '0';
-          setTimeout(() => { preloader.style.visibility = 'hidden'; }, 800);
-      }, 10000); // Tunggu 10 saat sebelum sembunyikan Clipper
-  }
+  hideGlobalLoader();
 });
 
 function initEventListeners() {
@@ -1666,9 +1660,12 @@ function toggleAccordion(id) {
     .forEach((w) => w.classList.remove("active"));
   if (!isActive) card.classList.add("active");
 }
+let globalLoaderStartTime = Date.now();
+
 function showGlobalLoader() {
   const preloader = document.getElementById('preloader');
   if (preloader) {
+      globalLoaderStartTime = Date.now();
       preloader.style.visibility = 'visible';
       preloader.style.opacity = '1';
   }
@@ -1677,8 +1674,12 @@ function showGlobalLoader() {
 function hideGlobalLoader() {
   const preloader = document.getElementById('preloader');
   if (preloader) {
-      preloader.style.opacity = '0';
-      setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
+      const elapsed = Date.now() - globalLoaderStartTime;
+      const remaining = Math.max(0, 1000 - elapsed);
+      setTimeout(() => {
+        preloader.style.opacity = '0';
+        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
+      }, remaining);
   }
 }
 
