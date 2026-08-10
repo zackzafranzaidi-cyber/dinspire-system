@@ -1651,7 +1651,7 @@ function initChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: "bottom" } },
+      plugins: { legend: { position: "bottom" }, tooltip: { enabled: false } },
       cutout: "65%",
     },
   });
@@ -1668,7 +1668,7 @@ function initChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: "bottom" } },
+      plugins: { legend: { position: "bottom" }, tooltip: { enabled: false } },
       cutout: "65%",
     },
   });
@@ -1695,7 +1695,7 @@ function initChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: "right", labels: { boxWidth: 10 } } },
+      plugins: { legend: { position: "right", labels: { boxWidth: 10 } }, tooltip: { enabled: false } },
       cutout: "65%",
       onClick: (evt, activeElements, chart) => {
         if (activeElements.length > 0) {
@@ -3130,6 +3130,7 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
 
 
 
