@@ -1,10 +1,10 @@
-const CACHE_NAME = 'dinspire-pwa-v6-staff';
+const CACHE_NAME = 'dinspire-pwa-v7-staff';
 const urlsToCache = [
   './',
   './index.html',
   '../css/staff.css?v=17',
   '../css/loader.css?v=2',
-  '../js/staff.js?v=25',
+  '../js/staff.js?v=26',
   './icon_staf.png'
 ];
 
@@ -47,3 +47,4 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
