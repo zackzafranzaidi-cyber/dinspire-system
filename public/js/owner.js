@@ -106,8 +106,25 @@ function animateNumber(id, targetVal, prefix = "", suffix = "", decimals = 0) {
     });
   };
 
+  const adjustFontSize = (element, text, elementId) => {
+    if (elementId.includes("Chart-val")) {
+      const textLen = text.length;
+      if (textLen > 11) {
+        element.style.fontSize = "0.75rem";
+      } else if (textLen > 8) {
+        element.style.fontSize = "0.875rem";
+      } else if (textLen > 5) {
+        element.style.fontSize = "1rem";
+      } else {
+        element.style.fontSize = "1.25rem";
+      }
+    }
+  };
+
   if (startVal === targetVal) {
-    el.innerText = prefix + formatVal(targetVal) + suffix;
+    const res = prefix + formatVal(targetVal) + suffix;
+    el.innerText = res;
+    adjustFontSize(el, res, id);
     return;
   }
 
@@ -129,12 +146,16 @@ function animateNumber(id, targetVal, prefix = "", suffix = "", decimals = 0) {
       const easedProgress = easeOutQuart(progress);
       const currentVal = startVal + (targetVal - startVal) * easedProgress;
 
-      el.innerText = prefix + formatVal(currentVal) + suffix;
+      const res = prefix + formatVal(currentVal) + suffix;
+      el.innerText = res;
+      adjustFontSize(el, res, id);
 
       if (progress < 1) {
         activeAnimations[id] = requestAnimationFrame(update);
       } else {
-        el.innerText = prefix + formatVal(targetVal) + suffix;
+        const finalRes = prefix + formatVal(targetVal) + suffix;
+        el.innerText = finalRes;
+        adjustFontSize(el, finalRes, id);
         delete activeAnimations[id];
       }
     }
@@ -1573,8 +1594,15 @@ Chart.register({
     if (chart.config.type !== 'doughnut') return;
     const overlay = document.getElementById(chart.canvas.id + '-overlay');
     if (overlay) {
-      const centerX = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
-      const centerY = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2;
+      let centerX, centerY;
+      const meta = chart.getDatasetMeta(0);
+      if (meta && meta.data && meta.data.length > 0) {
+        centerX = meta.data[0].x;
+        centerY = meta.data[0].y;
+      } else {
+        centerX = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
+        centerY = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2;
+      }
       overlay.style.left = centerX + 'px';
       overlay.style.top = centerY + 'px';
     }
@@ -3102,6 +3130,7 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
 
 
 
