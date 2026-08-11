@@ -700,21 +700,21 @@ function getTransactionBranch(barber, dateStr, timeStr) {
 
   if (!timeStr) {
     let latestPunch = punches.reduce((prev, current) => (prev.waktu_in > current.waktu_in) ? prev : current);
-    return latestPunch.cawangan || defaultBr;
+    return (latestPunch.cawangan === "Cawangan Utama" ? defaultBr : latestPunch.cawangan) || defaultBr;
   }
 
   for (let p of punches) {
      let tIn = p.waktu_in;
      let tOut = p.waktu_out;
      if (tIn && tOut) {
-         if (timeStr >= tIn && timeStr <= tOut) return p.cawangan;
+         if (timeStr >= tIn && timeStr <= tOut) return p.cawangan === "Cawangan Utama" ? defaultBr : p.cawangan;
      } else if (tIn && !tOut) {
-         if (timeStr >= tIn) return p.cawangan;
+         if (timeStr >= tIn) return p.cawangan === "Cawangan Utama" ? defaultBr : p.cawangan;
      }
   }
 
   let latestPunch = punches.reduce((prev, current) => (prev.waktu_in > current.waktu_in) ? prev : current);
-  return latestPunch.cawangan || defaultBr;
+  return (latestPunch.cawangan === "Cawangan Utama" ? defaultBr : latestPunch.cawangan) || defaultBr;
 }
 
 function isWithinFilter(dateData, filterType, refDate) {
@@ -3167,6 +3167,7 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
 
 
 
