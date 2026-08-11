@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dinspire-pwa-owner-v11';
+const CACHE_NAME = 'dinspire-pwa-owner-v12';
 const urlsToCache = [
   './',
   './index.html',
@@ -46,6 +46,7 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
 
 
 

@@ -1815,9 +1815,9 @@ function updateBarChart(bookings, orders, filterType) {
   // Sediakan penjejak data cawangan
   let branchDataPoints = {};
   let allPossibleBranches = new Set(Object.values(mapBarberBranch));
-  allPossibleBranches.add("Cawangan Utama");
-  allPossibleBranches.add("In-Branch");
-  allPossibleBranches.add("Tidak Ditetapkan");
+  
+  
+  
   
   bookings.forEach((b) => {
       let txDate = b.Date || (b.Timestamp ? String(b.Timestamp).split("T")[0] : "");
@@ -3167,6 +3167,7 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
 
 
 
