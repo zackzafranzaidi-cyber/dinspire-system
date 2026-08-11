@@ -28,6 +28,23 @@ function isValidImageBuffer(buffer) {
   return null; // Fail palsu / virus
 }
 
+async function isStaffPunchedIn(staff_id) {
+  if (!staff_id) return false;
+  const now = new Date();
+  const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  const tarikhStr = myTime.toISOString().split("T")[0];
+
+  const { data, error } = await supabase
+    .from("punch_cards")
+    .select("id")
+    .eq("staff_id", staff_id)
+    
+    .is("waktu_out", null);
+
+  if (error || !data || data.length === 0) return false;
+  return true;
+}
+
 async function uploadReceiptToStorage(base64Image, orderNo) {
   if (!base64Image || !base64Image.startsWith("data:image")) return base64Image;
   
@@ -351,6 +368,13 @@ router.put(
         .status(400)
         .json({ status: "error", message: "Harga tidak sah!" });
 
+    if (req.user.role === "staff") {
+       const punchedIn = await isStaffPunchedIn(req.user.id);
+       if (!punchedIn) {
+          return res.status(403).json({ status: "error", message: "Anda mesti Punch-In dahulu sebelum menguruskan jualan!" });
+       }
+    }
+
     // [DIBAIKI] Pengklonan Butang Selesai (Race Condition)
     if (completionLocks.has(orderNo)) {
       return res.status(409).json({ status: "error", message: "Pesanan ini sedang diselesaikan." });
@@ -518,6 +542,13 @@ router.post(
     } = req.body;
       const staff_id = req.user.id;
       
+      if (req.user.role === "staff") {
+         const punchedIn = await isStaffPunchedIn(req.user.id);
+         if (!punchedIn) {
+            return res.status(403).json({ status: "error", message: "Anda mesti Punch-In dahulu sebelum mendaftar pelanggan Walk-In!" });
+         }
+      }
+        
       // [DIBAIKI] Lompang Rentas Masa Walk-in (Zon Masa Malaysia)
       const now = new Date();
       const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
@@ -1221,3 +1252,4 @@ router.get("/fpx/verify", async (req, res) => {
 });
 
 module.exports = router;
+
