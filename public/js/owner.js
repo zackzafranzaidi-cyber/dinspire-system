@@ -681,6 +681,42 @@ function parseGSDate(dateStr) {
   return null;
 }
 
+function getTransactionBranch(barber, dateStr, timeStr) {
+  let defaultBr = mapBarberBranch[barber] || "Tidak Ditetapkan";
+  if (!masterData.punchCard) return defaultBr;
+  if (!dateStr) return defaultBr;
+  
+  let pDate = dateStr;
+  if (pDate.includes("T")) pDate = pDate.split("T")[0];
+
+  let punches = masterData.punchCard.filter(p => {
+     let pName = p["Nama Staf"] || p.nama || (p.staff ? p.staff.username : "");
+     let pDateStr = p.tarikh || p.Tarikh || "";
+     if (pDateStr.includes("T")) pDateStr = pDateStr.split("T")[0];
+     return pName === barber && pDateStr === pDate;
+  });
+
+  if (punches.length === 0) return defaultBr;
+
+  if (!timeStr) {
+    let latestPunch = punches.reduce((prev, current) => (prev.waktu_in > current.waktu_in) ? prev : current);
+    return latestPunch.cawangan || defaultBr;
+  }
+
+  for (let p of punches) {
+     let tIn = p.waktu_in;
+     let tOut = p.waktu_out;
+     if (tIn && tOut) {
+         if (timeStr >= tIn && timeStr <= tOut) return p.cawangan;
+     } else if (tIn && !tOut) {
+         if (timeStr >= tIn) return p.cawangan;
+     }
+  }
+
+  let latestPunch = punches.reduce((prev, current) => (prev.waktu_in > current.waktu_in) ? prev : current);
+  return latestPunch.cawangan || defaultBr;
+}
+
 function isWithinFilter(dateData, filterType, refDate) {
   if (filterType === "all") return true;
   if (!dateData) return false;
@@ -766,7 +802,9 @@ function processData() {
       payData.lain += price;
     }
 
-    let br = mapBarberBranch[b.Barber] || "In-Branch";
+    let txDate = b.Date || (b.Timestamp ? String(b.Timestamp).split("T")[0] : "");
+    let br = getTransactionBranch(b.Barber, txDate, b.Time);
+    if (br === "Tidak Ditetapkan") br = "In-Branch";
     if (!branchStats[br]) branchStats[br] = { count: 0, sales: 0 };
     branchStats[br].count++;
     branchStats[br].sales += price;
@@ -1400,9 +1438,12 @@ function renderReviewsTable(reviews) {
         let orderNo = r.OrderNo || r.no_booking;
         let bInfo = masterData.bookings.find((b) => b.OrderNo === orderNo);
         let barberName = bInfo ? bInfo.Barber : "Barber Tidak Diketahui";
-        let branchName = bInfo
-          ? mapBarberBranch[bInfo.Barber] || "Cawangan Utama"
-          : "-";
+        
+        let branchName = "-";
+        if (bInfo) {
+            let txDate = bInfo.Date || (bInfo.Timestamp ? String(bInfo.Timestamp).split("T")[0] : "");
+            branchName = getTransactionBranch(bInfo.Barber, txDate, bInfo.Time) || "Cawangan Utama";
+        }
 
         let stars = r.Stars || r.bintang || 5;
         let text = r.Text || r.review_text || "Tiada komen.";
@@ -1773,11 +1814,20 @@ function updateBarChart(bookings, orders, filterType) {
 
   // Sediakan penjejak data cawangan
   let branchDataPoints = {};
-  Object.values(mapBarberBranch).forEach(br => {
-    if (!branchDataPoints[br]) branchDataPoints[br] = [];
+  let allPossibleBranches = new Set(Object.values(mapBarberBranch));
+  allPossibleBranches.add("Cawangan Utama");
+  allPossibleBranches.add("In-Branch");
+  allPossibleBranches.add("Tidak Ditetapkan");
+  
+  bookings.forEach((b) => {
+      let txDate = b.Date || (b.Timestamp ? String(b.Timestamp).split("T")[0] : "");
+      let br = getTransactionBranch(b.Barber, txDate, b.Time);
+      if (br) allPossibleBranches.add(br);
   });
-  // Pastikan cawangan utama/In-Branch ada kalau tiada dalam map
-  if (!branchDataPoints["In-Branch"]) branchDataPoints["In-Branch"] = [];
+
+  allPossibleBranches.forEach(br => {
+    branchDataPoints[br] = [];
+  });
 
   if (filterType === "daily") {
     for (let i = 0; i < 24; i++) {
@@ -1832,7 +1882,7 @@ function updateBarChart(bookings, orders, filterType) {
     branchDataPoints[br] = new Array(labels.length).fill(0);
   });
 
-  const addAmount = (dateStr, timeStr, amount, branch = "In-Branch") => {
+  function addAmount(dateStr, timeStr, amount, brName) {
     let d;
     if (
       dateStr &&
@@ -1868,17 +1918,19 @@ function updateBarChart(bookings, orders, filterType) {
 
     if (idx !== -1) {
       dataPoints[idx] += amount;
-      if (branchDataPoints[branch]) {
-        branchDataPoints[branch][idx] += amount;
+      if (branchDataPoints[brName]) {
+        branchDataPoints[brName][idx] += amount;
       }
     }
-  };
+  }
 
   bookings.forEach((b) => {
-    let br = mapBarberBranch[b.Barber] || "In-Branch";
-    addAmount(b.Date || b.Timestamp, b.Time, parseFloat(b.Price) || 0, br);
+    let txDate = b.Date || (b.Timestamp ? String(b.Timestamp).split("T")[0] : "");
+    let br = getTransactionBranch(b.Barber, txDate, b.Time);
+    if (br === "Tidak Ditetapkan") br = "In-Branch";
+    addAmount(txDate, b.Time, parseFloat(b.Price) || 0, br);
   });
-  orders.forEach((o) => addAmount(o.Timestamp, null, o._calculatedTotal || 0, "In-Branch"));
+  orders.forEach((o) => addAmount(o.Timestamp || o.tarikh, null, o._calculatedTotal || 0, "In-Branch"));
 
   salesChartObj.data.labels = labels;
   salesChartObj.data.datasets[0].data = dataPoints;
