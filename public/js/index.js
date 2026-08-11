@@ -1029,23 +1029,32 @@ function renderProducts(searchQuery = "") {
     
     if (filtered.length > 0) {
       prodGrid.innerHTML = filtered.map(
-        (p) => `
-            <div class="product-card">
+        (p) => {
+          const stockLeft = parseInt(p.stok) || 0;
+          const isOutOfStock = stockLeft <= 0;
+          const btnColor = isOutOfStock ? "bg-red-500" : "bg-gray-600";
+          const btnText = isOutOfStock ? "Habis Stok" : i18n_index[currentLang]["products-btn-add"];
+          return `
+            <div class="product-card" style="position:relative;">
+                <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); color:#fff; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">
+                    Baki Stok: ${stockLeft}
+                </div>
                 <img src="${p.imageUrl || "https://via.placeholder.com/150"}" class="product-img" alt="${escapeHTML(p.name)}" onerror="this.src='https://via.placeholder.com/150'">
                 <div class="product-info">
                     <div class="product-title">${escapeHTML(p.name)}</div>
                     <div class="product-price">RM ${parseFloat(p.price).toFixed(2)}</div>
                     <div class="card-actions mt-auto pt-2">
                         <div class="qty-control flex items-center justify-between bg-gray-100 rounded-lg p-1 flex-1">
-                            <button class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="changeTempQty('${p.id}', -1)">-</button>
+                            <button class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="changeTempQty('${p.id}', -1, ${stockLeft})">-</button>
                             <span class="qty-num text-xs font-bold text-center w-5" id="temp-qty-${p.id}">1</span>
-                            <button class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="changeTempQty('${p.id}', 1)">+</button>
+                            <button class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="changeTempQty('${p.id}', 1, ${stockLeft})">+</button>
                         </div>
-                        <button class="add-btn bg-gray-600 text-white rounded-lg px-2 py-1.5 text-xs font-bold" onclick="addToCart('${p.id}', '${escapeHTML(p.name || "")}', ${parseFloat(p.price)}, '${p.imageUrl}')">${i18n_index[currentLang]["products-btn-add"]}</button>
+                        <button class="add-btn ${btnColor} text-white rounded-lg px-2 py-1.5 text-xs font-bold" ${isOutOfStock ? "disabled" : ""} onclick="addToCart('${p.id}', '${escapeHTML(p.name || "")}', ${parseFloat(p.price)}, '${p.imageUrl}', ${stockLeft})">${btnText}</button>
                     </div>
                 </div>
             </div>
-        `,
+        `;
+        }
       ).join("");
     } else {
       prodGrid.innerHTML = `<div style="grid-column: span 2; text-align:center; padding: 40px 20px; color:var(--text-muted); font-size:13px;">Produk tidak dijumpai.</div>`;
@@ -1366,25 +1375,35 @@ async function confirmUnifiedPayment() {
     });
 }
 
-function changeTempQty(id, delta) {
-  let el = document.getElementById("temp-qty-" + id);
-  if (!el) return;
-  let val = parseInt(el.innerText) + delta;
-  if (val < 1) val = 1;
-  el.innerText = val;
-}
-function addToCart(id, name, price, imgUrl) {
-  let qtyEl = document.getElementById("temp-qty-" + id);
-  let qty = parseInt(qtyEl.innerText);
-  if (cartState[id]) {
-    cartState[id].qty += qty;
-  } else {
-    cartState[id] = { id, name, price, imgUrl, qty };
+function changeTempQty(id, delta, maxStock) {
+    let el = document.getElementById("temp-qty-" + id);
+    if (!el) return;
+    let val = parseInt(el.innerText) + delta;
+    if (val < 1) val = 1;
+    if (maxStock !== undefined && val > maxStock) {
+        val = maxStock;
+        showToast("Maaf, kuantiti melebihi stok sedia ada (" + maxStock + ").");
+    }
+    el.innerText = val;
   }
-  qtyEl.innerText = 1;
-  updateCartUI();
-  showToast(i18n_index[currentLang]["alert-cart-updated"]);
-}
+  function addToCart(id, name, price, imgUrl, maxStock) {
+    let qtyEl = document.getElementById("temp-qty-" + id);
+    let qty = parseInt(qtyEl.innerText);
+    let currentInCart = cartState[id] ? cartState[id].qty : 0;
+    
+    if (maxStock !== undefined && (currentInCart + qty > maxStock)) {
+       return alert("Gagal menambah. Baki stok hanya tinggal " + maxStock + " unit.");
+    }
+    
+    if (cartState[id]) {
+      cartState[id].qty += qty;
+    } else {
+      cartState[id] = { id, name, price, imgUrl, qty };
+    }
+    qtyEl.innerText = 1;
+    updateCartUI();
+    showToast(i18n_index[currentLang]["alert-cart-updated"]);
+  }
 function updateCartUI() {
   let totalItems = 0;
   let totalPrice = 0;

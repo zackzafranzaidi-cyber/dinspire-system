@@ -53,6 +53,31 @@ schedule.scheduleJob({ rule: "*/5 * * * *", tz: "Asia/Kuala_Lumpur" }, async () 
     await supabase.from("booking_records").delete().eq("status", "Belum").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
     await supabase.from("treatment_records").delete().eq("status", "Belum").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
     await supabase.from("oncall_records").delete().eq("status", "Belum").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
+    // RESTORE STOK UNTUK PRODUK YANG TERBENGKALAI (FPX TIMEOUT)
+    try {
+        const { data: abandonedOrders } = await supabase.from("product_orders").select("senarai_produk").eq("status", "Preparing").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
+        if (abandonedOrders && abandonedOrders.length > 0) {
+           for (let order of abandonedOrders) {
+              try {
+                 const items = typeof order.senarai_produk === "string" ? JSON.parse(order.senarai_produk) : order.senarai_produk;
+                 for (let id in items) {
+                    let qty = parseInt(items[id].qty) || 0;
+                    if (qty > 0) {
+                       const { data: pData } = await supabase.from("products").select("stok").eq("id", id).maybeSingle();
+                       if (pData) {
+                           let currentStok = parseInt(pData.stok) || 0;
+                           await supabase.from("products").update({ stok: currentStok + qty }).eq("id", id);
+                       }
+                    }
+                 }
+              } catch (e) {
+                 console.error("Gagal memulihkan stok terbengkalai:", e);
+              }
+           }
+        }
+    } catch (e) {
+        console.error("Gagal mendapatkan pesanan produk terbengkalai:", e);
+    }
     await supabase.from("product_orders").delete().eq("status", "Preparing").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
   } catch (err) {
     console.error("Gagal membersihkan slot terbengkalai:", err);

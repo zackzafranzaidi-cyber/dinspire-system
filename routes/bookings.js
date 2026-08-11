@@ -804,7 +804,7 @@ router.post(
 
       const { data: productsDB } = await supabase
         .from("products")
-        .select("id, nama, harga")
+        .select("id, nama, harga, stok")
         .in("id", itemIds);
       if (!productsDB || productsDB.length === 0)
         return res
@@ -818,7 +818,13 @@ router.post(
       for (let id of itemIds) {
         let dbProduct = productsDB.find((p) => p.id == id);
         if (dbProduct) {
+          let currentStock = parseInt(dbProduct.stok) || 0;
           let qty = Math.max(1, Math.min(100, parseInt(cart_items[id].qty) || 1));
+          
+          if (qty > currentStock) {
+              return res.status(400).json({ status: "error", message: `Maaf, stok untuk ${dbProduct.nama} tidak mencukupi (Tinggal ${currentStock}).` });
+          }
+          
           trustedCartItems[id] = {
             id: dbProduct.id,
             name: dbProduct.nama, // Guna nama dari DB (Bukan dari pelayar)
@@ -828,6 +834,14 @@ router.post(
           };
           totalProductsPrice += parseFloat(dbProduct.harga) * qty;
         }
+      }
+      
+      // POTONG STOK SEKARANG (Reserve Inventory)
+      for (let id in trustedCartItems) {
+         let p = trustedCartItems[id];
+         let dbProduct = productsDB.find((prod) => prod.id == id);
+         let newStock = Math.max(0, (parseInt(dbProduct.stok) || 0) - p.qty);
+         await supabase.from("products").update({ stok: newStock }).eq("id", id);
       }
 
       const order_uuid = crypto.randomUUID();

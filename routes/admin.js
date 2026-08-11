@@ -189,6 +189,7 @@ router.get(
             name: p.nama,
             price: p.harga,
             imageUrl: p.gambar,
+            stok: p.stok,
           })),
           Posters: posters,
           Settings: settings,
@@ -394,7 +395,7 @@ router.post(
         }
         
         await syncData("products", processedProducts, (i) => ({
-          id: i.id, nama: i.name, harga: Math.max(0, parseFloat(i.price) || 0), gambar: i.imageUrl
+          id: i.id, nama: i.name, harga: Math.max(0, parseFloat(i.price) || 0), gambar: i.imageUrl, stok: Math.max(0, parseInt(i.stok) || 0)
         }));
       }
 

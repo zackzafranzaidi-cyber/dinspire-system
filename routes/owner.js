@@ -529,6 +529,26 @@ router.post(
         if (error) throw error;
         return res.json({ status: "success", message: "Bayaran produk diluluskan. Sila proses tempahan." });
       } else if (action === "reject") {
+        // RESTORE STOK SEBAB REJECT
+        const { data: orderData } = await supabase.from("product_orders").select("senarai_produk").eq("id", order_id).maybeSingle();
+        if (orderData && orderData.senarai_produk) {
+            try {
+                const items = typeof orderData.senarai_produk === "string" ? JSON.parse(orderData.senarai_produk) : orderData.senarai_produk;
+                for (let id in items) {
+                    let qty = parseInt(items[id].qty) || 0;
+                    if (qty > 0) {
+                       const { data: pData } = await supabase.from("products").select("stok").eq("id", id).maybeSingle();
+                       if (pData) {
+                           let currentStok = parseInt(pData.stok) || 0;
+                           await supabase.from("products").update({ stok: currentStok + qty }).eq("id", id);
+                       }
+                    }
+                }
+            } catch (e) {
+                console.error("Gagal memulihkan stok semasa penolakan:", e);
+            }
+        }
+        
         const { error } = await supabase
           .from("product_orders")
           .update({ status: "Rejected" })

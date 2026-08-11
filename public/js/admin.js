@@ -398,6 +398,11 @@ function renderProducts(dataArr, container) {
               <input type="number" step="0.01" value="${escapeHTML(row.price || "")}" onchange="updateData('Products', ${index}, 'price', this.value)" placeholder="0.00">
             </div>
           </div>
+          
+          <div class="product-input-group">
+            <label>Stok Kuantiti</label>
+            <input type="number" min="0" value="${escapeHTML(row.stok ?? 0)}" onchange="updateData('Products', ${index}, 'stok', this.value)" placeholder="0">
+          </div>
         </div>
 
         <div class="product-actions">
