@@ -100,6 +100,207 @@ body {
   .bottom-nav {
     display: none;
   }
+  .main-content-wrapper {
+    padding-bottom: 2rem !important;
+  }
+}
+
+
+
+/* ========================================================
+   [DIBAIKI] SEGMENTED CONTROL LEBIH PANJANG AGAR TIDAK TERLIPAT
+   ======================================================== */
+.segmented-control {
+  position: relative;
+  display: flex;
+  background-color: #e5e5ea;
+  border-radius: 20px;
+  padding: 3px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 320px;
+  margin: 0;
+  align-items: center;
+  height: 36px; /* FIXED HEIGHT */
+}
+@media (max-width: 768px) {
+  .segmented-control {
+    margin: 0 auto;
+  }
+}
+
+.segmented-control input[type="radio"] {
+  display: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+.segmented-control label {
+  position: relative;
+  flex: 1;
+  text-align: center;
+  padding: 0;
+  height: 30px;
+  line-height: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8e8e93;
+  cursor: pointer;
+  z-index: 2;
+  transition: 0.3s ease;
+  white-space: nowrap; /* Teks tidak akan berlapis */
+}
+.segmented-control .slider {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 2);
+  background-color: #ffffff;
+  border-radius: 17px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: left 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 1;
+}
+
+.segmented-control.three-tabs {
+  max-width: 420px;
+}
+.segmented-control.three-tabs .slider {
+  width: calc((100% - 6px) / 3);
+}
+
+#tab-tx-servis:checked ~ .slider {
+  left: 3px;
+}
+#tab-tx-produk:checked ~ .slider {
+  left: calc(3px + (100% - 6px) / 2);
+}
+#tab-rev-list:checked ~ .slider {
+  left: 3px;
+}
+#tab-rev-marketing:checked ~ .slider {
+  left: calc(3px + (100% - 6px) / 2);
+}
+#tab-punch-hadir:checked ~ .slider {
+  left: 3px;
+}
+#tab-punch-cuti:checked ~ .slider {
+  left: calc(3px + (100% - 6px) / 3);
+}
+#tab-punch-kecemasan:checked ~ .slider {
+  left: calc(3px + ((100% - 6px) / 3) * 2);
+}
+
+#tab-tx-servis:checked ~ label[for="tab-tx-servis"],
+#tab-tx-produk:checked ~ label[for="tab-tx-produk"],
+#tab-punch-hadir:checked ~ label[for="tab-punch-hadir"],
+#tab-punch-cuti:checked ~ label[for="tab-punch-cuti"],
+#tab-punch-kecemasan:checked ~ label[for="tab-punch-kecemasan"] {
+  color: #111827;
+}
+
+/* ========================================================
+   [DIBAIKI] BADGE IN/OUT LEBIH MODEN (TIDAK TERPUTUS DUA)
+   ======================================================== */
+.badge-in-out {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  display: inline-block;
+  white-space: nowrap;
+}
+.badge-in {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.badge-out {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+/* RESPONSIVE TYPOGRAPHY MOBILE */
+@media (max-width: 480px) {
+  body {
+    font-size: 11px !important;
+  }
+  .card {
+    padding: 0.75rem !important;
+    border-radius: 0.6rem !important;
+  }
+
+  nav.text-\[10px\] {
+    font-size: 9px !important;
+    margin-bottom: 2px !important;
+  }
+  h2#page-title {
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+  }
+
+  select#timeFilter {
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+  }
+
+  .card p.text-\[9px\],
+  .card p.text-\[10px\] {
+    font-size: 8px !important;
+    line-height: 1.3 !important;
+    margin-bottom: 2px !important;
+  }
+  .card p.text-base,
+  .card p.text-lg {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin-top: 2px !important;
+  }
+
+  .card .text-xs {
+    font-size: 9px !important;
+  }
+  .card .bg-gray-100.p-2 {
+    padding: 6px !important;
+    font-size: 12px !important;
+  }
+
+  .card h3.text-sm {
+    font-size: 11px !important;
+    margin-bottom: 8px !important;
+  }
+  table.text-sm {
+    font-size: 11px !important;
+  }
+  thead.text-xs th {
+    font-size: 9px !important;
+    padding: 8px 10px !important;
+  }
+  tbody td {
+    padding: 10px !important;
+  }
+
+
+
+  .nav-item {
+    font-size: 8.5px !important;
+  }
+  .nav-item i {
+    font-size: 15px !important;
+    margin-bottom: 2px !important;
+  }
+}
+
+@media (max-width: 360px) {
+
+  .card p.text-base,
+  .card p.text-lg {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+  }
+  h2#page-title {
     font-size: 16px !important;
   }
 }
