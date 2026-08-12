@@ -138,6 +138,7 @@ router.get(
         { data: staffList },
         { data: branchList },
         { data: staffLeaves },
+        { data: productsList },
       ] = await Promise.all([
         supabase
           .from("product_orders")
@@ -154,6 +155,7 @@ router.get(
         supabase.from("staff").select("username, jenis_staf, branch_id"),
         supabase.from("branches").select("id, nama_cawangan"),
         supabase.from("staff_leaves").select("*, staff(username)").order("tarikh", { ascending: true }),
+        supabase.from("products").select("nama, stok, harga"),
       ]);
 
       let mapBarberBranch = {};
@@ -180,6 +182,7 @@ router.get(
           orders: productOrders || [],
           reviews: reviews || [],
           commissionPercent: commissionPercent,
+          products: productsList || [],
         },
         mapBarberBranch: mapBarberBranch,
       });

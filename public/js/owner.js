@@ -855,6 +855,18 @@ function processData() {
   animateNumber("val-commission", totalComm, "RM ", "", 2);
   animateNumber("val-products-rm", productRev, "RM ", "", 2);
   animateNumber("val-orders-count", productOrderCount, "", "", 0);
+  
+  // Calculate total product stock
+  let totalStock = 0;
+  if (masterData.products && masterData.products.length > 0) {
+    masterData.products.forEach(p => {
+      totalStock += parseInt(p.stok) || 0;
+    });
+  }
+  if (document.getElementById("val-products-stock")) {
+    animateNumber("val-products-stock", totalStock, "", "", 0);
+  }
+  
   animateNumber("val-services-count", filteredBookings.length, "", "", 0);
   document.getElementById("val-walkin-booking").innerText =
     `${countHcWalkin} / ${countHcBooking}`;

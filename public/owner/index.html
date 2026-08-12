@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.29";
+      const CURRENT_APP_VERSION = "1.1.30";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -701,14 +701,24 @@
               </div>
             </div>
             <div
-              class="mt-2 pt-1 border-t border-gray-100 flex justify-between items-center text-[9px] md:text-[10px] w-full text-gray-400"
+              class="mt-2 pt-1 border-t border-gray-100 flex flex-col justify-center text-[9px] md:text-[10px] w-full text-gray-400 gap-1"
             >
-              <span>Order Quantity:</span>
-              <span
-                class="font-bold text-gray-900 text-right"
-                id="val-orders-count"
-                >0</span
-              >
+              <div class="flex justify-between items-center w-full">
+                <span>Order Quantity:</span>
+                <span
+                  class="font-bold text-gray-900 text-right"
+                  id="val-orders-count"
+                  >0</span
+                >
+              </div>
+              <div class="flex justify-between items-center w-full">
+                <span data-i18n="card-stock">Total Stock:</span>
+                <span
+                  class="font-bold text-gray-900 text-right"
+                  id="val-products-stock"
+                  >0</span
+                >
+              </div>
             </div>
           </div>
 
