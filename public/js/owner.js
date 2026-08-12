@@ -413,7 +413,7 @@ async function loginSystem(allowedRoles) {
   const username = document.getElementById("sys-username").value.trim();
   const password = document.getElementById("sys-password").value.trim();
   const remember = document.getElementById("login-remember").checked;
-  const btn = document.querySelector(".login-box button");
+  const btn = document.querySelector("#login-overlay button");
 
   if (!username || !password) {
     alert("Sila isi nama pengguna dan kata laluan.");
