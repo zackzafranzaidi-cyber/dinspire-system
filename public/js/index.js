@@ -1032,14 +1032,25 @@ function renderProducts(searchQuery = "") {
         (p) => {
           const stockLeft = parseInt(p.stok) || 0;
           const isOutOfStock = stockLeft <= 0;
-          const btnColor = isOutOfStock ? "bg-red-500" : "bg-gray-600";
+          const btnColor = isOutOfStock ? "bg-gray-400 opacity-70 cursor-not-allowed" : "bg-gray-600";
           const btnText = isOutOfStock ? "Habis Stok" : i18n_index[currentLang]["products-btn-add"];
+          
+          let imgOverlay = "";
+          let stockBadge = "";
+          
+          if (isOutOfStock) {
+              imgOverlay = `<div style="position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.6); display:flex; justify-content:center; align-items:center; z-index:10; border-radius:10px;"><span style="background:#4b5563; color:white; padding:4px 12px; border-radius:4px; font-weight:bold; font-size:12px; border: 2px solid white;">HABIS STOK</span></div>`;
+          } else {
+              stockBadge = `<div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); color:#fff; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold; z-index:11;">Baki Stok: ${stockLeft}</div>`;
+          }
+
           return `
             <div class="product-card" style="position:relative;">
-                <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); color:#fff; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">
-                    Baki Stok: ${stockLeft}
+                ${stockBadge}
+                <div style="position:relative; margin-bottom:10px;">
+                    ${imgOverlay}
+                    <img src="${p.imageUrl || "https://via.placeholder.com/150"}" class="product-img" style="margin-bottom:0;" alt="${escapeHTML(p.name)}" onerror="this.src='https://via.placeholder.com/150'">
                 </div>
-                <img src="${p.imageUrl || "https://via.placeholder.com/150"}" class="product-img" alt="${escapeHTML(p.name)}" onerror="this.src='https://via.placeholder.com/150'">
                 <div class="product-info">
                     <div class="product-title">${escapeHTML(p.name)}</div>
                     <div class="product-price">RM ${parseFloat(p.price).toFixed(2)}</div>
