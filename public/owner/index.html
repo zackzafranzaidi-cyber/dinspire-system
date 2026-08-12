@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.19";
+      const CURRENT_APP_VERSION = "1.1.20";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -88,6 +88,15 @@
       
       /* --- KEMASKINI GLASSMORPHISM LOGIN --- */
       #login-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 99999;
+          display: flex;
+          justify-content: center;
+          align-items: center;
           background-color: #1a1025;
           background-image: radial-gradient(circle at center, rgba(110, 45, 90, 0.6) 0%, #1a1025 80%);
           font-family: 'Inter', sans-serif;
