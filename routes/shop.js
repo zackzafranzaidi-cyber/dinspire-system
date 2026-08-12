@@ -152,6 +152,7 @@ router.get("/", async (req, res) => {
         name: p.nama,
         price: p.harga,
         imageUrl: p.gambar,
+        stok: p.stok,
       })),
       Posters: posters,
       Reviews: formattedReviews,
