@@ -1033,7 +1033,7 @@ function renderProducts(searchQuery = "") {
           const stockLeft = parseInt(p.stok) || 0;
           const isOutOfStock = stockLeft <= 0;
           const btnColor = isOutOfStock ? "bg-gray-400 opacity-70 cursor-not-allowed" : "bg-gray-600";
-          const btnText = isOutOfStock ? "Habis Stok" : i18n_index[currentLang]["products-btn-add"];
+          const btnText = i18n_index[currentLang]["products-btn-add"];
           
           let imgOverlay = "";
           let stockBadge = "";
