@@ -1032,7 +1032,8 @@ function renderProducts(searchQuery = "") {
         (p) => {
           const stockLeft = parseInt(p.stok) || 0;
           const isOutOfStock = stockLeft <= 0;
-          const btnColor = isOutOfStock ? "bg-gray-400 opacity-70 cursor-not-allowed" : "bg-gray-600";
+          const btnClass = isOutOfStock ? "text-white rounded-lg px-2 py-1.5 text-xs font-bold" : "bg-gray-600 text-white rounded-lg px-2 py-1.5 text-xs font-bold";
+          const btnStyle = isOutOfStock ? "background-color: #9ca3af; cursor: not-allowed; opacity: 0.7;" : "";
           const btnText = i18n_index[currentLang]["products-btn-add"];
           
           let imgOverlay = "";
@@ -1060,7 +1061,7 @@ function renderProducts(searchQuery = "") {
                             <span class="qty-num text-xs font-bold text-center w-5" id="temp-qty-${p.id}">1</span>
                             <button class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="changeTempQty('${p.id}', 1, ${stockLeft})">+</button>
                         </div>
-                        <button class="add-btn ${btnColor} text-white rounded-lg px-2 py-1.5 text-xs font-bold" ${isOutOfStock ? "disabled" : ""} onclick="addToCart('${p.id}', '${escapeHTML(p.name || "")}', ${parseFloat(p.price)}, '${p.imageUrl}', ${stockLeft})">${btnText}</button>
+                        <button class="add-btn ${btnClass}" style="${btnStyle}" ${isOutOfStock ? "disabled" : ""} onclick="addToCart('${p.id}', '${escapeHTML(p.name || "")}', ${parseFloat(p.price)}, '${p.imageUrl}', ${stockLeft})">${btnText}</button>
                     </div>
                 </div>
             </div>
