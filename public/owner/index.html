@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.25";
+      const CURRENT_APP_VERSION = "1.1.26";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -135,22 +135,22 @@
       }
       .glass-input-group input {
           width: 100%;
-          padding: 12px 20px 12px 48px;
-          background: transparent;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 30px;
+          padding: 16px 16px 16px 45px;
+          background: rgba(0, 0, 0, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 100px;
           color: #ffffff;
-          font-size: 13px;
-          font-family: 'Inter', sans-serif;
-          box-sizing: border-box;
+          font-size: 15px;
           outline: none;
-          transition: border-color 0.3s ease;
+          transition: all 0.3s;
+          box-sizing: border-box;
       }
       .glass-input-group input::placeholder {
-          color: #a0a0a0;
+          color: rgba(255, 255, 255, 0.4);
       }
       .glass-input-group input:focus {
-          border-color: rgba(255, 255, 255, 0.5);
+          background: rgba(0, 0, 0, 0.6);
+          border-color: rgba(255, 255, 255, 0.3);
       }
       .glass-options {
           display: flex;
@@ -180,19 +180,19 @@
           text-decoration: underline;
       }
       .glass-btn-signin {
-          width: 150px;
-          display: block;
-          margin: 0 auto;
-          padding: 12px;
+          width: 100%;
+          padding: 16px;
+          background: linear-gradient(135deg, #8ba8f9, #c4a1f4);
           border: none;
-          border-radius: 30px;
-          background: linear-gradient(90deg, #7ab0e6 0%, #a18cd1 100%);
+          border-radius: 100px;
           color: #ffffff;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 600;
           cursor: pointer;
-          box-shadow: 0 4px 15px rgba(122, 176, 230, 0.3);
-          transition: opacity 0.3s, transform 0.1s;
+          transition: 0.3s;
+          margin-top: 10px;
+          box-shadow: 0 4px 15px rgba(139, 168, 249, 0.3);
+          box-sizing: border-box;
       }
       .glass-btn-signin:hover {
           opacity: 0.9;
