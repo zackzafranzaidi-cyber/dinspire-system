@@ -29,7 +29,7 @@ const SCHEMAS = {
   OnCallBarbers: ["id", "name"],
   WalkInServices: ["id", "name", "price"],
   WalkInTreatments: ["id", "name", "price"],
-  Products: ["id", "name", "price", "imageUrl"],
+  Products: ["id", "name", "price", "imageUrl", "stok"],
   Posters: ["id", "imageUrl"],
   GeneralStaff: ["id", "name"],
 };
