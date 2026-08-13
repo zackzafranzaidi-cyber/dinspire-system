@@ -888,12 +888,14 @@ async function fetchShopData() {
             if (!firstSlide) return;
             const gap = parseFloat(window.getComputedStyle(posterTrack).gap) || 0;
             const slideWidth = firstSlide.offsetWidth + gap;
-            const index = Math.round(viewport.scrollLeft / slideWidth);
             
-            if (index >= shopData.Posters.length - 1) {
+            const maxScroll = viewport.scrollWidth - viewport.clientWidth;
+            if (viewport.scrollLeft >= maxScroll - 10) {
+              // At the end, go back to start
               viewport.scrollTo({ left: 0, behavior: 'smooth' });
             } else {
-              viewport.scrollTo({ left: (index + 1) * slideWidth, behavior: 'smooth' });
+              // Scroll to next slide
+              viewport.scrollTo({ left: viewport.scrollLeft + slideWidth, behavior: 'smooth' });
             }
           }, 4000);
         }
@@ -1644,13 +1646,16 @@ function renderHomeReviews() {
     let starsHtml = "★".repeat(r.stars || 5) + "☆".repeat(5 - (r.stars || 5));
     return `<div class="review-card">
                         <div class="review-header">
-                            <div class="avatar-circle">
-                                <img src="${r.avatar || "./Profile/1.png"}" onerror="this.src='./Profile/1.png'">
+                            <div class="review-header-left">
+                                <div class="avatar-circle">
+                                    <img src="${r.avatar || "./Profile/1.png"}" onerror="this.src='./Profile/1.png'">
+                                </div>
+                                <div class="reviewer-info">
+                                    <div class="reviewer-name">${escapeHTML(r.name)}</div>
+                                    <div class="review-time">1 day ago</div>
+                                </div>
                             </div>
-                            <div class="reviewer-info">
-                                <div class="reviewer-name">${escapeHTML(r.name)}</div>
-                                <div class="stars">${starsHtml}</div>
-                            </div>
+                            <div class="stars">${starsHtml}</div>
                         </div>
                         <div class="review-text">"${escapeHTML(r.text)}"</div>
                         <div class="service-tag">${escapeHTML(r.service)}</div>
