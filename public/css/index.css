@@ -91,6 +91,18 @@ body {
   .slider-track::after {
     flex: 0 0 calc(50vw - 300px) !important;
   }
+
+  /* Desktop Review Card Adjustment */
+  .review-card {
+    width: 340px !important;
+    padding: 16px !important;
+  }
+  .reviewer-name {
+    font-size: 15px !important;
+  }
+  .review-text {
+    font-size: 14px !important;
+  }
 }
 
 .view-content {
