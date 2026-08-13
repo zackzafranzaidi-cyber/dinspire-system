@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.33";
+      const CURRENT_APP_VERSION = "1.1.34";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -491,8 +491,25 @@
             ></div>
           </div>
           
-          <div id="total-customers-container" style="text-align: center; margin-top: 15px; font-size: 13px; color: var(--text-muted); font-weight: 600;">
-            <i class="fas fa-users" style="color: var(--primary-blue); margin-right: 4px;"></i> <span id="total-customers-count">0</span> <span data-i18n="home-registered-customers">Pelanggan Berdaftar</span>
+          <div class="stats-card" style="margin: 25px 20px 35px; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #F3F4F6;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #1C1C1E; margin-bottom: 6px;" data-i18n="home-stats-title">Thank you for your support!</h3>
+            <p style="font-size: 12px; color: #8E8E93; line-height: 1.5; margin-bottom: 25px; font-weight: 500;" data-i18n="home-stats-desc">We are proud to serve our community.</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px; color: #8E8E93; font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+                  <i class="fas fa-users" style="color:#1C1C1E;"></i> <span data-i18n="home-registered-customers">Total Customers</span>
+                </div>
+                <div style="font-size: 26px; font-weight: 800; color: #1C1C1E; letter-spacing: -0.5px;" id="total-customers-count">0</div>
+              </div>
+              
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px; color: #8E8E93; font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+                  <i class="fas fa-store" style="color:#1C1C1E;"></i> <span data-i18n="home-active-branches">Active Branches</span>
+                </div>
+                <div style="font-size: 26px; font-weight: 800; color: #1C1C1E; letter-spacing: -0.5px;" id="total-branches-count">0</div>
+              </div>
+            </div>
           </div>
         </div>
 

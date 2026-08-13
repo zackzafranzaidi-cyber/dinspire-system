@@ -45,7 +45,10 @@ const i18n_index = {
     "home-location": "Dinspire home",
     "home-promo": "Promotions & News",
     "home-reviews": "Live Customer Reviews",
-    "home-registered-customers": "Registered Customers",
+    "home-registered-customers": "Total Customers",
+    "home-stats-title": "Thank you for your support!",
+    "home-stats-desc": "We are proud to serve our community.",
+    "home-active-branches": "Active Branches",
 
     // Services View
     "services-title": "Service Booking",
@@ -174,7 +177,10 @@ const i18n_index = {
     "home-location": "Dinspire home",
     "home-promo": "Promosi & Berita",
     "home-reviews": "Ulasan Live Pelanggan",
-    "home-registered-customers": "Pelanggan Berdaftar",
+    "home-registered-customers": "Jumlah Pelanggan",
+    "home-stats-title": "Terima kasih atas sokongan anda!",
+    "home-stats-desc": "Kami berbangga berkhidmat untuk komuniti kami.",
+    "home-active-branches": "Cawangan Aktif",
 
     // Services View
     "services-title": "Tempahan Perkhidmatan",
