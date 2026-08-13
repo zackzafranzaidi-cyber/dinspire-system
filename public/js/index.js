@@ -518,7 +518,15 @@ function handleLogout(askConfirm = true) {
 
   let typingTimeout;
   function playGreetingAnimation(name) {
-    const container = document.getElementById('home-greeting-container');
+    let container = document.getElementById('home-greeting-container');
+    if (!container) {
+      // Fallback untuk cache lama
+      const headerDiv = document.querySelector('.header > div');
+      if (headerDiv) {
+        container = headerDiv.querySelector('h1');
+        if (container) container.id = 'home-greeting-container';
+      }
+    }
     if (!container) return;
     clearTimeout(typingTimeout);
 
