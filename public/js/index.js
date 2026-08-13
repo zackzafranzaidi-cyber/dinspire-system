@@ -865,36 +865,38 @@ async function fetchShopData() {
       
       // Sync dots on manual scroll
       if (viewport && paginationContainer) {
-        viewport.onscroll = () => {
-          const firstSlide = viewport.querySelector('.slide');
-          if (!firstSlide) return;
-          const slideWidth = firstSlide.offsetWidth + 12; // 12px gap
-          const index = Math.round(viewport.scrollLeft / slideWidth);
-          const dots = paginationContainer.querySelectorAll('.dot');
-          dots.forEach((dot, i) => {
-            if (i === index) dot.classList.add('active');
-            else dot.classList.remove('active');
-          });
-        };
-      }
-
-      if (window.sliderInterval) clearInterval(window.sliderInterval);
-      if (shopData.Posters.length > 1) {
-        window.sliderInterval = setInterval(() => {
-          if (!viewport || !viewport.offsetParent || document.hidden) return;
-          const maxScroll = viewport.scrollWidth - viewport.clientWidth;
-          
-          if (viewport.scrollLeft >= maxScroll - 10) {
-            viewport.scrollTo({ left: 0, behavior: 'smooth' });
-          } else {
-            // Find current snapped slide
+          viewport.onscroll = () => {
             const firstSlide = viewport.querySelector('.slide');
-            const slideWidth = firstSlide ? firstSlide.offsetWidth + 12 : viewport.clientWidth;
+            if (!firstSlide) return;
+            const gap = parseFloat(window.getComputedStyle(posterTrack).gap) || 0;
+            const slideWidth = firstSlide.offsetWidth + gap;
             const index = Math.round(viewport.scrollLeft / slideWidth);
-            viewport.scrollTo({ left: (index + 1) * slideWidth, behavior: 'smooth' });
-          }
-        }, 4000);
-      }
+            const dots = paginationContainer.querySelectorAll('.dot');
+            dots.forEach((dot, i) => {
+              if (i === index) dot.classList.add('active');
+              else dot.classList.remove('active');
+            });
+          };
+        }
+  
+        if (window.sliderInterval) clearInterval(window.sliderInterval);
+        if (shopData.Posters.length > 1) {
+          window.sliderInterval = setInterval(() => {
+            if (!viewport || !viewport.offsetParent || document.hidden) return;
+            const maxScroll = viewport.scrollWidth - viewport.clientWidth;
+            
+            if (viewport.scrollLeft >= maxScroll - 10) {
+              viewport.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+              // Find current snapped slide
+              const firstSlide = viewport.querySelector('.slide');
+              const gap = parseFloat(window.getComputedStyle(posterTrack).gap) || 0;
+              const slideWidth = firstSlide ? firstSlide.offsetWidth + gap : viewport.clientWidth;
+              const index = Math.round(viewport.scrollLeft / slideWidth);
+              viewport.scrollTo({ left: (index + 1) * slideWidth, behavior: 'smooth' });
+            }
+          }, 4000);
+        }
     } else {
       posterTrack.innerHTML = `<div class="slide"><div class="poster-card"><div style="color:gray; font-size:12px; font-weight:bold;">Tiada Promosi Dijalankan</div></div></div>`;
       if (paginationContainer) paginationContainer.innerHTML = '';
