@@ -68,10 +68,16 @@ body {
     justify-content: space-around !important;
   }
 
-  .view-section > :not(.header) {
+  .view-section > :not(.header):not(.slider-viewport):not(.reviews-container) {
     max-width: 400px;
     margin-left: auto !important;
     margin-right: auto !important;
+  }
+
+  /* Biarkan auto-slider dan review meregang ke hujung skrin (desktop) */
+  .slider-viewport, .reviews-container {
+    max-width: 100% !important;
+    width: 100% !important;
   }
 }
 
