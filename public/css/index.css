@@ -97,6 +97,35 @@ body {
   }
 }
 
+/* Mobile Review Card Scaling */
+@media (max-width: 767px) {
+  .review-card {
+    width: 230px !important;
+    padding: 12px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+  .avatar-circle {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .reviewer-name {
+    font-size: 11.5px !important;
+  }
+  .review-time {
+    font-size: 9px !important;
+  }
+  .stars {
+    font-size: 9.5px !important;
+  }
+  .review-text {
+    font-size: 10.5px !important;
+  }
+  .service-tag {
+    font-size: 10.5px !important;
+  }
+}
+
 .view-content {
   flex: 1;
   overflow-y: auto;
