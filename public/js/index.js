@@ -890,7 +890,9 @@ async function fetchShopData() {
             const slideWidth = firstSlide.offsetWidth + gap;
             
             const maxScroll = viewport.scrollWidth - viewport.clientWidth;
-            if (viewport.scrollLeft >= maxScroll - 10) {
+            const currentIndex = Math.round(viewport.scrollLeft / slideWidth);
+            const isLastSlide = currentIndex >= shopData.Posters.length - 1;
+            if (isLastSlide || viewport.scrollLeft >= maxScroll - 10) {
               // At the end, go back to start
               viewport.scrollTo({ left: 0, behavior: 'smooth' });
             } else {
