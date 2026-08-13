@@ -19,6 +19,7 @@ router.get("/", async (req, res) => {
       { data: stData, error: e4 },
       { data: prData, error: e5 },
       { data: allSettings, error: e6 },
+      { count: customerCount, error: e7 },
     ] = await Promise.all([
       supabase.from("haircuts").select("*").limit(200),
       supabase.from("treatments").select("*").limit(200),
@@ -27,10 +28,11 @@ router.get("/", async (req, res) => {
       supabase.from("products").select("*").limit(200),
       // [DIBAIKI] Ketirisan Rahsia Syarikat: Jangan fetch peratus_komisen
       supabase.from("settings").select("setting_key, setting_value").in("setting_key", ["posters", "shipping_fee", "service_fee"]).limit(50),
+      supabase.from("customers").select("*", { count: "exact", head: true }),
     ]);
 
-    if (e1 || e2 || e3 || e4 || e5 || e6) {
-      throw (e1 || e2 || e3 || e4 || e5 || e6);
+    if (e1 || e2 || e3 || e4 || e5 || e6 || e7) {
+      throw (e1 || e2 || e3 || e4 || e5 || e6 || e7);
     }
 
     let posters = [];
@@ -163,6 +165,7 @@ router.get("/", async (req, res) => {
       Posters: posters,
       Reviews: formattedReviews,
       Settings: { shippingFee, serviceFee },
+      TotalCustomers: customerCount || 0,
     };
 
     cache.set("shop_data", result, 300); // Set cache selama 5 minit

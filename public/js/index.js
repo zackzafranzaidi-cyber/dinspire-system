@@ -1728,6 +1728,12 @@ function renderHomeReviews() {
   let reviews = shopData.Reviews || [];
   const container = document.querySelector(".reviews-container");
   if (!container) return;
+  
+  // Update total customers
+  const totalCustomersEl = document.getElementById("total-customers-count");
+  if (totalCustomersEl && shopData.TotalCustomers !== undefined) {
+    totalCustomersEl.innerText = shopData.TotalCustomers;
+  }
 
   if (reviews.length === 0) {
     container.innerHTML = `<div style="text-align:center; padding:20px; font-size:12px; color:var(--text-muted); font-weight:600;">Belum ada ulasan daripada pelanggan.</div>`;

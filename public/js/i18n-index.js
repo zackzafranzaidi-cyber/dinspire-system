@@ -45,6 +45,7 @@ const i18n_index = {
     "home-location": "Dinspire home",
     "home-promo": "Promotions & News",
     "home-reviews": "Live Customer Reviews",
+    "home-registered-customers": "Registered Customers",
 
     // Services View
     "services-title": "Service Booking",
@@ -173,6 +174,7 @@ const i18n_index = {
     "home-location": "Dinspire home",
     "home-promo": "Promosi & Berita",
     "home-reviews": "Ulasan Live Pelanggan",
+    "home-registered-customers": "Pelanggan Berdaftar",
 
     // Services View
     "services-title": "Tempahan Perkhidmatan",
