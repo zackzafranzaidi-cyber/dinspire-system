@@ -1487,16 +1487,6 @@ select.input-field {
     font-size: 9.5px !important;
     margin: 8px 10px 4px !important;
   }
-  .review-card {
-    width: 200px !important;
-    padding: 8px !important;
-  }
-  .reviewer-name {
-    font-size: 11px !important;
-  }
-  .review-text {
-    font-size: 10px !important;
-  }
 
   .checkout-bar {
     padding: 6px 12px !important;
