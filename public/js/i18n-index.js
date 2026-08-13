@@ -38,6 +38,10 @@ const i18n_index = {
     // Home View
     "home-welcome": "Hello ",
     "home-guest": "new friend :)",
+    "home-morning": "Good morning",
+    "home-afternoon": "Good afternoon",
+    "home-evening": "Good evening",
+    "home-night": "Good night",
     "home-location": "Dinspire home",
     "home-promo": "Promotions & News",
     "home-reviews": "Live Customer Reviews",
@@ -161,7 +165,11 @@ const i18n_index = {
 
     // Home View
     "home-welcome": "Hello ",
-    "home-guest": "new friend :)",
+    "home-guest": "kawan baru :)",
+    "home-morning": "Selamat pagi",
+    "home-afternoon": "Selamat petang",
+    "home-evening": "Selamat malam",
+    "home-night": "Selamat malam",
     "home-location": "Dinspire home",
     "home-promo": "Promosi & Berita",
     "home-reviews": "Ulasan Live Pelanggan",

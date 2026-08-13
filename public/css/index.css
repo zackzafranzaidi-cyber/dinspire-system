@@ -1884,3 +1884,17 @@ select.input-field {
 .checkout-bar {
   bottom: calc(65px + env(safe-area-inset-bottom)) !important;
 }
+
+/* Typing Animation Cursor */
+.typing-cursor {
+  font-weight: 300;
+  color: var(--primary-blue);
+}
+.typing-cursor.blink {
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+

@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.25";
+      const CURRENT_APP_VERSION = "1.1.26";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -464,7 +464,7 @@
         <div id="view-home" class="view-section active">
           <div class="header">
               <div>
-                <h1><span data-i18n="home-welcome">Hello</span> <span id="home-welcome-name" data-i18n="home-guest">new friend :)</span></h1>
+                <h1 id="home-greeting-container"><span data-i18n="home-welcome">Hello</span> <span id="home-welcome-name" data-i18n="home-guest">new friend :)</span></h1>
                 <div class="location" data-i18n="home-location">Dinspire home</div>
               </div>
               <button class="lang-btn" onclick="toggleLanguage()">

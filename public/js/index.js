@@ -39,6 +39,12 @@ function updateLanguage(lang) {
     }
   });
 
+  // Retrigger greeting animation
+  if (typeof playGreetingAnimation === "function" && typeof currentUser !== "undefined") {
+    let nameStr = currentUser ? escapeHTML(currentUser.name || currentUser.username) : (i18n_index[lang] ? i18n_index[lang]["home-guest"].replace(" :)", "") : "new friend");
+    playGreetingAnimation(nameStr);
+  }
+
   // Re-render dynamic sections if data exists
   if (typeof renderServices === "function") renderServices();
   if (typeof renderProducts === "function") renderProducts();
@@ -510,31 +516,100 @@ function handleLogout(askConfirm = true) {
   }
 }
 
-function checkLoginState() {
-  let session = localStorage.getItem("din_logged_user") || sessionStorage.getItem("din_logged_user");
-  if (session) {
-    currentUser = JSON.parse(session);
-    document.getElementById("account-logged-out").style.display = "none";
-    document.getElementById("account-logged-in").style.display = "block";
-    document.getElementById("profile-name").innerText = escapeHTML(
-      currentUser.name || currentUser.username,
-    );
-    document.getElementById("profile-phone").innerText = escapeHTML(
-      currentUser.phone,
-    );
-    document.getElementById("profile-avatar").src = escapeHTML(
-      currentUser.avatar_url || "./Profile/1.png",
-    );
-    document.getElementById("home-welcome-name").innerText = escapeHTML(
-      currentUser.name || currentUser.username,
-    ) + " :)";
-  } else {
-    currentUser = null;
-    document.getElementById("account-logged-out").style.display = "block";
-    document.getElementById("account-logged-in").style.display = "none";
-    document.getElementById("home-welcome-name").innerText = "new friend :)";
+  let typingTimeout;
+  function playGreetingAnimation(name) {
+    const container = document.getElementById('home-greeting-container');
+    if (!container) return;
+    clearTimeout(typingTimeout);
+
+    container.innerHTML = '<span id="typing-text"></span><span class="typing-cursor">|</span>';
+    const textElement = document.getElementById('typing-text');
+    const cursorElement = document.querySelector('.typing-cursor');
+
+    const lang = localStorage.getItem("user_lang") || "en";
+    const i18n = typeof i18n_index !== "undefined" ? i18n_index[lang] : null;
+    
+    const prefix = i18n ? (i18n["home-welcome"] || "Hello ") : "Hello ";
+    const greeting1 = prefix + name + " :)";
+
+    const hour = new Date().getHours();
+    let timeGreetingKey = "home-night";
+    if (hour >= 5 && hour < 12) timeGreetingKey = "home-morning";
+    else if (hour >= 12 && hour < 17) timeGreetingKey = "home-afternoon";
+    else if (hour >= 17 && hour < 20) timeGreetingKey = "home-evening";
+
+    let timeText = i18n ? (i18n[timeGreetingKey] || "Good day") : "Good day";
+    const greeting2 = timeText + ", " + name + "!";
+
+    let i = 0;
+    let phase = 0;
+    
+    function type() {
+      if (!textElement) return;
+      if (phase === 0) {
+        textElement.innerText = greeting1.substring(0, i + 1);
+        i++;
+        if (i === greeting1.length) {
+          phase = 1;
+          typingTimeout = setTimeout(type, 1500); 
+        } else {
+          typingTimeout = setTimeout(type, 80);
+        }
+      } else if (phase === 1) {
+        phase = 2;
+        type();
+      } else if (phase === 2) {
+        textElement.innerText = greeting1.substring(0, i - 1);
+        i--;
+        if (i === 0) {
+          phase = 3;
+          typingTimeout = setTimeout(type, 300);
+        } else {
+          typingTimeout = setTimeout(type, 40);
+        }
+      } else if (phase === 3) {
+        textElement.innerText = greeting2.substring(0, i + 1);
+        i++;
+        if (i === greeting2.length) {
+          if (cursorElement) cursorElement.classList.add('blink');
+        } else {
+          typingTimeout = setTimeout(type, 80);
+        }
+      }
+    }
+    
+    typingTimeout = setTimeout(type, 500);
   }
-}
+
+  function checkLoginState() {
+    let session = localStorage.getItem("din_logged_user") || sessionStorage.getItem("din_logged_user");
+    let nameStr = "new friend";
+    
+    if (session) {
+      currentUser = JSON.parse(session);
+      document.getElementById("account-logged-out").style.display = "none";
+      document.getElementById("account-logged-in").style.display = "block";
+      document.getElementById("profile-name").innerText = escapeHTML(
+        currentUser.name || currentUser.username,
+      );
+      document.getElementById("profile-phone").innerText = escapeHTML(
+        currentUser.phone,
+      );
+      document.getElementById("profile-avatar").src = escapeHTML(
+        currentUser.avatar_url || "./Profile/1.png",
+      );
+      nameStr = escapeHTML(currentUser.name || currentUser.username);
+    } else {
+      currentUser = null;
+      document.getElementById("account-logged-out").style.display = "block";
+      document.getElementById("account-logged-in").style.display = "none";
+      const lang = localStorage.getItem("user_lang") || "en";
+      const i18n = typeof i18n_index !== "undefined" ? i18n_index[lang] : null;
+      nameStr = i18n ? i18n["home-guest"].replace(" :)", "") : "new friend";
+    }
+    
+    playGreetingAnimation(nameStr);
+  }
 
 function openAvatarModal() {
   document.getElementById("avatar-modal-overlay").classList.add("active");
