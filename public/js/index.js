@@ -883,16 +883,16 @@ async function fetchShopData() {
         if (shopData.Posters.length > 1) {
           window.sliderInterval = setInterval(() => {
             if (!viewport || !viewport.offsetParent || document.hidden) return;
-            const maxScroll = viewport.scrollWidth - viewport.clientWidth;
             
-            if (viewport.scrollLeft >= maxScroll - 10) {
+            const firstSlide = viewport.querySelector('.slide');
+            if (!firstSlide) return;
+            const gap = parseFloat(window.getComputedStyle(posterTrack).gap) || 0;
+            const slideWidth = firstSlide.offsetWidth + gap;
+            const index = Math.round(viewport.scrollLeft / slideWidth);
+            
+            if (index >= shopData.Posters.length - 1) {
               viewport.scrollTo({ left: 0, behavior: 'smooth' });
             } else {
-              // Find current snapped slide
-              const firstSlide = viewport.querySelector('.slide');
-              const gap = parseFloat(window.getComputedStyle(posterTrack).gap) || 0;
-              const slideWidth = firstSlide ? firstSlide.offsetWidth + gap : viewport.clientWidth;
-              const index = Math.round(viewport.scrollLeft / slideWidth);
               viewport.scrollTo({ left: (index + 1) * slideWidth, behavior: 'smooth' });
             }
           }, 4000);
