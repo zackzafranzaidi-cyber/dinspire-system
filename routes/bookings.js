@@ -346,7 +346,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
     }
     res
       .status(500)
-      .json({ status: "error", message: "Ralat pelayan memproses tempahan." });
+      .json({ status: "error", message: "Ralat pelayan memproses tempahan: " + (error.message || error.toString()) });
   }
 });
 
