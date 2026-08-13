@@ -1285,8 +1285,15 @@ function openEditCartPopup() {
 }
 
 function updateEditCartQty(id, delta) {
-  if (!cartState[id]) return;
-  cartState[id].qty += delta;
+    if (!cartState[id]) return;
+    
+    if (delta > 0 && cartState[id].maxStock !== undefined) {
+      if (cartState[id].qty + delta > cartState[id].maxStock) {
+        return alert("Gagal menambah. Baki stok hanya tinggal " + cartState[id].maxStock + " unit.");
+      }
+    }
+
+    cartState[id].qty += delta;
   if (cartState[id].qty <= 0) {
     delete cartState[id];
   }
@@ -1514,8 +1521,9 @@ function changeTempQty(id, delta, maxStock) {
     
     if (cartState[id]) {
       cartState[id].qty += qty;
+      cartState[id].maxStock = maxStock;
     } else {
-      cartState[id] = { id, name, price, imgUrl, qty };
+      cartState[id] = { id, name, price, imgUrl, qty, maxStock };
     }
     qtyEl.innerText = 1;
     updateCartUI();
