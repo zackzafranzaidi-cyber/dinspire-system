@@ -81,14 +81,14 @@ body {
 
   /* Desktop Auto-Slider Poster Adjustment */
   .slide {
-    flex: 0 0 500px !important;
+    flex: 0 0 600px !important;
   }
   .slider-track {
-    gap: calc(50vw - 310px) !important;
+    gap: calc(50vw - 360px) !important;
   }
   .slider-track::before,
   .slider-track::after {
-    flex: 0 0 calc(50vw - 250px) !important;
+    flex: 0 0 calc(50vw - 300px) !important;
   }
 
   /* Desktop Review Card Adjustment */
