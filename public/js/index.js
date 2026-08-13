@@ -586,7 +586,8 @@ function handleLogout(askConfirm = true) {
       }
     }
     
-    typingTimeout = setTimeout(type, 500);
+    // Delay 3 saat pada mulanya supaya skrin loading (preloader) sempat hilang
+    typingTimeout = setTimeout(type, 3000);
   }
 
   function checkLoginState() {
