@@ -580,8 +580,23 @@ function handleLogout(askConfirm = true) {
         i++;
         if (i === greeting2.length) {
           if (cursorElement) cursorElement.classList.add('blink');
+          phase = 4;
+          typingTimeout = setTimeout(type, 3000); // Tunggu 3 saat sebelum buang semula
         } else {
           typingTimeout = setTimeout(type, 80);
+        }
+      } else if (phase === 4) {
+        if (cursorElement) cursorElement.classList.remove('blink');
+        phase = 5;
+        type();
+      } else if (phase === 5) {
+        textElement.innerText = greeting2.substring(0, i - 1);
+        i--;
+        if (i === 0) {
+          phase = 0; // Kembali ke Hello
+          typingTimeout = setTimeout(type, 500);
+        } else {
+          typingTimeout = setTimeout(type, 40);
         }
       }
     }
