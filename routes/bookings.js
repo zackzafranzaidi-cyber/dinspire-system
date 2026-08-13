@@ -300,7 +300,6 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       staff_id: staff_id,
       harga_rm: harga_rm,
       service_fee: serviceFee,
-      jenis_bayaran: payment_method === "qr" ? "QR" : "FPX",
       resit: payment_method === "qr" ? finalReceiptUrl : `FPX_PENDING:${fpxResult.transaction_id}`,
       status: payment_method === "qr" ? "Pending Verification" : "Belum", // [DIBAIKI] Status manual
     };
@@ -407,7 +406,6 @@ router.put(
       let finalTotalHarga = parsedPrice + existingServiceFee;
 
       let payload = { status: "Selesai", harga_rm: finalTotalHarga };
-      if (jenis_bayaran && jenis_bayaran !== "") payload.jenis_bayaran = jenis_bayaran;
       if (finalReceiptUrl) payload.resit_selesai = finalReceiptUrl;
 
       let query = supabase
