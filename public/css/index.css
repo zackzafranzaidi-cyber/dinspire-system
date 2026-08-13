@@ -79,6 +79,18 @@ body {
     max-width: 100% !important;
     width: 100% !important;
   }
+
+  /* Desktop Auto-Slider Poster Adjustment */
+  .slide {
+    flex: 0 0 600px !important;
+  }
+  .slider-track {
+    gap: calc(50vw - 360px) !important;
+  }
+  .slider-track::before,
+  .slider-track::after {
+    flex: 0 0 calc(50vw - 300px) !important;
+  }
 }
 
 .view-content {
