@@ -72,7 +72,7 @@ router.get("/", async (req, res) => {
       // 3. HANYA tarik rekod tempahan yang berkaitan dengan ulasan (Bukan tarik semua)
       const { data: bData } = await supabase
         .from("booking_records")
-        .select("no_booking, nama_pelanggan, no_phone, haircuts(nama_potongan)")
+        .select("no_booking, nama_pelanggan, no_phone, haircuts(nama_potongan), staff(branches(nama_cawangan))")
         .in("no_booking", bookingIds);
       bookData = bData || [];
 
@@ -100,6 +100,11 @@ router.get("/", async (req, res) => {
           (c) => c.phone === b.no_phone || c.name === b.nama_pelanggan,
         );
       }
+      
+      let branchName = "Cawangan Dinspire";
+      if (b && b.staff && b.staff.branches && b.staff.branches.nama_cawangan) {
+          branchName = b.staff.branches.nama_cawangan;
+      }
 
       return {
         name: b ? b.nama_pelanggan : "Pelanggan",
@@ -107,6 +112,7 @@ router.get("/", async (req, res) => {
         stars: r.bintang,
         text: r.review_text,
         avatar: cust && cust.avatar_url ? cust.avatar_url : "./Profile/1.png",
+        branch: branchName
       };
     });
 

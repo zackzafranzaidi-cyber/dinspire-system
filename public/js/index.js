@@ -1652,7 +1652,7 @@ function renderHomeReviews() {
                                 </div>
                                 <div class="reviewer-info">
                                     <div class="reviewer-name">${escapeHTML(r.name)}</div>
-                                    <div class="review-time">1 day ago</div>
+                                    <div class="review-time">${escapeHTML(r.branch || "Cawangan Dinspire")}</div>
                                 </div>
                             </div>
                             <div class="stars">${starsHtml}</div>
