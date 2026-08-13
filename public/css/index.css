@@ -46,14 +46,32 @@ body {
 }
 
 /* Responsiveness: Tablet (Widen) & Desktop (Slimmer Phone Look) */
-@media (min-width: 481px) and (max-width: 1024px) {
+@media (min-width: 481px) and (max-width: 767px) {
   .mobile-container {
     max-width: 768px; /* Tambah keluasan untuk tablet */
   }
 }
-@media (min-width: 1025px) {
+@media (min-width: 768px) {
   .mobile-container {
-    max-width: 400px; /* Kurangkan lebar screen phone di laptop/desktop */
+    max-width: 100%; /* Luaskan background penuh mengikut skrin */
+  }
+
+  /* Pengekalan content di tengah tanpa mengganggu layout dalam (400px asalnya) */
+  .header {
+    padding-left: calc(max(20px, (100% - 400px) / 2)) !important;
+    padding-right: calc(max(20px, (100% - 400px) / 2)) !important;
+  }
+
+  .bottom-nav {
+    padding-left: calc(max(0px, (100% - 400px) / 2)) !important;
+    padding-right: calc(max(0px, (100% - 400px) / 2)) !important;
+    justify-content: space-around !important;
+  }
+
+  .view-section > :not(.header) {
+    max-width: 400px;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 }
 
