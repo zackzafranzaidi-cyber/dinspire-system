@@ -863,21 +863,39 @@ async function fetchShopData() {
       
       const viewport = document.querySelector(".slider-viewport");
       
-      // Sync dots on manual scroll
+      // Sync dots and 3D Coverflow on manual scroll
       if (viewport && paginationContainer) {
-          viewport.onscroll = () => {
-            const firstSlide = viewport.querySelector('.slide');
-            if (!firstSlide) return;
-            const gap = parseFloat(window.getComputedStyle(posterTrack).gap) || 0;
-            const slideWidth = firstSlide.offsetWidth + gap;
-            const index = Math.round(viewport.scrollLeft / slideWidth);
-            const dots = paginationContainer.querySelectorAll('.dot');
-            dots.forEach((dot, i) => {
-              if (i === index) dot.classList.add('active');
-              else dot.classList.remove('active');
-            });
-          };
-        }
+        const updateCoverflow = () => {
+          const firstSlide = viewport.querySelector('.slide');
+          if (!firstSlide) return;
+          const gap = parseFloat(window.getComputedStyle(posterTrack).gap) || 0;
+          const slideWidth = firstSlide.offsetWidth + gap;
+          const index = Math.round(viewport.scrollLeft / slideWidth);
+          const dots = paginationContainer.querySelectorAll('.dot');
+          dots.forEach((dot, i) => {
+            if (i === index) dot.classList.add('active');
+            else dot.classList.remove('active');
+          });
+
+          // 3D Coverflow Effect
+          const viewportCenter = viewport.scrollLeft + viewport.clientWidth / 2;
+          const slides = viewport.querySelectorAll('.slide');
+          slides.forEach(slide => {
+              const slideCenter = slide.offsetLeft + (slide.offsetWidth / 2);
+              const distance = slideCenter - viewportCenter;
+              let normalized = distance / slideWidth;
+              normalized = Math.max(-1, Math.min(1, normalized));
+              const scale = 1 - Math.abs(normalized) * 0.15;
+              const rotateY = normalized * 45; // Positive 45: outer edges push back
+              const translateX = normalized * -40; 
+              slide.style.transform = `perspective(1000px) translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`;
+              slide.style.zIndex = Math.round(100 - Math.abs(normalized) * 100);
+          });
+        };
+
+        viewport.onscroll = updateCoverflow;
+        setTimeout(updateCoverflow, 50); // Init on load
+      }
   
         if (window.sliderInterval) clearInterval(window.sliderInterval);
         if (shopData.Posters.length > 1) {
