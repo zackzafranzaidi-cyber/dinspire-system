@@ -320,16 +320,16 @@ body {
   margin-top: 12px;
 }
 .dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background-color: #d1d1d1;
   transition: all 0.3s ease;
 }
 .dot.active {
   background-color: var(--primary-blue);
-  width: 16px;
-  border-radius: 4px;
+  width: 12px;
+  border-radius: 3px;
 }
 
 .reviews-container {
