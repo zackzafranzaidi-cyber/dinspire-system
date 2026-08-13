@@ -12,15 +12,15 @@ router.get("/", async (req, res) => {
       return res.json(cachedData);
     }
 
-    const [
+    let [
       { data: hcData, error: e1 },
       { data: trData, error: e2 },
       { data: brData, error: e3 },
       { data: stData, error: e4 },
       { data: prData, error: e5 },
       { data: allSettings, error: e6 },
-      { count: customerCount, error: e7 },
-      { count: walkinCount, error: e8 },
+      { data: custData, error: e7 },
+      { data: walkinData, error: e8 },
     ] = await Promise.all([
       supabase.from("haircuts").select("*").limit(200),
       supabase.from("treatments").select("*").limit(200),
@@ -29,13 +29,44 @@ router.get("/", async (req, res) => {
       supabase.from("products").select("*").limit(200),
       // [DIBAIKI] Ketirisan Rahsia Syarikat: Jangan fetch peratus_komisen
       supabase.from("settings").select("setting_key, setting_value").in("setting_key", ["posters", "shipping_fee", "service_fee"]).limit(50),
-      supabase.from("customers").select("*", { count: "exact", head: true }),
-      supabase.from("walkin_records").select("*", { count: "exact", head: true }),
+      supabase.from("customers").select("phone"),
+      supabase.from("walkin_records").select("no_phone"),
     ]);
 
     if (e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8) {
       throw (e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8);
     }
+
+    // Calculate total unique customers (same logic as owner dashboard)
+    const uniqueCustomers = new Set();
+    let anonymousWalkins = 0;
+
+    const formatPhone = (phone) => {
+      let p = String(phone).replace(/\D/g, "");
+      if (p.startsWith("0")) p = "6" + p;
+      else if (p.startsWith("+60")) p = p.substring(1);
+      else if (!p.startsWith("60")) p = "60" + p;
+      return p;
+    };
+
+    (custData || []).forEach(c => {
+      if (c.phone) {
+        const p = formatPhone(c.phone);
+        if (p.length > 5) uniqueCustomers.add(p);
+      }
+    });
+
+    (walkinData || []).forEach(w => {
+      if (w.no_phone) {
+        const p = formatPhone(w.no_phone);
+        if (p.length > 5) uniqueCustomers.add(p);
+        else anonymousWalkins++;
+      } else {
+        anonymousWalkins++;
+      }
+    });
+
+    const totalCalculatedCustomers = uniqueCustomers.size + anonymousWalkins;
 
     let posters = [];
     let shippingFee = 0.0;
@@ -167,7 +198,7 @@ router.get("/", async (req, res) => {
       Posters: posters,
       Reviews: formattedReviews,
       Settings: { shippingFee, serviceFee },
-      TotalCustomers: (customerCount || 0) + (walkinCount || 0),
+      TotalCustomers: totalCalculatedCustomers,
     };
 
     cache.set("shop_data", result, 300); // Set cache selama 5 minit
