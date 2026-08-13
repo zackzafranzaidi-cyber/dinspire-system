@@ -1619,7 +1619,7 @@ function renderNotifications() {
               names.push(`${items[k].name} (x${items[k].qty})`);
             itemsStr = names.join(", ");
           } catch (e) {}
-          productsHtml += `<div style="background:var(--bg-surface); padding:18px; border-radius:16px; margin-bottom:15px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:12px; font-weight:800; color:var(--text-muted); font-family:monospace;">ID: ${o.id.substring(0, 8).toUpperCase()}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${o.status.toUpperCase()}</span></div><div style="font-size:14px; font-weight:700; margin-top:10px; color:var(--text-main); line-height:1.4;">${itemsStr}</div>${trackInfo}${actionBtn}</div>`;
+          productsHtml += `<div style="background:var(--bg-surface); padding:14px; border-radius:10px; margin-bottom:10px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:12px; font-weight:800; color:var(--text-muted); font-family:monospace;">ID: ${o.id.substring(0, 8).toUpperCase()}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${o.status.toUpperCase()}</span></div><div style="font-size:14px; font-weight:700; margin-top:10px; color:var(--text-main); line-height:1.4;">${itemsStr}</div>${trackInfo}${actionBtn}</div>`;
         } else {
           let badgeStyle =
             o.status === "Pending Verification"
@@ -1643,7 +1643,7 @@ function renderNotifications() {
               }
           }
           
-          servicesHtml += `<div style="background:var(--bg-surface); padding:18px; border-radius:16px; margin-bottom:15px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:13px; font-weight:800; color:var(--primary-blue); font-family:monospace;">NO: ${o.id}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${displayStatus}</span></div><div style="font-size:14px; font-weight:700; margin-top:8px; color:var(--text-main);">${o.service_name}</div><div style="font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600;"><i class="fas fa-calendar-alt"></i> ${o.date} &nbsp; <i class="fas fa-clock"></i> ${o.time}</div>${actionBtnService}</div>`;
+          servicesHtml += `<div style="background:var(--bg-surface); padding:14px; border-radius:10px; margin-bottom:10px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:13px; font-weight:800; color:var(--primary-blue); font-family:monospace;">NO: ${o.id}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${displayStatus}</span></div><div style="font-size:14px; font-weight:700; margin-top:8px; color:var(--text-main);">${o.service_name}</div><div style="font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600;"><i class="fas fa-calendar-alt"></i> ${o.date} &nbsp; <i class="fas fa-clock"></i> ${o.time}</div>${actionBtnService}</div>`;
         }
       });
       
