@@ -1740,18 +1740,18 @@ function submitCustomerReview(event) {
     const placeholderImg = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=400&q=80";
     
     const branchesHtml = branches.map(b => `
-      <div class="branch-home-card">
-        <img src="${escapeHTML(b.image_url || placeholderImg)}" alt="${escapeHTML(b.name)}">
-        <div class="branch-home-info">
-          <h3>${escapeHTML(b.name)}</h3>
-          <p><i class="fas fa-map-marker-alt"></i> ${escapeHTML(b.location)}</p>
+        <div class="branch-home-card">
+          <img src="${escapeHTML(b.image_url || placeholderImg)}" alt="${escapeHTML(b.name)}">
+          <div class="branch-home-info">
+            <h3>${escapeHTML(b.name)}</h3>
+            <p><i class="fas fa-map-marker-alt"></i> ${escapeHTML(b.location)}</p>
+          </div>
         </div>
-      </div>
-    `).join("");
-    
-    // Duplicate content to create an endless loop
-    container.innerHTML = branchesHtml.repeat(4);
-  }
+      `).join("");
+      
+      // Duplicate content to create a pseudo-endless manual swipe slider
+      container.innerHTML = branchesHtml.repeat(20);
+    }
   
   function renderHomeReviews() {
   let reviews = shopData.Reviews || [];
