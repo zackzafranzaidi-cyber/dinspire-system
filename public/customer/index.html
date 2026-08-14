@@ -528,13 +528,12 @@
               .branches-slider { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 25px; scroll-snap-type: x mandatory; padding-left: 20px; padding-right: 20px; margin-left: -20px !important; margin-right: -20px !important; max-width: none !important; scrollbar-width: none; }
               .branches-slider::-webkit-scrollbar { display: none; }
               .branch-home-card { flex: 0 0 280px; scroll-snap-align: center; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); display: flex; flex-direction: column; }
-              .branch-home-card img { width: 100%; height: 160px; object-fit: cover; }
+              .branch-home-card img { width: 100%; aspect-ratio: 7/4; object-fit: cover; }
               .branch-home-info { padding: 15px; }
               .branch-home-info h3 { font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0 0 5px 0; }
               .branch-home-info p { font-size: 12px; font-weight: 500; color: var(--text-muted); margin: 0; display: flex; align-items: center; gap: 5px; }
               @media (min-width: 480px) {
                 .branch-home-card { flex: 0 0 calc(100% - 40px); }
-                .branch-home-card img { height: 400px; }
                 .branch-home-info h3 { font-size: 24px; }
                 .branch-home-info p { font-size: 16px; }
               }
