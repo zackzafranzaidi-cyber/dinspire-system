@@ -1749,8 +1749,17 @@ function submitCustomerReview(event) {
         </div>
       `).join("");
       
-      // Duplicate content to create a pseudo-endless manual swipe slider
-      container.innerHTML = branchesHtml.repeat(20);
+      // Duplicate content 40 times to create a pseudo-endless manual swipe slider
+      container.innerHTML = branchesHtml.repeat(40);
+      
+      // Letakkan skrol di tengah-tengah supaya "tiada permulaan" (boleh swipe ke kiri)
+      setTimeout(() => {
+        const card = container.querySelector('.branch-home-card');
+        if (card) {
+          const setWidth = branches.length * (card.offsetWidth + 15);
+          container.scrollLeft = 20 * setWidth; // Mula di set ke-20
+        }
+      }, 150);
     }
   
   function renderHomeReviews() {
