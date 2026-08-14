@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.41";
+      const CURRENT_APP_VERSION = "1.1.42";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -497,7 +497,7 @@
               <h3 style="font-size: 20px; font-weight: 700; color: #111827; margin: 0; letter-spacing: -0.3px;" data-i18n="home-stats-title">Thank you for your support!</h3>
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: clamp(10px, 5vw, 60px);">
               <div style="text-align: center;">
                 <div style="font-size: clamp(24px, 7vw, 42px); font-weight: 700; color: #4F46E5; letter-spacing: -1px; line-height: 1; margin-bottom: 8px;" id="customer-satisfaction-count">0%</div>
                 <div style="font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 6px;" data-i18n="home-satisfaction">Satisfaction</div>
