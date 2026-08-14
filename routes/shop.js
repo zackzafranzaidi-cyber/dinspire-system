@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
       { data: stData, error: e4 },
       { data: prData, error: e5 },
       { data: allSettings, error: e6 },
-      { data: custData, error: e7 },
+      { data: allCustomersData, error: e7 },
       { data: walkinData, error: e8 },
     ] = await Promise.all([
       supabase.from("haircuts").select("*").limit(200),
@@ -49,7 +49,7 @@ router.get("/", async (req, res) => {
       return p;
     };
 
-    (custData || []).forEach(c => {
+    (allCustomersData || []).forEach(c => {
       if (c.phone) {
         const p = formatPhone(c.phone);
         if (p.length > 5) uniqueCustomers.add(p);
