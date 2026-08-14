@@ -1739,7 +1739,7 @@ function submitCustomerReview(event) {
     // Placeholder image since DB doesn't have image column yet
     const placeholderImg = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=400&q=80";
     
-    container.innerHTML = branches.map(b => `
+    const branchesHtml = branches.map(b => `
       <div class="branch-home-card">
         <img src="${escapeHTML(b.image_url || placeholderImg)}" alt="${escapeHTML(b.name)}">
         <div class="branch-home-info">
@@ -1748,6 +1748,9 @@ function submitCustomerReview(event) {
         </div>
       </div>
     `).join("");
+    
+    // Duplicate content to create an endless loop
+    container.innerHTML = branchesHtml.repeat(4);
   }
   
   function renderHomeReviews() {
