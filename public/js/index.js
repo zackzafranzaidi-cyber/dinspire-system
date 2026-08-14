@@ -927,6 +927,8 @@ async function fetchShopData() {
     document.getElementById("services-treatments").innerHTML =
       `<div class="section-title">Rawatan & Terapi</div>` +
       buildCard(shopData.Treatments || [], "tr", "Rawatan", "Treatments");
+      
+    renderHomeBranches();
 
     let oncallSvc = document.getElementById("oncall-service-dropdown");
     if (oncallSvc)
@@ -1724,7 +1726,31 @@ function submitCustomerReview(event) {
 }
 
 // [DIBAIKI] Penggunaan escapeHTML pada setiap string dari database
-function renderHomeReviews() {
+  function renderHomeBranches() {
+    const container = document.getElementById("home-branches-container");
+    if (!container) return;
+    
+    let branches = shopData.Branches || [];
+    if (branches.length === 0) {
+      container.innerHTML = `<div style="padding:20px; font-size:13px; color:var(--text-muted);">Tiada cawangan tersedia.</div>`;
+      return;
+    }
+    
+    // Placeholder image since DB doesn't have image column yet
+    const placeholderImg = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=400&q=80";
+    
+    container.innerHTML = branches.map(b => `
+      <div class="branch-home-card">
+        <img src="${escapeHTML(b.image_url || placeholderImg)}" alt="${escapeHTML(b.name)}">
+        <div class="branch-home-info">
+          <h3>${escapeHTML(b.name)}</h3>
+          <p><i class="fas fa-map-marker-alt"></i> ${escapeHTML(b.location)}</p>
+        </div>
+      </div>
+    `).join("");
+  }
+  
+  function renderHomeReviews() {
   let reviews = shopData.Reviews || [];
   const container = document.querySelector(".reviews-container");
   if (!container) return;
