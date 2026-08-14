@@ -45,10 +45,11 @@ const i18n_index = {
     "home-location": "Dinspire home",
     "home-promo": "Promotions & News",
     "home-reviews": "Live Customer Reviews",
-    "home-registered-customers": "Total Customers",
+    "home-satisfaction": "Satisfaction",
+    "home-registered-customers": "Customers",
     "home-stats-title": "Thank you for your support!",
     "home-stats-desc": "We are proud to serve our community.",
-    "home-active-branches": "Active Branches",
+    "home-active-branches": "Branches",
 
     // Services View
     "services-title": "Service Booking",
@@ -134,7 +135,7 @@ const i18n_index = {
   ms: {
     // PWA Prompt
     "pwa-title": "Pasang Aplikasi Ini",
-    "pwa-desc": "Akses pantas, tekan <strong>Share</strong> / <strong>Menu</strong> dan pilih <strong>'Add to Home Screen'</strong>.",
+    "pwa-desc": "Untuk akses pantas, tekan <strong>Share</strong> / <strong>Menu</strong> dan pilih <strong>'Add to Home Screen'</strong>.",
     "pwa-close": "Saya Faham, Tutup",
 
     // Checkout Modal
@@ -142,25 +143,25 @@ const i18n_index = {
     "checkout-subtitle": "Sila semak butiran pesanan sebelum sahkan",
     "checkout-pm-title": "Kaedah Pembayaran",
     "checkout-pm-qr": "DuitNow / Imbasan QR",
-    "checkout-pm-desc": "Sila buat bayaran penuh dan muat naik resit",
+    "checkout-pm-desc": "Sila buat pembayaran penuh dan muat naik resit",
     "checkout-shipping-title": "Maklumat Penghantaran",
     "checkout-main-address": "Alamat Utama",
-    "checkout-update-address": "Sila kemas kini alamat",
+    "checkout-update-address": "Sila kemaskini alamat anda",
     "checkout-order-details": "Butiran Pesanan",
     "checkout-subtotal": "Subtotal",
-    "checkout-shipping-fee": "Yuran Penghantaran",
-    "checkout-total": "Jumlah Keseluruhan",
+    "checkout-shipping-fee": "Caj Penghantaran",
+    "checkout-total": "Jumlah",
     "checkout-confirm-btn": "Sahkan Pembayaran",
 
     // Edit Cart Modal
-    "cart-edit-title": "Edit Troli Anda",
-    "cart-edit-desc": "Slide ke kiri untuk memadam item",
+    "cart-edit-title": "Kemaskini Troli",
+    "cart-edit-desc": "Tarik ke kiri untuk buang",
     "cart-edit-done": "Selesai Semak",
-    "cart-delete-btn": "Padam",
+    "cart-delete-btn": "Buang",
 
     // Success Screen
     "success-title": "Pembayaran Berjaya",
-    "success-desc": "Kami amat menghargai kepercayaan anda kepada kami.",
+    "success-desc": "Kami sangat menghargai kepercayaan anda terhadap kami.",
     "success-btn": "Teruskan",
 
     // Avatar Modal
@@ -168,19 +169,20 @@ const i18n_index = {
     "avatar-confirm": "Sahkan Pilihan",
 
     // Home View
-    "home-welcome": "Hello ",
-    "home-guest": "kawan baru :)",
+    "home-welcome": "Helo ",
+    "home-guest": "kawan baharu :)",
     "home-morning": "Selamat pagi",
     "home-afternoon": "Selamat petang",
-    "home-evening": "Selamat malam",
+    "home-evening": "Selamat senja",
     "home-night": "Selamat malam",
     "home-location": "Dinspire home",
     "home-promo": "Promosi & Berita",
     "home-reviews": "Ulasan Live Pelanggan",
-    "home-registered-customers": "Jumlah Pelanggan",
+    "home-satisfaction": "Kepuasan",
+    "home-registered-customers": "Pelanggan",
     "home-stats-title": "Terima kasih atas sokongan anda!",
     "home-stats-desc": "Kami berbangga berkhidmat untuk komuniti kami.",
-    "home-active-branches": "Cawangan Aktif",
+    "home-active-branches": "Cawangan",
 
     // Services View
     "services-title": "Tempahan Perkhidmatan",
