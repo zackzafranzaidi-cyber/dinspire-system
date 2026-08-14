@@ -472,20 +472,7 @@
               </button>
             </div>
             
-            <div class="section-title" data-i18n="home-branches-title">Our Branches</div>
-            <div class="branches-slider" id="home-branches-container" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scroll-snap-type: x mandatory; padding-left: 20px; padding-right: 20px; margin-left: -20px; margin-right: -20px; scrollbar-width: none;">
-              <!-- Javascript will render branch cards here -->
-            </div>
-            <style>
-              .branches-slider::-webkit-scrollbar { display: none; }
-              .branch-home-card { flex: 0 0 280px; scroll-snap-align: center; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); display: flex; flex-direction: column; }
-              .branch-home-card img { width: 100%; height: 160px; object-fit: cover; }
-              .branch-home-info { padding: 15px; }
-              .branch-home-info h3 { font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0 0 5px 0; }
-              .branch-home-info p { font-size: 12px; font-weight: 500; color: var(--text-muted); margin: 0; display: flex; align-items: center; gap: 5px; }
-            </style>
-            
-            <div class="section-title" style="margin-top: 15px;" data-i18n="home-promo">Promotions & News</div>
+            <div class="section-title" data-i18n="home-promo">Promotions & News</div>
           <div class="slider-viewport">
             <div class="slider-track" id="dynamic-slider-track"></div>
           </div>
@@ -527,13 +514,32 @@
               <div style="text-align: center;">
                 <div style="font-size: clamp(24px, 7vw, 42px); font-weight: 700; color: #4F46E5; letter-spacing: -1px; line-height: 1; margin-bottom: 8px;" id="total-branches-count">0</div>
                 <div style="font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 6px; white-space: nowrap;" data-i18n="home-active-branches">Branches</div>
-                <div style="font-size: 11px; font-weight: 400; color: #9CA3AF; line-height: 1.4;">Available locations.</div>
+                  <div style="font-size: 11px; font-weight: 400; color: #9CA3AF; line-height: 1.4;">Available locations.</div>
+                </div>
               </div>
+  
             </div>
-
+            
+            <div class="section-title" style="margin-top: 25px;" data-i18n="home-branches-title">Our Branches</div>
+            <div class="branches-slider" id="home-branches-container">
+              <!-- Javascript will render branch cards here -->
+            </div>
+            <style>
+              .branches-slider { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 25px; scroll-snap-type: x mandatory; padding-left: 20px; padding-right: 20px; margin-left: -20px; margin-right: -20px; scrollbar-width: none; }
+              .branches-slider::-webkit-scrollbar { display: none; }
+              .branch-home-card { flex: 0 0 280px; scroll-snap-align: center; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+              .branch-home-card img { width: 100%; height: 160px; object-fit: cover; }
+              .branch-home-info { padding: 15px; }
+              .branch-home-info h3 { font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0 0 5px 0; }
+              .branch-home-info p { font-size: 12px; font-weight: 500; color: var(--text-muted); margin: 0; display: flex; align-items: center; gap: 5px; }
+              @media (min-width: 480px) {
+                .branches-slider { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; overflow: visible; }
+                .branch-home-card { flex: auto; }
+              }
+            </style>
+            
           </div>
-        </div>
-
+  
         <div id="view-services" class="view-section">
           <div class="header">
               <div>
