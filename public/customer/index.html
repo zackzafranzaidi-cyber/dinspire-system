@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.40";
+      const CURRENT_APP_VERSION = "1.1.41";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -497,17 +497,23 @@
               <h3 style="font-size: 20px; font-weight: 700; color: #111827; margin: 0; letter-spacing: -0.3px;" data-i18n="home-stats-title">Thank you for your support!</h3>
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
               <div style="text-align: center;">
-                <div style="font-size: clamp(32px, 10vw, 42px); font-weight: 700; color: #4F46E5; letter-spacing: -1px; line-height: 1; margin-bottom: 8px;" id="total-customers-count">0</div>
-                <div style="font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 6px;" data-i18n="home-registered-customers">Total Customers</div>
-                <div style="font-size: 12px; font-weight: 400; color: #9CA3AF; line-height: 1.4;">Registered and walk-ins.</div>
+                <div style="font-size: clamp(24px, 7vw, 42px); font-weight: 700; color: #4F46E5; letter-spacing: -1px; line-height: 1; margin-bottom: 8px;" id="customer-satisfaction-count">0%</div>
+                <div style="font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 6px;" data-i18n="home-satisfaction">Satisfaction</div>
+                <div style="font-size: 11px; font-weight: 400; color: #9CA3AF; line-height: 1.4;">Based on reviews.</div>
+              </div>
+
+              <div style="text-align: center;">
+                <div style="font-size: clamp(24px, 7vw, 42px); font-weight: 700; color: #4F46E5; letter-spacing: -1px; line-height: 1; margin-bottom: 8px;" id="total-customers-count">0</div>
+                <div style="font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 6px;" data-i18n="home-registered-customers">Customers</div>
+                <div style="font-size: 11px; font-weight: 400; color: #9CA3AF; line-height: 1.4;">Registered & walk-ins.</div>
               </div>
               
               <div style="text-align: center;">
-                <div style="font-size: clamp(32px, 10vw, 42px); font-weight: 700; color: #4F46E5; letter-spacing: -1px; line-height: 1; margin-bottom: 8px;" id="total-branches-count">0</div>
-                <div style="font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 6px;" data-i18n="home-active-branches">Active Branches</div>
-                <div style="font-size: 12px; font-weight: 400; color: #9CA3AF; line-height: 1.4;">Available locations for you.</div>
+                <div style="font-size: clamp(24px, 7vw, 42px); font-weight: 700; color: #4F46E5; letter-spacing: -1px; line-height: 1; margin-bottom: 8px;" id="total-branches-count">0</div>
+                <div style="font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 6px;" data-i18n="home-active-branches">Branches</div>
+                <div style="font-size: 11px; font-weight: 400; color: #9CA3AF; line-height: 1.4;">Available locations.</div>
               </div>
             </div>
 

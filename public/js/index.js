@@ -1729,15 +1729,20 @@ function renderHomeReviews() {
   const container = document.querySelector(".reviews-container");
   if (!container) return;
   
-  // Update total customers & branches
+  // Update total customers & branches & satisfaction
   const totalCustomersEl = document.getElementById("total-customers-count");
   if (totalCustomersEl && shopData.TotalCustomers !== undefined) {
     totalCustomersEl.innerText = shopData.TotalCustomers.toLocaleString() + "+";
   }
-  
+
   const totalBranchesEl = document.getElementById("total-branches-count");
   if (totalBranchesEl && shopData.Branches) {
     totalBranchesEl.innerText = shopData.Branches.length;
+  }
+  
+  const custSatisfactionEl = document.getElementById("customer-satisfaction-count");
+  if (custSatisfactionEl && shopData.CustomerSatisfaction !== undefined) {
+    custSatisfactionEl.innerText = shopData.CustomerSatisfaction + "%";
   }
 
   if (reviews.length === 0) {

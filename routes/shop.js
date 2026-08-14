@@ -12,30 +12,32 @@ router.get("/", async (req, res) => {
       return res.json(cachedData);
     }
 
-    let [
-      { data: hcData, error: e1 },
-      { data: trData, error: e2 },
-      { data: brData, error: e3 },
-      { data: stData, error: e4 },
-      { data: prData, error: e5 },
-      { data: allSettings, error: e6 },
-      { data: allCustomersData, error: e7 },
-      { data: walkinData, error: e8 },
-    ] = await Promise.all([
-      supabase.from("haircuts").select("*").limit(200),
-      supabase.from("treatments").select("*").limit(200),
-      supabase.from("branches").select("*").limit(50),
-      supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment").limit(100),
-      supabase.from("products").select("*").limit(200),
-      // [DIBAIKI] Ketirisan Rahsia Syarikat: Jangan fetch peratus_komisen
-      supabase.from("settings").select("setting_key, setting_value").in("setting_key", ["posters", "shipping_fee", "service_fee"]).limit(50),
-      supabase.from("customers").select("phone"),
-      supabase.from("walkin_records").select("no_phone"),
-    ]);
+      let [
+        { data: hcData, error: e1 },
+        { data: trData, error: e2 },
+        { data: brData, error: e3 },
+        { data: stData, error: e4 },
+        { data: prData, error: e5 },
+        { data: allSettings, error: e6 },
+        { data: allCustomersData, error: e7 },
+        { data: walkinData, error: e8 },
+        { data: allReviewsData, error: e9 },
+      ] = await Promise.all([
+        supabase.from("haircuts").select("*").limit(200),
+        supabase.from("treatments").select("*").limit(200),
+        supabase.from("branches").select("*").limit(50),
+        supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment").limit(100),
+        supabase.from("products").select("*").limit(200),
+        // [DIBAIKI] Ketirisan Rahsia Syarikat: Jangan fetch peratus_komisen
+        supabase.from("settings").select("setting_key, setting_value").in("setting_key", ["posters", "shipping_fee", "service_fee"]).limit(50),
+        supabase.from("customers").select("phone"),
+        supabase.from("walkin_records").select("no_phone"),
+        supabase.from("reviews").select("bintang"),
+      ]);
 
-    if (e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8) {
-      throw (e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8);
-    }
+      if (e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9) {
+        throw (e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9);
+      }
 
     // Calculate total unique customers (same logic as owner dashboard)
     const uniqueCustomers = new Set();
@@ -200,6 +202,21 @@ router.get("/", async (req, res) => {
       Settings: { shippingFee, serviceFee },
       TotalCustomers: totalCalculatedCustomers,
     };
+
+    // Calculate Customer Satisfaction Percentage
+    let totalStars = 0;
+    let totalReviewsCount = 0;
+    (allReviewsData || []).forEach(r => {
+      if (r.bintang) {
+        totalStars += r.bintang;
+        totalReviewsCount++;
+      }
+    });
+    let customerSatisfaction = 100; // Default 100% if no reviews
+    if (totalReviewsCount > 0) {
+      customerSatisfaction = Math.round((totalStars / (totalReviewsCount * 5)) * 100);
+    }
+    result.CustomerSatisfaction = customerSatisfaction;
 
     cache.set("shop_data", result, 300); // Set cache selama 5 minit
     res.json(result);
