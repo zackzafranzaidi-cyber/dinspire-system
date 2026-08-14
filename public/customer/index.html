@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.36";
+      const CURRENT_APP_VERSION = "1.1.37";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -491,29 +491,31 @@
             ></div>
           </div>
           
-          <div class="stats-card-modern" style="margin: 30px 20px; background: linear-gradient(145deg, #ffffff, #f9fafb); border-radius: 28px; padding: 32px 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.8); display: flex; flex-wrap: wrap; gap: 25px; align-items: center; justify-content: space-between;">
-            <div style="flex: 1 1 250px;">
-              <h3 style="font-size: 22px; font-weight: 800; color: #111827; margin-bottom: 8px; letter-spacing: -0.5px;" data-i18n="home-stats-title">Thank you for your support!</h3>
-              <p style="font-size: 13px; color: #6B7280; line-height: 1.6; font-weight: 500; margin: 0;" data-i18n="home-stats-desc">We are proud to serve our community.</p>
+          <div class="stats-card-modern" style="margin: 30px 20px; background: white; border-radius: 24px; padding: 35px 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid #F3F4F6;">
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h3 style="font-size: 22px; font-weight: 800; color: #1C1C1E; margin-bottom: 6px; letter-spacing: -0.5px;" data-i18n="home-stats-title">Thank you for your support!</h3>
+              <p style="font-size: 13px; color: #8E8E93; line-height: 1.5; font-weight: 500; margin: 0;" data-i18n="home-stats-desc">We are proud to serve our community.</p>
             </div>
             
-            <div style="display: flex; flex-wrap: wrap; gap: 25px; flex: 1 1 200px;">
-              <div style="flex: 1 1 100px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                  <i class="fas fa-users" style="color: #4B5563; font-size: 14px;"></i>
-                  <span style="font-size: 32px; font-weight: 800; color: #111827; letter-spacing: -1px; line-height: 1;" id="total-customers-count">0</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div style="text-align: center;">
+                <div style="display: flex; justify-content: center; align-items: baseline; gap: 8px; margin-bottom: 4px;">
+                  <i class="fas fa-users" style="color: #1C1C1E; font-size: 16px;"></i>
+                  <span style="font-size: 38px; font-weight: 800; color: #1C1C1E; letter-spacing: -1.5px; line-height: 1;" id="total-customers-count">0</span>
                 </div>
-                <div style="font-size: 12px; font-weight: 600; color: #6B7280;" data-i18n="home-registered-customers">Total Customers</div>
+                <div style="font-size: 12px; font-weight: 600; color: #8E8E93;" data-i18n="home-registered-customers">Total Customers</div>
               </div>
               
-              <div style="flex: 1 1 100px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                  <i class="fas fa-store" style="color: #4B5563; font-size: 14px;"></i>
-                  <span style="font-size: 32px; font-weight: 800; color: #111827; letter-spacing: -1px; line-height: 1;" id="total-branches-count">0</span>
+              <div style="text-align: center;">
+                <div style="display: flex; justify-content: center; align-items: baseline; gap: 8px; margin-bottom: 4px;">
+                  <i class="fas fa-store" style="color: #1C1C1E; font-size: 16px;"></i>
+                  <span style="font-size: 38px; font-weight: 800; color: #1C1C1E; letter-spacing: -1.5px; line-height: 1;" id="total-branches-count">0</span>
                 </div>
-                <div style="font-size: 12px; font-weight: 600; color: #6B7280;" data-i18n="home-active-branches">Active Branches</div>
+                <div style="font-size: 12px; font-weight: 600; color: #8E8E93;" data-i18n="home-active-branches">Active Branches</div>
               </div>
             </div>
+
           </div>
         </div>
 
