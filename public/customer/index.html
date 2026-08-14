@@ -524,7 +524,7 @@
             <div class="branches-slider" id="home-branches-container">
               <!-- Javascript will render branch cards here -->
             </div>
-            <style>
+              <style>
               .branches-slider { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 25px; scroll-snap-type: x mandatory; padding-left: 20px; padding-right: 20px; margin-left: -20px; margin-right: -20px; scrollbar-width: none; }
               .branches-slider::-webkit-scrollbar { display: none; }
               .branch-home-card { flex: 0 0 280px; scroll-snap-align: center; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); display: flex; flex-direction: column; }
@@ -533,8 +533,9 @@
               .branch-home-info h3 { font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0 0 5px 0; }
               .branch-home-info p { font-size: 12px; font-weight: 500; color: var(--text-muted); margin: 0; display: flex; align-items: center; gap: 5px; }
               @media (min-width: 480px) {
-                .branches-slider { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; overflow: visible; }
-                .branch-home-card { flex: auto; }
+                .branches-slider { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; overflow-x: auto; }
+                .branch-home-card { flex: 0 0 340px; }
+                .branch-home-card img { height: 200px; }
               }
             </style>
             
