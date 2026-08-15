@@ -1737,7 +1737,7 @@ function submitCustomerReview(event) {
     }
     
     // Placeholder image since DB doesn't have image column yet
-    const placeholderImg = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=400&q=80";
+    const placeholderImg = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1200&q=80";
     
     const branchesHtml = branches.map(b => `
         <div class="branch-home-card">
