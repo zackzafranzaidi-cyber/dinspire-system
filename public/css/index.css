@@ -292,6 +292,11 @@ body {
   position: relative;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); /* Softer drop shadow */
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  transform: scale(0.93);
+}
+.slide.active .poster-card {
+  transform: scale(1);
 }
 .poster-card::after {
   content: "";
