@@ -950,10 +950,10 @@ async function fetchShopData() {
     const posterTrack = document.getElementById("dynamic-slider-track");
     const paginationContainer = document.querySelector(".pagination");
     if (shopData.Posters && shopData.Posters.length > 0) {
-        posterTrack.innerHTML = shopData.Posters.map(
-          (p, i) =>
-            `<div class="slide ${i === 0 ? 'active' : ''}"><div class="poster-card"><img src="${p.imageUrl}" alt="Promosi"></div></div>`,
-        ).join("");
+      posterTrack.innerHTML = shopData.Posters.map(
+        (p) =>
+          `<div class="slide"><div class="poster-card"><img src="${p.imageUrl}" alt="Promosi"></div></div>`,
+      ).join("");
       
       // Update pagination dots
       if (paginationContainer) {
@@ -976,11 +976,6 @@ async function fetchShopData() {
             dots.forEach((dot, i) => {
               if (i === index) dot.classList.add('active');
               else dot.classList.remove('active');
-            });
-            const allSlides = viewport.querySelectorAll('.slide');
-            allSlides.forEach((slideEl, i) => {
-                if (i === index) slideEl.classList.add('active');
-                else slideEl.classList.remove('active');
             });
           };
         }
