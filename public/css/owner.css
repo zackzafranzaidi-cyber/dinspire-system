@@ -83,7 +83,7 @@ body {
   transition: all 0.3s;
 }
 .nav-item.active {
-  color: #ffffff;
+  color: #ffffff !important;
 }
 .nav-item i {
   font-size: 18px;

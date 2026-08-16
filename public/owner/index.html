@@ -1386,65 +1386,67 @@
     <!-- NAVIGATION BAWAH (MOBILE) -->
     <nav
       class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-950 text-gray-500 flex justify-around items-center shadow-[0_-4px_20px_rgba(0,0,0,0.5)] z-50 border-t border-gray-800 rounded-t-2xl"
-      style="height: calc(65px + env(safe-area-inset-bottom, 0px)) !important; padding-bottom: env(safe-area-inset-bottom, 0px) !important;"
     >
-      <a
-        href="#"
-        onclick="switchTab('dashboard')"
-        class="nav-item flex flex-col items-center justify-center w-full h-full text-white active"
-        ><i class="fas fa-chart-pie text-lg mb-1"></i
-        ><span
-          class="text-[9px] font-bold tracking-wider"
-          data-i18n="mob-nav-sales"
-          >Analisis</span
-        ></a
-      >
-      <a
-        href="#"
-        onclick="switchTab('transactions')"
-        class="nav-item flex flex-col items-center justify-center w-full h-full hover:text-white transition"
-        ><i class="fas fa-exchange-alt text-lg mb-1"></i
-        ><span
-          class="text-[9px] font-bold tracking-wider"
-          data-i18n="mob-nav-orders"
-          >Pesanan</span
-        ></a
-      >
-      <a
-        href="#"
-        onclick="switchTab('ai')"
-        id="mob-nav-ai"
-        class="nav-item flex flex-col items-center justify-center w-full h-full text-purple-400 hover:text-purple-300 transition"
-        style="color: #a855f7"
-        ><i class="fas fa-brain text-lg mb-1"></i
-        ><span
-          class="text-[9px] font-bold tracking-wider"
-          data-i18n="mob-nav-ai"
-          >AI</span
-        ></a
-      >
-      <a
-        href="#"
-        onclick="switchTab('reviews')"
-        class="nav-item flex flex-col items-center justify-center w-full h-full hover:text-white transition"
-        ><i class="fas fa-star text-lg mb-1"></i
-        ><span
-          class="text-[9px] font-bold tracking-wider"
-          data-i18n="mob-nav-reviews"
-          >Ulasan</span
-        ></a
-      >
-      <a
-        href="#"
-        onclick="switchTab('punch')"
-        class="nav-item flex flex-col items-center justify-center w-full h-full hover:text-white transition"
-        ><i class="fas fa-fingerprint text-lg mb-1"></i
-        ><span
-          class="text-[9px] font-bold tracking-wider"
-          data-i18n="mob-nav-gps"
-          >Hadir</span
-        ></a
-      >
+        <a
+          href="#"
+          onclick="switchTab('dashboard')"
+          id="mob-nav-dashboard"
+          class="nav-item flex flex-col items-center justify-center w-full h-full text-[#9ca3af] hover:text-white transition active"
+          ><i class="fas fa-chart-pie text-lg mb-1"></i
+          ><span
+            class="text-[9px] font-bold tracking-wider"
+            data-i18n="mob-nav-sales"
+            >Analisis</span
+          ></a
+        >
+        <a
+          href="#"
+          onclick="switchTab('transactions')"
+          id="mob-nav-transactions"
+          class="nav-item flex flex-col items-center justify-center w-full h-full text-[#9ca3af] hover:text-white transition"
+          ><i class="fas fa-exchange-alt text-lg mb-1"></i
+          ><span
+            class="text-[9px] font-bold tracking-wider"
+            data-i18n="mob-nav-orders"
+            >Pesanan</span
+          ></a
+        >
+        <a
+          href="#"
+          onclick="switchTab('ai')"
+          id="mob-nav-ai"
+          class="nav-item flex flex-col items-center justify-center w-full h-full text-purple-400 hover:text-purple-300 transition"
+          ><i class="fas fa-brain text-lg mb-1"></i
+          ><span
+            class="text-[9px] font-bold tracking-wider"
+            data-i18n="mob-nav-ai"
+            >AI</span
+          ></a
+        >
+        <a
+          href="#"
+          onclick="switchTab('reviews')"
+          id="mob-nav-reviews"
+          class="nav-item flex flex-col items-center justify-center w-full h-full text-[#9ca3af] hover:text-white transition"
+          ><i class="fas fa-star text-lg mb-1"></i
+          ><span
+            class="text-[9px] font-bold tracking-wider"
+            data-i18n="mob-nav-reviews"
+            >Ulasan</span
+          ></a
+        >
+        <a
+          href="#"
+          onclick="switchTab('punch')"
+          id="mob-nav-punch"
+          class="nav-item flex flex-col items-center justify-center w-full h-full text-[#9ca3af] hover:text-white transition"
+          ><i class="fas fa-fingerprint text-lg mb-1"></i
+          ><span
+            class="text-[9px] font-bold tracking-wider"
+            data-i18n="mob-nav-gps"
+            >Hadir</span
+          ></a
+        >
     </nav>
 
     <!-- MODAL RESIT -->
