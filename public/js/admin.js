@@ -426,21 +426,21 @@ function renderProducts(dataArr, container) {
 }
 
 // [DIBAIKI] Fungsi Memampat Imej Diubah ke Sistem Promise yang Stabil
-function processImageCompression(file) {
+function processImageCompression(file, maxWidth = 1200) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = function (e) {
       const img = new Image();
       img.onload = function () {
         const canvas = document.createElement("canvas");
-        let scaleSize = img.width > 600 ? 600 / img.width : 1;
+        let scaleSize = img.width > maxWidth ? maxWidth / img.width : 1;
         canvas.width = img.width * scaleSize;
         canvas.height = img.height * scaleSize;
         const ctx = canvas.getContext("2d");
         ctx.fillStyle = "#FFFFFF";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.7));
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
       };
       img.src = e.target.result;
     };
