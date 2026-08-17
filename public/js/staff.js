@@ -855,14 +855,14 @@ function compressImage(file, callback) {
     const img = new Image();
     img.onload = function () {
       const canvas = document.createElement("canvas");
-      let scaleSize = img.width > 600 ? 600 / img.width : 1;
+      let scaleSize = img.width > 800 ? 800 / img.width : 1;
       canvas.width = img.width * scaleSize;
       canvas.height = img.height * scaleSize;
       const ctx = canvas.getContext("2d");
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      callback(canvas.toDataURL("image/jpeg", 0.6));
+      callback(canvas.toDataURL("image/jpeg", 0.7));
     };
     img.src = e.target.result;
   };
