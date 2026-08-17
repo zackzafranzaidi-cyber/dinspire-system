@@ -87,6 +87,19 @@ body {
   }
 
   /* Desktop Auto-Slider Poster Adjustment */
+  .service-card-inner {
+    padding: 24px 28px !important;
+  }
+  .service-card-inner .card-header h3 {
+    font-size: 17px !important;
+  }
+  .service-card-inner .card-header p {
+    font-size: 13px !important;
+  }
+  .service-card-inner .price {
+    font-size: 17px !important;
+  }
+
   .slide {
     flex: 0 0 600px !important;
   }
