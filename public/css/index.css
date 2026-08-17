@@ -72,9 +72,9 @@ body {
     margin-right: auto !important;
   }
 
-  /* Lebarkan kad servis supaya sejajar dengan poster 600px */
+  /* Lebarkan kad servis supaya lebih besar dari poster */
   .category-section {
-    max-width: 600px !important;
+    max-width: 750px !important;
     margin-left: auto !important;
     margin-right: auto !important;
   }
