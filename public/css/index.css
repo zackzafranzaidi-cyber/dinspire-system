@@ -101,6 +101,19 @@ body {
     font-size: 20px !important;
   }
 
+  /* Desktop Form Inputs & Buttons within Service Cards */
+  .service-card-inner .form-group label {
+    font-size: 14px !important;
+    margin-bottom: 8px !important;
+  }
+  .input-field,
+  .btn-pilih-jadual,
+  .submit-btn {
+    height: 56px !important;
+    font-size: 16px !important;
+    border-radius: 12px !important;
+  }
+
   .slide {
     flex: 0 0 600px !important;
   }
