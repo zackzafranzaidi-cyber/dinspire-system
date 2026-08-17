@@ -88,16 +88,17 @@ body {
 
   /* Desktop Auto-Slider Poster Adjustment */
   .service-card-inner {
-    padding: 24px 28px !important;
+    padding: 34px 32px !important;
   }
   .service-card-inner .card-header h3 {
-    font-size: 17px !important;
+    font-size: 20px !important;
   }
   .service-card-inner .card-header p {
-    font-size: 13px !important;
+    font-size: 14px !important;
+    margin-top: 6px !important;
   }
   .service-card-inner .price {
-    font-size: 17px !important;
+    font-size: 20px !important;
   }
 
   .slide {
