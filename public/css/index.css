@@ -56,8 +56,8 @@ body {
 
   /* Pengekalan content di tengah tanpa mengganggu layout dalam (400px asalnya) */
   .header {
-    padding-left: calc(max(20px, (100% - 400px) / 2)) !important;
-    padding-right: calc(max(20px, (100% - 400px) / 2)) !important;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
   }
 
   .bottom-nav {
