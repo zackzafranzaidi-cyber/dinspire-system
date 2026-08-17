@@ -66,8 +66,15 @@ body {
     justify-content: space-around !important;
   }
 
-  .view-section > :not(.header):not(.slider-viewport):not(.reviews-container) {
+  .view-section > :not(.header):not(.slider-viewport):not(.reviews-container):not(.category-section):not(.segmented-control) {
     max-width: 400px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Lebarkan kad servis dan tab supaya sejajar dengan poster 600px */
+  .category-section, .segmented-control {
+    max-width: 600px !important;
     margin-left: auto !important;
     margin-right: auto !important;
   }
