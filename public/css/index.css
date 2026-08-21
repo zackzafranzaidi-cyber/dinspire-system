@@ -54,6 +54,13 @@ body {
     max-width: 100%; /* Luaskan background penuh mengikut skrin */
   }
 
+  .schedule-date-panel,
+  .schedule-time-panel {
+    max-width: 400px;
+    width: 100%;
+    align-self: center;
+  }
+
   /* Pengekalan content di tengah tanpa mengganggu layout dalam (400px asalnya) */
   .header {
     padding-left: 40px !important;
