@@ -1955,3 +1955,39 @@ select.input-field {
   50% { opacity: 0; }
 }
 
+@media (min-width: 1024px) {
+  .schedule-overlay {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    align-items: flex-end;
+    justify-content: flex-start;
+  }
+  
+  .schedule-date-panel,
+  .schedule-time-panel {
+    max-width: 400px !important;
+    width: 400px !important;
+    align-self: flex-end !important;
+    border-radius: 0 !important;
+  }
+
+  .schedule-date-panel {
+    transform: translateX(100%) !important;
+    box-shadow: -4px 0 15px rgba(0,0,0,0.05) !important;
+    border-bottom-left-radius: 24px !important;
+  }
+
+  .schedule-time-panel {
+    transform: translateX(100%) !important;
+    margin-top: 0 !important;
+    border-left: 1px solid var(--border-color);
+    box-shadow: -4px 0 15px rgba(0,0,0,0.05) !important;
+    flex: 1;
+  }
+
+  .schedule-overlay.active .schedule-date-panel,
+  .schedule-overlay.active .schedule-time-panel {
+    transform: translateX(0) !important;
+  }
+}
