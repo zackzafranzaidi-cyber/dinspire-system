@@ -1997,11 +1997,18 @@ select.input-field {
     transform: translateX(0) !important;
   }
 
-  /* Tolak kandungan menu utama ke kiri apabila kalendar dibuka supaya tidak berlindung */
-  .view-content {
-    transition: padding-right 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    /* Tolak kandungan menu utama ke kiri apabila kalendar dibuka supaya tidak berlindung */
+  .view-content, .header, .bottom-nav {
+    transition: padding 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .mobile-container:has(.schedule-overlay.active) .view-content {
     padding-right: 420px !important; 
+  }
+  .mobile-container:has(.schedule-overlay.active) .header {
+    padding-right: 460px !important; /* 40px asal + 420px */
+  }
+  .mobile-container:has(.schedule-overlay.active) .bottom-nav {
+    padding-left: calc(max(0px, (100% - 820px) / 2)) !important;
+    padding-right: calc(max(0px, (100% - 820px) / 2) + 420px) !important;
   }
 }
