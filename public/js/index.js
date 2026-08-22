@@ -677,7 +677,7 @@ let currentBarberLeaves = [];
 let currentBarberBookings = [];
 
 async function openScheduleModal(formId) {
-  const barberSelect = document.getElementById(`barber-${formId}`);
+  const barberSelect = document.getElementById(`barber-${formId}`) || document.getElementById(`${formId}-barber-dropdown`);
   if (!barberSelect || !barberSelect.value) {
      if (typeof Swal !== "undefined") {
        Swal.fire({
