@@ -2008,4 +2008,14 @@ select.input-field {
     padding-left: calc(max(0px, (100% - 820px) / 2)) !important;
     padding-right: calc(max(0px, (100% - 820px) / 2) + 420px) !important;
   }
+  /* Jadikan payment page & edit cart sebagai popup di mod desktop */
+  .checkout-sheet, .edit-cart-sheet {
+    position: relative !important;
+    width: 500px !important;
+    height: 90vh !important;
+    max-height: 850px !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    bottom: auto !important;
+  }
 }
