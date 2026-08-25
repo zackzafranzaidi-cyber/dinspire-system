@@ -1772,15 +1772,18 @@ function submitCustomerReview(event) {
     // Placeholder image since DB doesn't have image column yet
     const placeholderImg = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1200&q=80";
     
-    const branchesHtml = branches.map(b => `
-        <div class="branch-home-card">
-          <img src="${escapeHTML(b.image_url || placeholderImg)}" alt="${escapeHTML(b.name)}">
-          <div class="branch-home-info">
-            <h3>${escapeHTML(b.name)}</h3>
-            <p><i class="fas fa-map-marker-alt"></i> ${escapeHTML(b.location)}</p>
+    const branchesHtml = branches.map(b => {
+        const query = encodeURIComponent(b.name + " " + b.location);
+        return `
+          <div class="branch-home-card" style="cursor:pointer;" onclick="window.open('https://www.google.com/maps/search/?api=1&query=' + '${query}', '_blank')">
+            <img src="${escapeHTML(b.image_url || placeholderImg)}" alt="${escapeHTML(b.name)}">
+            <div class="branch-home-info">
+              <h3>${escapeHTML(b.name)}</h3>
+              <p><i class="fas fa-map-marker-alt"></i> ${escapeHTML(b.location)}</p>
+            </div>
           </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
       
       // Duplicate content 40 times to create a pseudo-endless manual swipe slider
       container.innerHTML = branchesHtml.repeat(40);
@@ -2191,3 +2194,4 @@ async function submitResetBooking() {
     else alert('Sistem tidak dapat berhubung');
   }
 }
+
