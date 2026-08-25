@@ -183,6 +183,8 @@ router.get("/", async (req, res) => {
         id: b.id,
         name: b.nama_cawangan,
         location: b.lokasi,
+        lat: b.lat,
+        lng: b.lng
       })),
       Barbers: (stData || [])
         .filter((s) => s.jenis_staf === "In-Branch")
