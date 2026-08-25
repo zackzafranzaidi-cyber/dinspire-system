@@ -2018,4 +2018,26 @@ select.input-field {
     overflow: hidden !important;
     bottom: auto !important;
   }
+  /* Animasi Success dalam popup (Desktop) */
+  .success-screen {
+    position: fixed !important;
+    width: 500px !important;
+    height: 90vh !important;
+    max-height: 850px !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) scale(0.9) !important;
+    border-radius: 20px !important;
+    clip-path: none !important;
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s !important;
+  }
+  .success-screen.active {
+    clip-path: none !important;
+    transform: translate(-50%, -50%) scale(1) !important;
+    opacity: 1;
+    visibility: visible;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.6) !important;
+  }
 }
