@@ -107,13 +107,21 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (statusId === "1") {
-      switchView("home");
-      showSuccessScreen();
+      if (window !== window.parent) {
+        window.parent.postMessage({ type: "FPX_SUCCESS" }, "*");
+      } else {
+        switchView("home");
+        showSuccessScreen();
+      }
     } else {
-      switchView("notifications");
-      setTimeout(() => {
-          showToast("Bayaran anda sedang diproses atau tidak berjaya. Sila semak status pesanan anda.");
-      }, 1000);
+      if (window !== window.parent) {
+        window.parent.postMessage({ type: "FPX_FAILED" }, "*");
+      } else {
+        switchView("notifications");
+        setTimeout(() => {
+            showToast("Bayaran anda sedang diproses atau tidak berjaya. Sila semak status pesanan anda.");
+        }, 1000);
+      }
     }
     
     setTimeout(() => {
@@ -122,6 +130,20 @@ window.addEventListener("DOMContentLoaded", async () => {
   } else {
     switchView("home");
   }
+
+  // Listen for iframe messages
+  window.addEventListener("message", (event) => {
+    if (event.data && event.data.type === 'FPX_SUCCESS') {
+      switchView("home");
+      showSuccessScreen();
+    } else if (event.data && event.data.type === 'FPX_FAILED') {
+      document.getElementById("unified-checkout-modal").classList.remove("active");
+      switchView("notifications");
+      setTimeout(() => {
+          showToast("Bayaran anda sedang diproses atau tidak berjaya. Sila semak status pesanan anda.");
+      }, 1000);
+    }
+  });
   setupOtpInputs("log-otp-inputs", "log-otp");
   setupOtpInputs("reg-otp-inputs", "reg-otp");
   setupStarRating();
@@ -1486,7 +1508,18 @@ async function confirmUnifiedPayment() {
     .then((data) => {
       if (data && data.status === "success") {
         if (paymentMethod === "fpx" && data.payment_url) {
-          window.location.href = data.payment_url;
+          if (window.innerWidth >= 1024) {
+             const sheet = document.querySelector("#unified-checkout-modal .checkout-sheet");
+             sheet.innerHTML = `
+               <div class="checkout-header" style="position: absolute; top: 0; left: 0; right: 0; z-index: 10; background: white; padding: 15px; text-align: center; border-bottom: 1px solid #ddd;">
+                 <button class="checkout-back-btn" onclick="window.location.reload()" style="position: absolute; left: 15px; top: 15px;"><i class="fas fa-arrow-left"></i></button>
+                 <h2 style="margin: 0; font-size: 16px;">ToyyibPay FPX</h2>
+               </div>
+               <iframe src="${data.payment_url}" style="width:100%; height:100%; border:none; padding-top: 55px; box-sizing: border-box;"></iframe>
+             `;
+          } else {
+             window.location.href = data.payment_url;
+          }
         } else {
           showSuccessScreen();
         }
