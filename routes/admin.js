@@ -288,12 +288,9 @@ router.post(
 
             // 4b. Kemas Kini Rekod Sedia Ada
             if (itemsToUpdate.length > 0) {
-              const updatePromises = itemsToUpdate.map((item) =>
-                supabase.from(table).update(item).eq("id", item.id)
-              );
-              const results = await Promise.all(updatePromises);
-              for (let r of results) {
-                if (r.error) throw r.error;
+              for (let item of itemsToUpdate) {
+                const { error } = await supabase.from(table).update(item).eq("id", item.id);
+                if (error) throw error;
               }
             }
           }

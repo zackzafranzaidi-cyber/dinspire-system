@@ -426,7 +426,7 @@ function renderProducts(dataArr, container) {
 }
 
 // [DIBAIKI] Fungsi Memampat Imej Diubah ke Sistem Promise yang Stabil
-function processImageCompression(file, maxWidth = 1200) {
+function processImageCompression(file, maxWidth = 600) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -440,7 +440,7 @@ function processImageCompression(file, maxWidth = 1200) {
         ctx.fillStyle = "#FFFFFF";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.85));
+        resolve(canvas.toDataURL("image/jpeg", 0.70));
       };
       img.src = e.target.result;
     };
@@ -841,3 +841,4 @@ function openMapPicker(index) {
     }
   });
 }
+
