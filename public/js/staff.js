@@ -247,6 +247,27 @@ async function submitForgotPassword() {
   btn.innerText = "Mohon Reset (Hantar Kepada Admin)";
 }
 
+async function cancelLeave(leaveId) {
+  if (!confirm("Adakah anda pasti mahu membatalkan cuti ini?")) return;
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/staff/leaves/` + leaveId, {
+      method: "DELETE",
+      credentials: "include"
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      alert("Cuti berjaya dibatalkan.");
+      initLeaveSystem(); // Refresh table
+    } else {
+      alert("Ralat: " + data.message);
+    }
+  } catch (err) {
+    console.error("Gagal batal cuti", err);
+    alert("Ralat rangkaian. Sila cuba lagi.");
+  }
+}
+
 function logoutStaff() {
   if (confirm("Pasti mahu log keluar dari sistem?")) {
     fetch(`${API_BASE_URL}/auth/logout-sys`, {
@@ -1042,7 +1063,10 @@ async function initLeaveSystem() {
            html += `<tr style="border-bottom: 1px solid #f9f9f9;">
                       <td style="padding: 8px 4px;">${formattedDate}</td>
                       <td style="padding: 8px 4px;">${jenis}</td>
-                      <td style="padding: 8px 4px; text-align: right; color: ${statusColor}; font-weight: bold;">${statusText}</td>
+                      <td style="padding: 8px 4px; text-align: right; color: ${statusColor}; font-weight: bold;">
+                        ${statusText}
+                        <button onclick="cancelLeave('${l.id}')" style="margin-left: 10px; padding: 2px 6px; font-size: 10px; background-color: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Batal</button>
+                      </td>
                     </tr>`;
          });
          html += `</table>`;
@@ -1189,3 +1213,7 @@ async function submitEmergencyLeaves() {
    }
    btn.innerHTML = originalText;
 }
+
+
+
+

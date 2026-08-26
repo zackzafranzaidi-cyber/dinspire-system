@@ -711,4 +711,39 @@ router.post(
   }
 );
 
+// ==========================================
+// 4. Batal Cuti (Cancel Leave)
+// ==========================================
+router.delete("/leaves/:id", authenticate, requireRole(["staff"]), async (req, res) => {
+  const staff_id = req.user.id;
+  const leave_id = req.params.id;
+
+  try {
+    // Pastikan cuti itu milik staf yang login
+    const { data: leaveData } = await supabase
+      .from("staff_leaves")
+      .select("id, tarikh")
+      .eq("id", leave_id)
+      .eq("staff_id", staff_id)
+      .single();
+
+    if (!leaveData) {
+      return res.status(404).json({ status: "error", message: "Rekod cuti tidak dijumpai." });
+    }
+
+    const { error } = await supabase
+      .from("staff_leaves")
+      .delete()
+      .eq("id", leave_id);
+
+    if (error) throw error;
+
+    res.json({ status: "success", message: "Berjaya membatalkan cuti." });
+  } catch (err) {
+    console.error("Ralat membatalkan cuti:", err);
+    res.status(500).json({ status: "error", message: "Ralat membatalkan cuti." });
+  }
+});
+
 module.exports = router;
+
