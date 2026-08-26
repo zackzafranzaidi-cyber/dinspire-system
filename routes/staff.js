@@ -423,14 +423,15 @@ router.post(
           .eq("id", existPunch.id);
 
         if (error) throw error;
+        res.json({ status: "success", message: `Berjaya ${type} pada ${masa}.` });
       }
 
       punchLocks.delete(lockKey);
-      res.json({ status: "success", message: `Berjaya ${type} pada ${masa}.` });
     } catch (err) {
       if (typeof lockKey !== "undefined") punchLocks.delete(lockKey);
       console.error("Ralat Rekod Kehadiran:", err);
-      res.status(500).json({ status: "error", message: "Ralat sistem. Cuba sebentar lagi." });
+      const errorMsg = err.message || "Ralat sistem. Cuba sebentar lagi.";
+      res.status(err.status || 500).json({ status: "error", message: errorMsg });
     }
   },
 );
