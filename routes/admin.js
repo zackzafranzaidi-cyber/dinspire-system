@@ -289,6 +289,14 @@ router.post(
             // 4b. Kemas Kini Rekod Sedia Ada
             if (itemsToUpdate.length > 0) {
               for (let item of itemsToUpdate) {
+                // [DIBAIKI] Semakan Pertukaran Nama Cawangan
+                if (table === "branches" && item.nama_cawangan) {
+                  const { data: oldData } = await supabase.from("branches").select("nama_cawangan").eq("id", item.id).single();
+                  if (oldData && oldData.nama_cawangan && oldData.nama_cawangan !== item.nama_cawangan) {
+                    await supabase.from("punch_cards").update({ cawangan: item.nama_cawangan }).eq("cawangan", oldData.nama_cawangan);
+                  }
+                }
+                
                 const { error } = await supabase.from(table).update(item).eq("id", item.id);
                 if (error) throw error;
               }
