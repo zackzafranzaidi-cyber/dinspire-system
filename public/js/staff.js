@@ -996,22 +996,6 @@ let leavePicker = null;
 async function initLeaveSystem() {
   const today = new Date();
   
-  // Peringatan Cuti setiap 25hb sehingga hujung bulan
-  if (today.getDate() >= 25) {
-     const hasReminded = sessionStorage.getItem("din_leave_reminded");
-     if (!hasReminded) {
-        if (typeof Swal !== "undefined") {
-          Swal.fire({
-             icon: 'info',
-             title: 'Peringatan Cuti!',
-             text: 'Sila pilih 4 hari cuti anda untuk bulan hadapan sebelum hujung bulan ini di ruangan Profil.',
-             confirmButtonColor: '#3b82f6'
-          });
-          sessionStorage.setItem("din_leave_reminded", "true");
-        }
-     }
-  }
-
   const nextMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 1);
   const nextMonthYear = nextMonthDate.getFullYear();
   const nextMonth = nextMonthDate.getMonth();
@@ -1032,6 +1016,30 @@ async function initLeaveSystem() {
      
      const othersData = await resOthers.json();
      const myData = await resMine.json();
+     
+     // Peringatan Cuti setiap 25hb sehingga hujung bulan (Hanya jika belum mohon untuk bulan hadapan)
+     if (today.getDate() >= 25) {
+        const nextMonthStr = String(nextMonth + 1).padStart(2, "0");
+        const nextYearStr = String(nextMonthYear);
+        const prefix = `${nextYearStr}-${nextMonthStr}-`;
+        
+        const hasAppliedNextMonth = myData.leaves && myData.leaves.some(l => l.tarikh.startsWith(prefix));
+        
+        if (!hasAppliedNextMonth) {
+           const hasReminded = sessionStorage.getItem("din_leave_reminded");
+           if (!hasReminded) {
+              if (typeof Swal !== "undefined") {
+                Swal.fire({
+                   icon: "info",
+                   title: "Peringatan Cuti!",
+                   text: "Sila pilih 4 hari cuti anda untuk bulan hadapan sebelum hujung bulan ini di ruangan Profil.",
+                   confirmButtonColor: "#3b82f6"
+                });
+                sessionStorage.setItem("din_leave_reminded", "true");
+              }
+           }
+        }
+     }
      
      const takenLeaves = othersData.leaves ? othersData.leaves.map(l => l.tarikh) : [];
      const mySelectedLeaves = myData.leaves ? myData.leaves.map(l => l.tarikh) : [];
@@ -1213,6 +1221,7 @@ async function submitEmergencyLeaves() {
    }
    btn.innerHTML = originalText;
 }
+
 
 
 
