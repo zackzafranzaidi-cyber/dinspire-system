@@ -62,12 +62,18 @@ async function uploadToStorage(base64Image, folder, namePrefix) {
       return null; // Tolak fail secara automatik
     }
 
-    const fileName = `${folder}/${namePrefix}_${Date.now()}.${realExtension}`;
+    // Convert to WebP using sharp
+    const sharp = require("sharp");
+    const webpBuffer = await sharp(buffer)
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    const fileName = `${folder}/${namePrefix}_${Date.now()}.webp`;
 
     const { error } = await supabase.storage
       .from("shop_images")
-      .upload(fileName, buffer, {
-        contentType: `image/${realExtension}`,
+      .upload(fileName, webpBuffer, {
+        contentType: "image/webp",
         upsert: true,
       });
 
@@ -168,6 +174,7 @@ router.get(
             location: b.lokasi,
             lat: b.lat,
             lng: b.lng,
+            imageUrl: b.gambar,
           })),
           Barbers: (stData || [])
             .filter((s) => s.jenis_staf === "In-Branch")
@@ -351,7 +358,8 @@ router.post(
         nama_cawangan: i.name,
         lokasi: i.location,
         lat: parseFloat(i.lat) || null,
-        lng: parseFloat(i.lng) || null
+        lng: parseFloat(i.lng) || null,
+        gambar: i.imageUrl || null
       }));
       await syncData(
         "staff",

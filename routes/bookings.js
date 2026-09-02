@@ -71,12 +71,18 @@ async function uploadReceiptToStorage(base64Image, orderNo) {
       );
     }
 
-    const fileName = `receipt_${crypto.randomUUID()}.${realExtension}`;
+    // Convert to WebP using sharp
+    const sharp = require("sharp");
+    const webpBuffer = await sharp(buffer)
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    const fileName = `receipt_${crypto.randomUUID()}.webp`;
 
     const { data, error } = await supabase.storage
       .from("receipts")
-      .upload(fileName, buffer, {
-        contentType: `image/${realExtension}`,
+      .upload(fileName, webpBuffer, {
+        contentType: "image/webp",
         upsert: true,
       });
     if (error) return null;
