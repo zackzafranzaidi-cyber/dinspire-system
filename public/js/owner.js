@@ -1135,9 +1135,11 @@ async function fetchDashboardInsights(
 
   const bgPrompt = `Sebagai penganalisis perniagaan Dinspire, berikan rumusan eksekutif yang sangat padat (maksimum 3 ayat pendek) berdasarkan data ${timeframe} ini: Jumlah Keseluruhan Jualan RM${totalSales}, Jumlah Pelanggan Servis ${totalServis} (Pecahan -> Walk-in: ${walkin}, Booking: ${booking}, Rawatan: ${rawatan}, OnCall: ${oncall}). Nyatakan sama ada prestasi baik/buruk secara ringkas, dan selitkan satu nasihat operasi ringkas. Terus kepada inti pati, jangan guna tajuk besar.`;
 
+  if (window.lastInsightPrompt === bgPrompt) return;
+  window.lastInsightPrompt = bgPrompt;
+
   if (insightDebounceTimer) clearTimeout(insightDebounceTimer);
   insightDebounceTimer = setTimeout(async () => {
-    showGlobalLoader();
     try {
       const res = await fetch(`${API_BASE_URL}/owner/ai-insights`, {
       method: "POST",
@@ -1173,8 +1175,6 @@ async function fetchDashboardInsights(
       "text-[9px] md:text-[10px] text-rose-400 font-bold tracking-widest uppercase bg-rose-900/50 px-2 py-1 rounded-full border border-rose-500/30 whitespace-nowrap";
     document.getElementById("ai-insights-content").innerHTML =
       `<p class="text-rose-400 text-xs md:text-sm font-semibold break-words whitespace-normal">Ralat: ${escapeHTML(err.message)}</p>`;
-  } finally {
-    hideGlobalLoader();
   }
   }, 1000);
 }
@@ -2781,7 +2781,8 @@ async function fetchSMSBalance() {
       if (data.status === "success" && data.balance !== undefined) {
         const el = document.getElementById("val-sms-balance");
         if (el) el.innerText = data.balance.toLocaleString();
-        if (data.balance >= 0 && data.balance < 500) {
+        if (data.balance >= 0 && data.balance < 500 && !window.hasShownSMSAlert) {
+          window.hasShownSMSAlert = true;
           if (typeof Swal !== 'undefined') {
             Swal.fire({
               icon: "warning",
