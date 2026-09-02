@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const cache = require("../utils/cache");
 const schedule = require("node-schedule");
 const { sendSMS } = require("../utils/sms");
+const { notifyOwner } = require("../utils/push");
 
 // ==========================================
 // [DIBAIKI] Fungsi Keselamatan: Semak Magic Number Fail (Bukan sekadar Regex)
@@ -322,6 +323,8 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       if (error) throw error;
     }
 
+    notifyOwner("Tempahan Baharu!", `Satu tempahan ${booking_type === "treatment" ? "rawatan" : "guntingan"} diterima pada ${booking_date} ${booking_time} (No Bil: ${order_no})`);
+
     bookingLocks.delete(lockKey); // [DIBAIKI] MEMORY LEAK FIX
     if (payment_method === "qr") {
       res.json({ 
@@ -589,6 +592,7 @@ router.post(
         },
       ]);
       if (error) throw error;
+      notifyOwner("Walk-In Baharu!", `Pelanggan walk-in (${customer_name}) telah didaftarkan.`);
       res.json({ status: "success", message: "Rekod Walk-In disimpan" });
     } catch (error) {
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
@@ -720,6 +724,8 @@ router.post(
       ]);
 
       if (error) throw error;
+      
+      notifyOwner("Tempahan On-Call!", `Satu tempahan On-Call diterima dari ${cust.name}.`);
 
       try {
         // [DIBAIKI] Zon Masa Peringatan
@@ -898,7 +904,8 @@ router.post(
       ]);
 
       if (error) throw error;
-
+      
+      notifyOwner("Pesanan Produk!", `Satu pesanan E-Commerce baru diterima dari ${cust.name}.`);
 
       if (payment_method === "qr") {
         res.json({
