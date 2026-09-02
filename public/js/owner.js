@@ -219,6 +219,8 @@ const i18n = {
     "card-quotation": "Total Revenue",
     "card-commission": "Staff Commissions",
     "card-product": "Product Sales",
+    "card-net-profit": "Net Profit",
+    "card-stock": "Total Stock:",
     "card-service": "Total Service",
     "card-rating": "Average Rating",
     "card-fees": "COLLECTED FEES",
@@ -294,6 +296,7 @@ const i18n = {
     "card-quotation": "Jumlah Quotation",
     "card-commission": "Komisen Staf",
     "card-product": "Jualan Produk",
+    "card-net-profit": "Keuntungan Bersih",
     "card-service": "Jumlah Servis",
     "card-rating": "Purata Penilaian",
     "card-fees": "KUTIPAN YURAN",
@@ -853,6 +856,12 @@ function processData() {
   if (document.getElementById("val-service-fee")) animateNumber("val-service-fee", totalServiceFees, "RM ", "", 2);
   if (document.getElementById("val-shipping-fee")) animateNumber("val-shipping-fee", totalShippingFees, "RM ", "", 2);
   animateNumber("val-commission", totalComm, "RM ", "", 2);
+  
+  const netProfit = (serviceRev + productRev + totalShippingFees) - totalComm;
+  if (document.getElementById("val-net-profit")) {
+    animateNumber("val-net-profit", netProfit, "RM ", "", 2);
+  }
+
   animateNumber("val-products-rm", productRev, "RM ", "", 2);
   animateNumber("val-orders-count", productOrderCount, "", "", 0);
   
