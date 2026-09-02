@@ -49,7 +49,7 @@ async function notifyOwner(title, body, url = "/owner/index.html") {
       .select("setting_value")
       .eq("setting_key", "push_sub_owner");
 
-    if (!settingData || settingData.length === 0 || !settingData[0].setting_value) return;
+    if (!settingData || settingData.length === 0 || !settingData[0].setting_value) return 0;
 
     let subs = [];
     try { subs = JSON.parse(settingData[0].setting_value); } catch(e) {}
@@ -87,8 +87,10 @@ async function notifyOwner(title, body, url = "/owner/index.html") {
       }).eq("setting_key", "push_sub_owner");
     }
 
+    return validSubs.length;
   } catch (error) {
     console.error("Gagal broadcast push:", error);
+    return 0;
   }
 }
 
