@@ -3330,7 +3330,7 @@ async function subscribeToPush() {
     let reg = await navigator.serviceWorker.getRegistration();
     if (!reg) {
         currentStep = "registerSW";
-        reg = await navigator.serviceWorker.register("/owner/sw.js?v=33");
+        reg = await navigator.serviceWorker.register("/owner/sw.js?v=34");
     }
     currentStep = "fetchVapid";
     const res = await fetch(`${API_BASE_URL}/owner/push/vapid-key`, {credentials: 'include'});
