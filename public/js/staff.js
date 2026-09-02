@@ -286,6 +286,7 @@ function logoutStaff() {
 }
 
 function showDashboard() {
+  if (typeof requestNotifPermission === 'function') requestNotifPermission();
   document.getElementById("login-screen").style.display = "none";
   document.getElementById("main-header").style.display = "flex";
   document.getElementById("main-content").style.display = "block";
@@ -333,7 +334,31 @@ function hideGlobalLoader() {
   }
 }
 
+let hasRequestedNotif = false;
+function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'denied') {
+      if (!hasRequestedNotif) {
+          alert('Sila benarkan notifikasi dalam tetapan peranti anda untuk menerima makluman cuti/tugasan.');
+          hasRequestedNotif = true;
+      }
+      return;
+  }
+  if (!hasRequestedNotif && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+          if (permission === 'granted' && typeof subscribeToPush === 'function') {
+              subscribeToPush();
+          }
+      });
+      hasRequestedNotif = true;
+  } else if (!hasRequestedNotif && Notification.permission === 'granted' && typeof subscribeToPush === 'function') {
+      subscribeToPush();
+      hasRequestedNotif = true;
+  }
+}
+
 function switchView(id) {
+  if (typeof requestNotifPermission === 'function') requestNotifPermission();
   showGlobalLoader();
   setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
 
