@@ -28,14 +28,16 @@ async function addOwnerSubscription(subscription) {
     const exists = subs.find(s => s.endpoint === subscription.endpoint);
     if (!exists) {
       subs.push(subscription);
-      await supabase.from("settings").upsert({
+      const { error } = await supabase.from("settings").upsert({
         setting_key: "push_sub_owner",
         setting_value: JSON.stringify(subs),
         description: "Owner Push Subscriptions"
       });
+      if (error) throw error;
     }
   } catch (error) {
     console.error("Gagal simpan subscription push:", error);
+    throw error;
   }
 }
 

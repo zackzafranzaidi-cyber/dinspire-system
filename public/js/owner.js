@@ -484,6 +484,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+async function testPushNotification() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/owner/push/test`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            showToast("Ujian Push Berjaya Dihantar!");
+        } else {
+            alert("Ralat Ujian Push: " + data.message);
+        }
+    } catch (e) {
+        alert("Ralat Rangkaian Ujian Push");
+    }
+}
+
 async function loginSystem(allowedRoles) {
   const username = document.getElementById("sys-username").value.trim();
   const password = document.getElementById("sys-password").value.trim();
@@ -3298,10 +3315,14 @@ document.addEventListener('click', function(event) {
 
 
 async function subscribeToPush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      alert("PushManager tidak disokong pada peranti ini.");
+      return;
+  }
   try {
     const reg = await navigator.serviceWorker.ready;
     const res = await fetch(`${API_BASE_URL}/owner/push/vapid-key`, {credentials: 'include'});
+    if (!res.ok) throw new Error("Gagal dapatkan VAPID key: " + res.status);
     const { publicKey } = await res.json();
     
     const urlB64ToUint8Array = (base64String) => {
@@ -3321,14 +3342,17 @@ async function subscribeToPush() {
       applicationServerKey: applicationServerKey
     });
 
-    await fetch(`${API_BASE_URL}/owner/push/subscribe`, {
+    const subRes = await fetch(`${API_BASE_URL}/owner/push/subscribe`, {
       method: 'POST',
       body: JSON.stringify(subscription),
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include'
     });
+    if (!subRes.ok) throw new Error("Gagal simpan langganan: " + subRes.status);
+    
     console.log("Push subscribed.");
   } catch (err) {
+    alert("Push sub error: " + err.message);
     console.error("Push sub error", err);
   }
 }

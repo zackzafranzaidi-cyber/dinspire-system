@@ -11,7 +11,7 @@ const aiLimiter = rateLimit({
   message: { status: "error", message: "Had pertanyaan AI tercapai. Sila tunggu 5 minit untuk menyejukkan enjin AI." }
 });
 
-const { addOwnerSubscription, publicVapidKey } = require("../utils/push");
+const { addOwnerSubscription, notifyOwner, publicVapidKey } = require("../utils/push");
 
 router.get("/push/vapid-key", authenticate, requireRole(["owner"]), (req, res) => {
   res.json({ status: "success", publicKey: publicVapidKey });
@@ -20,8 +20,21 @@ router.get("/push/vapid-key", authenticate, requireRole(["owner"]), (req, res) =
 router.post("/push/subscribe", authenticate, requireRole(["owner"]), async (req, res) => {
   const subscription = req.body;
   if (!subscription || !subscription.endpoint) return res.status(400).json({ status: "error", message: "Invalid subscription" });
-  await addOwnerSubscription(subscription);
-  res.json({ status: "success", message: "Push subscribed successfully" });
+  try {
+    await addOwnerSubscription(subscription);
+    res.json({ status: "success", message: "Push subscribed successfully" });
+  } catch(e) {
+    res.status(500).json({ status: "error", message: "Gagal simpan ke DB: " + (e.message || JSON.stringify(e)) });
+  }
+});
+
+router.post("/push/test", authenticate, requireRole(["owner"]), async (req, res) => {
+  try {
+    await notifyOwner("Ujian Push Berjaya!", "Ini adalah contoh notifikasi sebenar Web Push API.");
+    res.json({ status: "success", message: "Test sent" });
+  } catch(e) {
+    res.status(500).json({ status: "error", message: e.message });
+  }
 });
 
 router.get(
