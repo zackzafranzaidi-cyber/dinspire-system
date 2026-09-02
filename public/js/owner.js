@@ -423,14 +423,34 @@ function triggerNativeNotification(title, body) {
 
 let hasRequestedNotif = false;
 function requestNotifPermission() {
-  if ("Notification" in window && !hasRequestedNotif) {
-      if (Notification.permission === "default") {
-          Notification.requestPermission().then(permission => {
-              if (permission === "granted" && typeof subscribeToPush === "function") subscribeToPush();
-          });
-      } else if (Notification.permission === "granted" && typeof subscribeToPush === "function") {
-          subscribeToPush();
+  if (!("Notification" in window)) {
+      if (!hasRequestedNotif) {
+          showToast("Peranti ini (iOS/Safari) perlukan 'Add to Home Screen' untuk fungsi Notifikasi.");
+          hasRequestedNotif = true;
       }
+      return;
+  }
+  
+  if (Notification.permission === "denied") {
+      if (!hasRequestedNotif) {
+          alert("Tuan telah menyekat notifikasi. Sila pergi ke tetapan browser (Site Settings) dan benarkan semula.");
+          hasRequestedNotif = true;
+      }
+      return;
+  }
+
+  if (!hasRequestedNotif && Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+          if (permission === "granted" && typeof subscribeToPush === "function") {
+              subscribeToPush();
+              showToast("Notifikasi diaktifkan!");
+          } else if (permission === "denied") {
+              alert("Kebenaran notifikasi ditolak.");
+          }
+      });
+      hasRequestedNotif = true;
+  } else if (!hasRequestedNotif && Notification.permission === "granted" && typeof subscribeToPush === "function") {
+      subscribeToPush();
       hasRequestedNotif = true;
   }
 }
