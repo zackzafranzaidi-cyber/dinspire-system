@@ -11,7 +11,7 @@ const aiLimiter = rateLimit({
   message: { status: "error", message: "Had pertanyaan AI tercapai. Sila tunggu 5 minit untuk menyejukkan enjin AI." }
 });
 
-const { addOwnerSubscription, notifyOwner, publicVapidKey } = require("../utils/push");
+const { addOwnerSubscription, notifyOwner, notifyStaff, publicVapidKey } = require("../utils/push");
 
 router.get("/push/vapid-key", authenticate, requireRole(["owner"]), (req, res) => {
   // Sanitize VAPID key (buang \0, spaces, newlines jika user tersilap copy paste dalam .env Vercel)
@@ -230,7 +230,8 @@ router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "adm
 
     if (action === 'Reject') {
       await supabase.from("staff_leaves").update({ status: 'Rejected' }).eq("id", leave_id);
-      return res.json({ status: "success", message: "Cuti Kecemasan telah Ditolak." });
+      notifyStaff(leave.staff_id, "Cuti Ditolak", `Permohonan cuti kecemasan anda pada ${leave.tarikh} tidak diluluskan.`);
+      return res.json({ status: "success", message: "Cuti kecemasan ditolak." });
     }
 
     const branch_id = leave.staff ? leave.staff.branch_id : null;
@@ -307,6 +308,9 @@ router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "adm
     // Tiada konflik, terus Approve
     await supabase.from("staff_leaves").update({ status: 'Approved' }).eq("id", leave_id);
     
+    // Notis staf bahawa cuti telah diluluskan
+    notifyStaff(leave.staff_id, "Cuti Diluluskan!", `Permohonan cuti kecemasan anda pada ${leave.tarikh} telah diluluskan.`);
+
     // Padam kesemua cuti 'Biasa' yang berbaki pada bulan semasa untuk staf ini
     const today = new Date();
     const myTime = new Date(today.getTime() + 8 * 60 * 60 * 1000);

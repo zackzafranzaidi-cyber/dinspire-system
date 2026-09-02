@@ -78,6 +78,7 @@ window.addEventListener("DOMContentLoaded", () => {
     loggedInStaff = JSON.parse(savedUser);
     fetchServicesForWalkin();
     showDashboard();
+    if (typeof subscribeToPush === 'function') subscribeToPush();
   }
   initStaffEventListeners();
   loadBranchOptions();
@@ -1223,4 +1224,64 @@ async function submitEmergencyLeaves() {
 
 
 
+
+
+// ==========================================
+// PUSH NOTIFICATION (WEB PUSH API)
+// ==========================================
+async function subscribeToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    let reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+        reg = await navigator.serviceWorker.register('/staff/sw.js?v=2');
+    }
+    const res = await fetch(${API_BASE_URL}/staff/push/vapid-key, {credentials: 'include'});
+    if (!res.ok) throw new Error('Gagal dapatkan VAPID key');
+    
+    const { publicKey } = await res.json();
+    
+    const urlB64ToUint8Array = (base64String) => {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    };
+
+    const applicationServerKey = urlB64ToUint8Array(publicKey.trim());
+    
+    const existingSub = await reg.pushManager.getSubscription();
+    if (existingSub) {
+        await existingSub.unsubscribe();
+    }
+
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: applicationServerKey
+    });
+
+    const subRes = await fetch(${API_BASE_URL}/staff/push/subscribe, {
+      method: 'POST',
+      body: JSON.stringify(subscription),
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    });
+    if (!subRes.ok) throw new Error('Gagal simpan langganan staff');
+    
+    console.log('Staff Push subscribed.');
+  } catch (err) {
+    console.error('Staff Push sub error', err);
+  }
+}
+
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && loggedInStaff) {
+        if (typeof subscribeToPush === 'function') subscribeToPush();
+    }
+});
 

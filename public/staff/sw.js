@@ -1,11 +1,10 @@
-const CACHE_NAME = 'dinspire-pwa-v7-staff';
+const CACHE_NAME = 'dinspire-pwa-staff-v3';
 const urlsToCache = [
   './',
   './index.html',
-  '../css/staff.css?v=17',
-  '../css/loader.css?v=2',
-  '../js/staff.js?v=26',
-  './icon_staf.png'
+  '../css/staff.css',
+  '../css/loader.css',
+  '../js/staff.js'
 ];
 
 self.addEventListener('install', event => {
@@ -13,7 +12,7 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
   );
-  self.skipWaiting(); // Force activate immediately
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
@@ -24,16 +23,14 @@ self.addEventListener('activate', event => {
       );
     })
   );
-  self.clients.claim(); // Take control of all clients immediately
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
-  // Hanya simpan cache untuk request fail statik (GET) dan elakkan request API
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
     return;
   }
 
-  // Network First Strategy (Utamakan Rangkaian, Jatuh balik ke Cache jika offline)
   event.respondWith(
     fetch(event.request)
       .then(networkResponse => {
@@ -48,3 +45,39 @@ self.addEventListener('fetch', event => {
   );
 });
 
+self.addEventListener('push', function(event) {
+    if (event.data) {
+        try {
+            const data = event.data.json();
+            const options = {
+                body: data.body,
+                icon: data.icon || '/icon.png',
+                badge: data.icon || '/icon.png',
+                vibrate: [200, 100, 200],
+                data: { url: data.url || '/staff/index.html' }
+            };
+            event.waitUntil(
+                self.registration.showNotification(data.title, options)
+            );
+        } catch(e) {
+            console.error('Push data parse error:', e);
+        }
+    }
+});
+
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({ type: 'window' }).then(windowClients => {
+            for (var i = 0; i < windowClients.length; i++) {
+                var client = windowClients[i];
+                if (client.url.indexOf(event.notification.data.url) !== -1 && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(event.notification.data.url);
+            }
+        })
+    );
+});

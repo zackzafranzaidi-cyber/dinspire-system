@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const cache = require("../utils/cache");
 const schedule = require("node-schedule");
 const { sendSMS } = require("../utils/sms");
-const { notifyOwner } = require("../utils/push");
+const { notifyOwner, notifyStaff } = require("../utils/push");
 
 // ==========================================
 // [DIBAIKI] Fungsi Keselamatan: Semak Magic Number Fail (Bukan sekadar Regex)
@@ -324,6 +324,7 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
     }
 
     notifyOwner("Tempahan Baharu!", `Satu tempahan ${booking_type === "treatment" ? "rawatan" : "guntingan"} diterima pada ${booking_date} ${booking_time} (No Bil: ${order_no})`);
+    notifyStaff(staff_id, "Tempahan Baharu!", `Anda mendapat tempahan pelanggan pada ${booking_date} ${booking_time}`);
 
     bookingLocks.delete(lockKey); // [DIBAIKI] MEMORY LEAK FIX
     if (payment_method === "qr") {
@@ -726,6 +727,7 @@ router.post(
       if (error) throw error;
       
       notifyOwner("Tempahan On-Call!", `Satu tempahan On-Call diterima dari ${cust.name}.`);
+      notifyStaff(barber, "Tempahan On-Call!", `Anda mendapat tugasan On-Call dari ${cust.name} di lokasi ${address}`);
 
       try {
         // [DIBAIKI] Zon Masa Peringatan

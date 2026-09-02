@@ -4,7 +4,23 @@ const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
 const schedule = require("node-schedule"); // [DIBAIKI] Ditambah untuk jadual SMS
 const { sendSMS } = require("../utils/sms");
-const { notifyOwner } = require("../utils/push");
+const { notifyOwner, addStaffSubscription, publicVapidKey } = require("../utils/push");
+
+router.get("/push/vapid-key", authenticate, requireRole(["staff", "owner"]), (req, res) => {
+  const cleanKey = publicVapidKey.replace(/[^A-Za-z0-9\-_]/g, '');
+  res.json({ status: "success", publicKey: cleanKey });
+});
+
+router.post("/push/subscribe", authenticate, requireRole(["staff", "owner"]), async (req, res) => {
+  const subscription = req.body;
+  if (!subscription || !subscription.endpoint) return res.status(400).json({ status: "error", message: "Invalid subscription" });
+  try {
+    await addStaffSubscription(req.user.id, subscription);
+    res.json({ status: "success", message: "Push subscribed successfully" });
+  } catch(e) {
+    res.status(500).json({ status: "error", message: "Gagal simpan ke DB: " + (e.message || JSON.stringify(e)) });
+  }
+});
 
 // ==========================================
 // 1. Papan Pemuka Tugasan Staf (Dashboard)
