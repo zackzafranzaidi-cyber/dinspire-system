@@ -1296,8 +1296,10 @@ async function subscribeToPush() {
     if (!subRes.ok) throw new Error('Gagal simpan langganan staff');
     
     console.log('Staff Push subscribed.');
+    alert('Berjaya mendaftar notifikasi Staf!');
   } catch (err) {
     console.error('Staff Push sub error', err);
+    alert('Ralat Push: ' + err.message);
   }
 }
 
