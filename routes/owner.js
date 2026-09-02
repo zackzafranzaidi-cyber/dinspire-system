@@ -14,7 +14,9 @@ const aiLimiter = rateLimit({
 const { addOwnerSubscription, notifyOwner, publicVapidKey } = require("../utils/push");
 
 router.get("/push/vapid-key", authenticate, requireRole(["owner"]), (req, res) => {
-  res.json({ status: "success", publicKey: publicVapidKey });
+  // Sanitize VAPID key (buang \0, spaces, newlines jika user tersilap copy paste dalam .env Vercel)
+  const cleanKey = publicVapidKey.replace(/[^A-Za-z0-9\-_]/g, '');
+  res.json({ status: "success", publicKey: cleanKey });
 });
 
 router.post("/push/subscribe", authenticate, requireRole(["owner"]), async (req, res) => {

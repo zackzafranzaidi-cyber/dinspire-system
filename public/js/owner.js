@@ -3324,15 +3324,22 @@ async function subscribeToPush() {
       alert("PushManager tidak disokong pada peranti ini.");
       return;
   }
+  let currentStep = "Mula";
   try {
+    currentStep = "getRegistration";
     let reg = await navigator.serviceWorker.getRegistration();
     if (!reg) {
-        reg = await navigator.serviceWorker.register("/owner/sw.js?v=32");
+        currentStep = "registerSW";
+        reg = await navigator.serviceWorker.register("/owner/sw.js?v=33");
     }
+    currentStep = "fetchVapid";
     const res = await fetch(`${API_BASE_URL}/owner/push/vapid-key`, {credentials: 'include'});
     if (!res.ok) throw new Error("Gagal dapatkan VAPID key: " + res.status);
+    
+    currentStep = "parseVapid";
     const { publicKey } = await res.json();
     
+    currentStep = "base64Convert";
     const urlB64ToUint8Array = (base64String) => {
       const padding = '='.repeat((4 - base64String.length % 4) % 4);
       const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -3344,19 +3351,22 @@ async function subscribeToPush() {
       return outputArray;
     };
 
-    const applicationServerKey = urlB64ToUint8Array(publicKey);
+    const applicationServerKey = urlB64ToUint8Array(publicKey.trim());
     
-    // Unsubscribe langganan lama yang mungkin rosak / 410 Gone
+    currentStep = "getExistingSub";
     const existingSub = await reg.pushManager.getSubscription();
     if (existingSub) {
+        currentStep = "unsubscribeOld";
         await existingSub.unsubscribe();
     }
 
+    currentStep = "subscribeNew";
     const subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: applicationServerKey
     });
 
+    currentStep = "saveToDB";
     const subRes = await fetch(`${API_BASE_URL}/owner/push/subscribe`, {
       method: 'POST',
       body: JSON.stringify(subscription),
@@ -3367,7 +3377,7 @@ async function subscribeToPush() {
     
     console.log("Push subscribed.");
   } catch (err) {
-    alert("Push sub error: " + err.message);
+    alert(`Ralat di [${currentStep}]: ` + err.message);
     console.error("Push sub error", err);
   }
 }
