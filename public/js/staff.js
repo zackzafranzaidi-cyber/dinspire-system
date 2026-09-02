@@ -1279,15 +1279,13 @@ async function subscribeToPush() {
 
     const applicationServerKey = urlB64ToUint8Array(publicKey.trim());
     
-    const existingSub = await reg.pushManager.getSubscription();
-    if (existingSub) {
-        await existingSub.unsubscribe();
+    let subscription = await reg.pushManager.getSubscription();
+    if (!subscription) {
+      subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: applicationServerKey
+      });
     }
-
-    const subscription = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: applicationServerKey
-    });
 
     const subRes = await fetch(`${API_BASE_URL}/staff/push/subscribe`, {
       method: 'POST',
