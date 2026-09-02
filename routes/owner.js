@@ -230,7 +230,7 @@ router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "adm
 
     if (action === 'Reject') {
       await supabase.from("staff_leaves").update({ status: 'Rejected' }).eq("id", leave_id);
-      notifyStaff(leave.staff_id, "Cuti Ditolak", `Permohonan cuti kecemasan anda pada ${leave.tarikh} tidak diluluskan.`);
+      await notifyStaff(leave.staff_id, "Cuti Ditolak", `Permohonan cuti kecemasan anda pada ${leave.tarikh} tidak diluluskan.`);
       return res.json({ status: "success", message: "Cuti kecemasan ditolak." });
     }
 
@@ -309,7 +309,7 @@ router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "adm
     await supabase.from("staff_leaves").update({ status: 'Approved' }).eq("id", leave_id);
     
     // Notis staf bahawa cuti telah diluluskan
-    notifyStaff(leave.staff_id, "Cuti Diluluskan!", `Permohonan cuti kecemasan anda pada ${leave.tarikh} telah diluluskan.`);
+    await notifyStaff(leave.staff_id, "Cuti Diluluskan!", `Permohonan cuti kecemasan anda pada ${leave.tarikh} telah diluluskan.`);
 
     // Padam kesemua cuti 'Biasa' yang berbaki pada bulan semasa untuk staf ini
     const today = new Date();

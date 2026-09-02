@@ -589,7 +589,7 @@ router.post("/leaves", authenticate, requireRole(["staff"]), async (req, res) =>
       throw error;
     }
 
-    notifyOwner("Cuti Staf", `Staf ${req.user.username} telah memohon cuti bulanan.`);
+    await notifyOwner("Cuti Staf", `Staf ${req.user.username} telah memohon cuti bulanan.`);
 
     res.json({ status: "success", message: "Cuti bulan hadapan berjaya disimpan!" });
   } catch (err) {
@@ -664,7 +664,7 @@ router.post("/emergency-leaves", authenticate, requireRole(["staff"]), async (re
       throw error;
     }
 
-    notifyOwner("Cuti Kecemasan!", `Staf ${req.user.username} telah memohon cuti kecemasan: ${reason}`);
+    await notifyOwner("Cuti Kecemasan!", `Staf ${req.user.username} telah memohon cuti kecemasan: ${reason}`);
 
     res.json({ status: "success", message: "Permohonan Cuti Kecemasan dihantar." });
   } catch (err) {

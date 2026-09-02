@@ -323,8 +323,8 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       if (error) throw error;
     }
 
-    notifyOwner("Tempahan Baharu!", `Satu tempahan ${booking_type === "treatment" ? "rawatan" : "guntingan"} diterima pada ${booking_date} ${booking_time} (No Bil: ${order_no})`);
-    notifyStaff(staff_id, "Tempahan Baharu!", `Anda mendapat tempahan pelanggan pada ${booking_date} ${booking_time}`);
+    await notifyOwner("Tempahan Baharu!", `Satu tempahan ${booking_type === "treatment" ? "rawatan" : "guntingan"} diterima pada ${booking_date} ${booking_time} (No Bil: ${order_no})`);
+    await notifyStaff(staff_id, "Tempahan Baharu!", `Anda mendapat tempahan pelanggan pada ${booking_date} ${booking_time}`);
 
     bookingLocks.delete(lockKey); // [DIBAIKI] MEMORY LEAK FIX
     if (payment_method === "qr") {
@@ -593,7 +593,7 @@ router.post(
         },
       ]);
       if (error) throw error;
-      notifyOwner("Walk-In Baharu!", `Pelanggan walk-in (${customer_name}) telah didaftarkan.`);
+      await notifyOwner("Walk-In Baharu!", `Pelanggan walk-in (${customer_name}) telah didaftarkan.`);
       res.json({ status: "success", message: "Rekod Walk-In disimpan" });
     } catch (error) {
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
@@ -726,8 +726,8 @@ router.post(
 
       if (error) throw error;
       
-      notifyOwner("Tempahan On-Call!", `Satu tempahan On-Call diterima dari ${cust.name}.`);
-      notifyStaff(barber, "Tempahan On-Call!", `Anda mendapat tugasan On-Call dari ${cust.name} di lokasi ${address}`);
+      await notifyOwner("Tempahan On-Call!", `Satu tempahan On-Call diterima dari ${cust.name}.`);
+      await notifyStaff(barber, "Tempahan On-Call!", `Anda mendapat tugasan On-Call dari ${cust.name} di lokasi ${address}`);
 
       try {
         // [DIBAIKI] Zon Masa Peringatan
@@ -907,7 +907,7 @@ router.post(
 
       if (error) throw error;
       
-      notifyOwner("Pesanan Produk!", `Satu pesanan E-Commerce baru diterima dari ${cust.name}.`);
+      await notifyOwner("Pesanan Produk!", `Satu pesanan E-Commerce baru diterima dari ${cust.name}.`);
 
       if (payment_method === "qr") {
         res.json({
