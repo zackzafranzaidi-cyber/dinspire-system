@@ -20,6 +20,7 @@ let currentInsightAbortController = null;
 let insightDebounceTimer = null;
 let currentActiveTab = "dashboard";
 let currentReferenceDate = new Date();
+let lastNotificationCounts = null;
 
 function showToast(msg) {
   const t = document.getElementById("toast");
@@ -398,7 +399,31 @@ function escapeHTML(str) {
   });
 }
 
+function triggerNativeNotification(title, body) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+      const notif = new Notification(title, {
+          body: body,
+          icon: "/icon.png" // Fallback ke default icon PWA
+      });
+      notif.onclick = function() {
+          window.focus();
+          this.close();
+      };
+  } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(permission => {
+          if (permission === "granted") triggerNativeNotification(title, body);
+      });
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  if ("Notification" in window) {
+      if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+          Notification.requestPermission();
+      }
+  }
+
   let isLogged = localStorage.getItem("din_owner_logged") || sessionStorage.getItem("din_owner_logged");
   if (isLogged) {
     document.getElementById("login-overlay").style.display = "none";
@@ -406,8 +431,13 @@ document.addEventListener("DOMContentLoaded", () => {
       initChart();
     } catch (e) {}
     fetchOwnerDashboardData();
-      switchTab(currentActiveTab);
-    } else {
+    switchTab(currentActiveTab);
+    
+    setInterval(() => {
+        let stillLogged = localStorage.getItem("din_owner_logged") || sessionStorage.getItem("din_owner_logged");
+        if (stillLogged) fetchOwnerDashboardData(true);
+    }, 30000); // 30 saat untuk real-time polling
+  } else {
     hideGlobalLoader();
   }
 });
@@ -618,12 +648,12 @@ document.getElementById("punch-kecemasan-view").classList.add("block");
   }
 }
 
-async function fetchOwnerDashboardData() {
-  showGlobalLoader();
+async function fetchOwnerDashboardData(silent = false) {
+  if (!silent) showGlobalLoader();
 
   // [DIBAIKI] Caching Tempatan (Optimistic Load) untuk PWA
   const cachedData = localStorage.getItem("din_owner_dashboard");
-  if (cachedData) {
+  if (cachedData && !silent) {
       try {
           const data = JSON.parse(cachedData);
           masterData = data.masterData || {};
@@ -655,6 +685,27 @@ async function fetchOwnerDashboardData() {
       mapBarberBranch = data.mapBarberBranch || {};
       if (!masterData.orders) masterData.orders = [];
       if (!masterData.bookings) masterData.bookings = [];
+      if (!masterData.staffLeaves) masterData.staffLeaves = [];
+      
+      let currentCounts = {
+          bookings: masterData.bookings.length,
+          orders: masterData.orders.length,
+          leaves: masterData.staffLeaves.length
+      };
+      
+      if (lastNotificationCounts !== null) {
+          if (currentCounts.bookings > lastNotificationCounts.bookings) {
+              triggerNativeNotification("Transaksi Baharu", "Terdapat jualan/tempahan baharu telah direkodkan oleh staf.");
+          }
+          if (currentCounts.orders > lastNotificationCounts.orders) {
+              triggerNativeNotification("Pesanan Produk", "Terdapat pesanan E-Commerce baharu.");
+          }
+          if (currentCounts.leaves > lastNotificationCounts.leaves) {
+              triggerNativeNotification("Permohonan Cuti", "Staf telah memohon cuti baharu. Sila semak.");
+          }
+      }
+      lastNotificationCounts = currentCounts;
+
       processData();
       fetchSMSBalance();
     } else {
@@ -664,7 +715,7 @@ async function fetchOwnerDashboardData() {
   } catch (err) {
     console.error("Fetch err:", err);
   } finally {
-    hideGlobalLoader();
+    if (!silent) hideGlobalLoader();
   }
 }
 
