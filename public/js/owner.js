@@ -455,7 +455,8 @@ function requestNotifPermission() {
   }
 }
 
-document.addEventListener("click", requestNotifPermission, { once: true });
+// Buang { once: true } click listener kerana ia terlalu awal
+// document.addEventListener("click", requestNotifPermission, { once: true });
 
 document.addEventListener("DOMContentLoaded", () => {
   let isLogged = localStorage.getItem("din_owner_logged") || sessionStorage.getItem("din_owner_logged");
@@ -464,6 +465,13 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       initChart();
     } catch (e) {}
+    
+    // Auto subscribe jika dah granted dan dah log masuk
+    if ("Notification" in window && Notification.permission === "granted" && typeof subscribeToPush === "function") {
+        subscribeToPush();
+        hasRequestedNotif = true;
+    }
+
     fetchOwnerDashboardData();
     switchTab(currentActiveTab);
     
@@ -559,6 +567,10 @@ function hideGlobalLoader() {
 }
 
 function switchTab(tabName, element = null) {
+  if (typeof requestNotifPermission === "function" && !hasRequestedNotif) {
+      requestNotifPermission();
+  }
+
   showGlobalLoader();
   setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
 
