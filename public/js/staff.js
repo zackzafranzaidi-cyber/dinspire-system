@@ -458,6 +458,7 @@ async function loadDashboardData() {
          staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
          staffData.monthlySales = data.monthlySales || 0;
          staffData.monthlyCustomers = data.monthlyCustomers || 0;
+         staffData.isPunchedIn = data.isPunchedIn || false;
          calculateDashboardStats();
          renderBookingList();
          renderHistoryList();
@@ -485,6 +486,7 @@ async function loadDashboardData() {
       staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
       staffData.monthlySales = data.monthlySales || 0;
       staffData.monthlyCustomers = data.monthlyCustomers || 0;
+      staffData.isPunchedIn = data.isPunchedIn || false;
       
       if (loggedInStaff.is_general) {
          document.getElementById("general-staff-branch-container").style.display = "block";
@@ -982,6 +984,8 @@ function submitPunch(type) {
         if (data.status === "success") {
           statusText.innerHTML = `<span style="color:var(--success);">Berjaya ${type}</span>`;
           showToast(data.message);
+          // KEMAS KINI DASHBOARD SERTA MERTA SUPAYA SISTEM UNLOCK
+          loadDashboardData();
         } else {
           statusText.innerHTML = `<span style="color:var(--danger);">${escapeHTML(data.message)}</span>`;
         }
