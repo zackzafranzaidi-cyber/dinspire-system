@@ -418,6 +418,10 @@ router.post(
           },
         ]);
         if (error) throw error;
+        
+        // Push notification kepada Owner
+        notifyOwner("Kehadiran Staf (Masuk)", `Staf ${username} telah Punch In di ${namaCawangan}.`).catch(e => console.error("Punch In Notif Error:", e));
+
         res.json({
           status: "success",
           message: "Berjaya Punch In di " + namaCawangan,
@@ -444,6 +448,10 @@ router.post(
           .eq("id", existPunch.id);
 
         if (error) throw error;
+
+        // Push notification kepada Owner
+        notifyOwner("Kehadiran Staf (Keluar)", `Staf ${username} telah Punch Out dari ${namaCawangan}.`).catch(e => console.error("Punch Out Notif Error:", e));
+
         res.json({ status: "success", message: `Berjaya ${type} pada ${masa}.` });
       }
 
