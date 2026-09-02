@@ -1308,10 +1308,8 @@ async function subscribeToPush() {
     }
     
     console.log('Staff Push subscribed.');
-    alert('Berjaya mendaftar notifikasi Staf!');
   } catch (err) {
     console.error('Staff Push sub error', err);
-    alert('Ralat Push: ' + err.message);
   }
 }
 
