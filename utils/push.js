@@ -17,12 +17,11 @@ async function addOwnerSubscription(subscription) {
     let { data: settingData } = await supabase
       .from("settings")
       .select("setting_value")
-      .eq("setting_key", "push_sub_owner")
-      .single();
+      .eq("setting_key", "push_sub_owner");
 
     let subs = [];
-    if (settingData && settingData.setting_value) {
-      try { subs = JSON.parse(settingData.setting_value); } catch(e) {}
+    if (settingData && settingData.length > 0 && settingData[0].setting_value) {
+      try { subs = JSON.parse(settingData[0].setting_value); } catch(e) {}
     }
 
     // Check if subscription already exists
@@ -46,13 +45,12 @@ async function notifyOwner(title, body, url = "/owner/index.html") {
     let { data: settingData } = await supabase
       .from("settings")
       .select("setting_value")
-      .eq("setting_key", "push_sub_owner")
-      .single();
+      .eq("setting_key", "push_sub_owner");
 
-    if (!settingData || !settingData.setting_value) return;
+    if (!settingData || settingData.length === 0 || !settingData[0].setting_value) return;
 
     let subs = [];
-    try { subs = JSON.parse(settingData.setting_value); } catch(e) {}
+    try { subs = JSON.parse(settingData[0].setting_value); } catch(e) {}
 
     const payload = JSON.stringify({
       title: title,
