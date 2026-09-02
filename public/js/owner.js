@@ -417,13 +417,19 @@ function triggerNativeNotification(title, body) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  if ("Notification" in window) {
-      if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+let hasRequestedNotif = false;
+function requestNotifPermission() {
+  if ("Notification" in window && !hasRequestedNotif) {
+      if (Notification.permission === "default") {
           Notification.requestPermission();
       }
+      hasRequestedNotif = true;
   }
+}
 
+document.addEventListener("click", requestNotifPermission, { once: true });
+
+document.addEventListener("DOMContentLoaded", () => {
   let isLogged = localStorage.getItem("din_owner_logged") || sessionStorage.getItem("din_owner_logged");
   if (isLogged) {
     document.getElementById("login-overlay").style.display = "none";
