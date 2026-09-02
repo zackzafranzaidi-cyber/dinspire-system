@@ -410,9 +410,13 @@ function triggerNativeNotification(title, body) {
           window.focus();
           this.close();
       };
+      if (typeof subscribeToPush === "function") subscribeToPush();
   } else if (Notification.permission !== "denied") {
       Notification.requestPermission().then(permission => {
-          if (permission === "granted") triggerNativeNotification(title, body);
+          if (permission === "granted") {
+              triggerNativeNotification(title, body);
+              if (typeof subscribeToPush === "function") subscribeToPush();
+          }
       });
   }
 }
@@ -421,7 +425,11 @@ let hasRequestedNotif = false;
 function requestNotifPermission() {
   if ("Notification" in window && !hasRequestedNotif) {
       if (Notification.permission === "default") {
-          Notification.requestPermission();
+          Notification.requestPermission().then(permission => {
+              if (permission === "granted" && typeof subscribeToPush === "function") subscribeToPush();
+          });
+      } else if (Notification.permission === "granted" && typeof subscribeToPush === "function") {
+          subscribeToPush();
       }
       hasRequestedNotif = true;
   }
@@ -3257,3 +3265,38 @@ document.addEventListener('click', function(event) {
 
 
 
+async function subscribeToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const res = await fetch(`${API_BASE_URL}/owner/push/vapid-key`, {credentials: 'include'});
+    const { publicKey } = await res.json();
+    
+    const urlB64ToUint8Array = (base64String) => {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    };
+
+    const applicationServerKey = urlB64ToUint8Array(publicKey);
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: applicationServerKey
+    });
+
+    await fetch(`${API_BASE_URL}/owner/push/subscribe`, {
+      method: 'POST',
+      body: JSON.stringify(subscription),
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    });
+    console.log("Push subscribed.");
+  } catch (err) {
+    console.error("Push sub error", err);
+  }
+}

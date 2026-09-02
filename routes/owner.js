@@ -5,11 +5,23 @@ const { authenticate, requireRole } = require("../middleware/auth");
 const { generateBusinessInsights } = require("../utils/ai");
 const rateLimit = require("express-rate-limit");
 
-// [DIBAIKI] AI Billing Exhaustion Prevention (Limit 5 req / 5 min)
 const aiLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 5,
   message: { status: "error", message: "Had pertanyaan AI tercapai. Sila tunggu 5 minit untuk menyejukkan enjin AI." }
+});
+
+const { addOwnerSubscription, publicVapidKey } = require("../utils/push");
+
+router.get("/push/vapid-key", authenticate, requireRole(["owner"]), (req, res) => {
+  res.json({ status: "success", publicKey: publicVapidKey });
+});
+
+router.post("/push/subscribe", authenticate, requireRole(["owner"]), async (req, res) => {
+  const subscription = req.body;
+  if (!subscription || !subscription.endpoint) return res.status(400).json({ status: "error", message: "Invalid subscription" });
+  await addOwnerSubscription(subscription);
+  res.json({ status: "success", message: "Push subscribed successfully" });
 });
 
 router.get(

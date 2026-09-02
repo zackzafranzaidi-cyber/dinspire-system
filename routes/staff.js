@@ -4,6 +4,7 @@ const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
 const schedule = require("node-schedule"); // [DIBAIKI] Ditambah untuk jadual SMS
 const { sendSMS } = require("../utils/sms");
+const { notifyOwner } = require("../utils/push");
 
 // ==========================================
 // 1. Papan Pemuka Tugasan Staf (Dashboard)
@@ -572,6 +573,8 @@ router.post("/leaves", authenticate, requireRole(["staff"]), async (req, res) =>
       throw error;
     }
 
+    notifyOwner("Cuti Staf", `Staf ${req.user.username} telah memohon cuti bulanan.`);
+
     res.json({ status: "success", message: "Cuti bulan hadapan berjaya disimpan!" });
   } catch (err) {
     console.error("Ralat post /leaves:", err);
@@ -644,6 +647,8 @@ router.post("/emergency-leaves", authenticate, requireRole(["staff"]), async (re
       }
       throw error;
     }
+
+    notifyOwner("Cuti Kecemasan!", `Staf ${req.user.username} telah memohon cuti kecemasan: ${reason}`);
 
     res.json({ status: "success", message: "Permohonan Cuti Kecemasan dihantar." });
   } catch (err) {
