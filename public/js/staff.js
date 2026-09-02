@@ -602,7 +602,10 @@ function renderBookingList() {
       let phone = b.customer && b.customer.phone ? String(b.customer.phone).trim() : (b.customers && b.customers.phone ? String(b.customers.phone).trim() : "");
       let callLink = "";
       let waLink = "";
-      if (phone && phone !== "Tiada" && phone !== "null") {
+      
+      let isWalkIn = b.order_no && String(b.order_no).startsWith("#WLK-");
+      
+      if (!isWalkIn && phone && phone !== "Tiada" && phone !== "null") {
         if (!phone.startsWith("60") && phone.startsWith("0")) phone = "60" + phone.substring(1);
         let staffName = loggedInStaff ? (loggedInStaff.nama_penuh || loggedInStaff.username) : "Staf";
         let bDate = new Date(b.booking_date).toLocaleDateString("ms-MY");
@@ -656,7 +659,10 @@ function renderHistoryList() {
       let phone = b.customer && b.customer.phone ? String(b.customer.phone).trim() : (b.customers && b.customers.phone ? String(b.customers.phone).trim() : "");
       let callLink = "";
       let waLink = "";
-      if (phone && phone !== "Tiada" && phone !== "null") {
+      
+      let isWalkIn = b.order_no && String(b.order_no).startsWith("#WLK-");
+      
+      if (!isWalkIn && phone && phone !== "Tiada" && phone !== "null") {
         if (!phone.startsWith("60") && phone.startsWith("0")) phone = "60" + phone.substring(1);
         let staffName = loggedInStaff ? (loggedInStaff.nama_penuh || loggedInStaff.username) : "Staf";
         let bDate = new Date(b.booking_date).toLocaleDateString("ms-MY");
