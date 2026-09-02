@@ -325,12 +325,10 @@ function showGlobalLoader() {
 function hideGlobalLoader() {
   const preloader = document.getElementById('preloader');
   if (preloader) {
-      const elapsed = Date.now() - globalLoaderStartTime;
-      const remaining = Math.max(0, 1000 - elapsed);
+      preloader.style.opacity = '0';
       setTimeout(() => {
-        preloader.style.opacity = '0';
-        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
-      }, remaining);
+          preloader.style.visibility = 'hidden';
+      }, 300);
   }
 }
 

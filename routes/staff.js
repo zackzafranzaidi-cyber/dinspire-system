@@ -16,12 +16,23 @@ router.get(
     const staff_id = req.user.id;
 
     try {
+      const now = new Date();
+      const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000); // Waktu Malaysia
+      const firstDayOfMonth = myTime.toISOString().substring(0, 8) + "01";
+
       const [
         { data: settingData },
         { data: bookings },
         { data: walkins },
         { data: oncalls },
         { data: treatments },
+        { data: monthlyCashData },
+        { data: monthlyTreatmentCashData },
+        { data: monthlyBookingData },
+        { data: monthlyWalkinData },
+        { data: monthlyOncallData },
+        { data: monthlyTreatmentData },
+        { data: branchesData }
       ] = await Promise.all([
         supabase
           .from("settings")
@@ -51,6 +62,43 @@ router.get(
           .eq("staff_id", staff_id)
           .order("created_at", { ascending: false })
           .limit(100),
+        supabase
+          .from("walkin_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .gte("tarikh", firstDayOfMonth)
+          .in("jenis_bayaran", ["Cash", "Tunai"]),
+        supabase
+          .from("treatment_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .eq("status", "Selesai")
+          .gte("tarikh", firstDayOfMonth)
+          .in("jenis_bayaran", ["Cash", "Tunai"]),
+        supabase
+          .from("booking_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .eq("status", "Selesai")
+          .gte("tarikh", firstDayOfMonth),
+        supabase
+          .from("walkin_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .gte("tarikh", firstDayOfMonth),
+        supabase
+          .from("oncall_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .eq("status", "Selesai")
+          .gte("tarikh", firstDayOfMonth),
+        supabase
+          .from("treatment_records")
+          .select("harga_rm")
+          .eq("staff_id", staff_id)
+          .eq("status", "Selesai")
+          .gte("tarikh", firstDayOfMonth),
+        supabase.from("branches").select("id, nama_cawangan")
       ]);
       
       let commissionPercent = 50;
@@ -125,57 +173,6 @@ router.get(
         });
       });
 
-      // KIRA CASH ON HAND BULANAN SECARA TEPAT (AUTO-RESET)
-      const now = new Date();
-      const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000); // Waktu Malaysia
-      const firstDayOfMonth = myTime.toISOString().substring(0, 8) + "01";
-      
-      const [
-        { data: monthlyCashData },
-        { data: monthlyTreatmentCashData },
-        { data: monthlyBookingData },
-        { data: monthlyWalkinData },
-        { data: monthlyOncallData },
-        { data: monthlyTreatmentData }
-      ] = await Promise.all([
-        supabase
-          .from("walkin_records")
-          .select("harga_rm")
-          .eq("staff_id", staff_id)
-          .gte("tarikh", firstDayOfMonth)
-          .in("jenis_bayaran", ["Cash", "Tunai"]),
-        supabase
-          .from("treatment_records")
-          .select("harga_rm")
-          .eq("staff_id", staff_id)
-          .eq("status", "Selesai")
-          .gte("tarikh", firstDayOfMonth)
-          .in("jenis_bayaran", ["Cash", "Tunai"]),
-        supabase
-          .from("booking_records")
-          .select("harga_rm")
-          .eq("staff_id", staff_id)
-          .eq("status", "Selesai")
-          .gte("tarikh", firstDayOfMonth),
-        supabase
-          .from("walkin_records")
-          .select("harga_rm")
-          .eq("staff_id", staff_id)
-          .gte("tarikh", firstDayOfMonth),
-        supabase
-          .from("oncall_records")
-          .select("harga_rm")
-          .eq("staff_id", staff_id)
-          .eq("status", "Selesai")
-          .gte("tarikh", firstDayOfMonth),
-        supabase
-          .from("treatment_records")
-          .select("harga_rm")
-          .eq("staff_id", staff_id)
-          .eq("status", "Selesai")
-          .gte("tarikh", firstDayOfMonth)
-      ]);
-
       let monthlyCashOnHand = 0;
       (monthlyCashData || []).forEach((w) => {
         monthlyCashOnHand += parseFloat(w.harga_rm) || 0;
@@ -198,8 +195,6 @@ router.get(
       aggregateSales(monthlyWalkinData);
       aggregateSales(monthlyOncallData);
       aggregateSales(monthlyTreatmentData);
-
-      const { data: branchesData } = await supabase.from("branches").select("id, nama_cawangan");
       
       res.json({
         status: "success",
