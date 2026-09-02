@@ -30,18 +30,7 @@ router.post("/push/subscribe", authenticate, requireRole(["owner"]), async (req,
   }
 });
 
-router.post("/push/test", authenticate, requireRole(["owner"]), async (req, res) => {
-  try {
-    const count = await notifyOwner("Ujian Push Berjaya!", "Ini adalah contoh notifikasi sebenar Web Push API.");
-    if (count === 0) {
-      res.json({ status: "error", message: "Tiada rekod telefon dijumpai dalam pangkalan data. Sila refresh dan daftar semula." });
-    } else {
-      res.json({ status: "success", message: `Test sent to ${count} devices.` });
-    }
-  } catch(e) {
-    res.status(500).json({ status: "error", message: e.message });
-  }
-});
+
 
 router.get(
   "/dashboard",
