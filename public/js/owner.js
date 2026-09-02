@@ -485,6 +485,11 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function testPushNotification() {
+    showToast("Mendaftarkan peranti...");
+    if (typeof subscribeToPush === "function") {
+       await subscribeToPush();
+    }
+
     try {
         const res = await fetch(`${API_BASE_URL}/owner/push/test`, {
             method: 'POST',
@@ -3320,7 +3325,10 @@ async function subscribeToPush() {
       return;
   }
   try {
-    const reg = await navigator.serviceWorker.ready;
+    let reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+        reg = await navigator.serviceWorker.register("/owner/sw.js?v=32");
+    }
     const res = await fetch(`${API_BASE_URL}/owner/push/vapid-key`, {credentials: 'include'});
     if (!res.ok) throw new Error("Gagal dapatkan VAPID key: " + res.status);
     const { publicKey } = await res.json();
@@ -3337,6 +3345,13 @@ async function subscribeToPush() {
     };
 
     const applicationServerKey = urlB64ToUint8Array(publicKey);
+    
+    // Unsubscribe langganan lama yang mungkin rosak / 410 Gone
+    const existingSub = await reg.pushManager.getSubscription();
+    if (existingSub) {
+        await existingSub.unsubscribe();
+    }
+
     const subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: applicationServerKey
