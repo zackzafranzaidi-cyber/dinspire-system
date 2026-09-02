@@ -358,6 +358,11 @@ function requestNotifPermission() {
 }
 
 function switchView(id) {
+  if (id === 'walkin' && !staffData.isPunchedIn) {
+      alert("Anda mesti Punch-In (Hadir) terlebih dahulu di tab Profile sebelum mendaftar pelanggan Walk-In!");
+      return;
+  }
+
   if (typeof requestNotifPermission === 'function') requestNotifPermission();
   showGlobalLoader();
   setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
@@ -577,17 +582,21 @@ function renderBookingList() {
       let btnAction = "";
       let resitBtn = "";
       
-      if (b.status === "Pending Verification") {
-        if (b.resit) {
-            resitBtn = `<button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="window.open('${b.resit}', '_blank')"><i class="fas fa-file-invoice mr-2"></i> Lihat Resit</button>`;
-        }
-        btnAction = `<button class="btn btn-primary" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-check mr-2"></i> Approve</button>
-                     <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'reject')"><i class="fas fa-times mr-2"></i> Reject</button>`;
+      if (!staffData.isPunchedIn) {
+          btnAction = `<button class="btn btn-disabled" style="width:100%; margin-top:10px;" onclick="alert('Anda mesti Punch-In di tab Profile terlebih dahulu untuk memproses tempahan pelanggan.')"><i class="fas fa-lock mr-2"></i> Disekat (Belum Punch-In)</button>`;
       } else {
-        btnAction = isEarly
-          ? `<button class="btn btn-disabled" onclick="showToast('Selesai dikunci.')"><i class="fas fa-lock mr-2"></i> Belum Tiba Waktu</button>`
-          : `<button class="btn btn-primary" onclick="processBookingSelesai('${escapeHTML(b.order_no)}', ${b.price})"><i class="fas fa-check-circle mr-2"></i> Selesai</button>`;
-        btnAction += `<button class="btn btn-outline" style="width:30%; color:var(--danger);" onclick="cancelBooking('${escapeHTML(b.order_no)}')">Batal</button>`;
+          if (b.status === "Pending Verification") {
+            if (b.resit) {
+                resitBtn = `<button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="window.open('${b.resit}', '_blank')"><i class="fas fa-file-invoice mr-2"></i> Lihat Resit</button>`;
+            }
+            btnAction = `<button class="btn btn-primary" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-check mr-2"></i> Approve</button>
+                         <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'reject')"><i class="fas fa-times mr-2"></i> Reject</button>`;
+          } else {
+            btnAction = isEarly
+              ? `<button class="btn btn-disabled" onclick="showToast('Selesai dikunci.')"><i class="fas fa-lock mr-2"></i> Belum Tiba Waktu</button>`
+              : `<button class="btn btn-primary" onclick="processBookingSelesai('${escapeHTML(b.order_no)}', ${b.price})"><i class="fas fa-check-circle mr-2"></i> Selesai</button>`;
+            btnAction += `<button class="btn btn-outline" style="width:30%; color:var(--danger);" onclick="cancelBooking('${escapeHTML(b.order_no)}')">Batal</button>`;
+          }
       }
 
       let phone = b.customer && b.customer.phone ? String(b.customer.phone).trim() : (b.customers && b.customers.phone ? String(b.customers.phone).trim() : "");
@@ -1293,7 +1302,10 @@ async function subscribeToPush() {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include'
     });
-    if (!subRes.ok) throw new Error('Gagal simpan langganan staff');
+    if (!subRes.ok) {
+        let errText = await subRes.text();
+        throw new Error(`HTTP ${subRes.status} - ${errText}`);
+    }
     
     console.log('Staff Push subscribed.');
     alert('Berjaya mendaftar notifikasi Staf!');

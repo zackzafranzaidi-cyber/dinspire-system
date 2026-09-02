@@ -213,8 +213,17 @@ router.get(
       aggregateSales(monthlyOncallData);
       aggregateSales(monthlyTreatmentData);
       
+      const myTimePunch = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+      const { data: punchData } = await supabase
+        .from("punch_cards")
+        .select("id")
+        .eq("staff_id", staff_id)
+        .is("waktu_out", null);
+      const isPunchedIn = (punchData && punchData.length > 0);
+      
       res.json({
         status: "success",
+        isPunchedIn: isPunchedIn,
         bookings: allBookings,
         commissionPercent: commissionPercent,
         basicSalary: basicSalary,
