@@ -97,7 +97,7 @@ async function notifyOwner(title, body, url = "/owner/index.html") {
 // Simpan langganan Staff ke dalam jadual settings
 async function addStaffSubscription(staffId, subscription) {
   try {
-    const key = 'push_sub_staff_' + staffId;
+    const key = 'staff_push_' + staffId;
     let { data: settingData } = await supabase
       .from('settings')
       .select('setting_value')
@@ -127,7 +127,7 @@ async function addStaffSubscription(staffId, subscription) {
 // Hantar Push Notification kepada peranti Staff tertentu
 async function notifyStaff(staffId, title, body, url = '/staff/index.html') {
   try {
-    const key = 'push_sub_staff_' + staffId;
+    const key = 'staff_push_' + staffId;
     let { data: settingData } = await supabase
       .from('settings')
       .select('setting_value')
