@@ -1236,7 +1236,7 @@ async function subscribeToPush() {
     if (!reg) {
         reg = await navigator.serviceWorker.register('/staff/sw.js?v=2');
     }
-    const res = await fetch(${API_BASE_URL}/staff/push/vapid-key, {credentials: 'include'});
+    const res = await fetch(`${API_BASE_URL}/staff/push/vapid-key`, {credentials: 'include'});
     if (!res.ok) throw new Error('Gagal dapatkan VAPID key');
     
     const { publicKey } = await res.json();
@@ -1264,7 +1264,7 @@ async function subscribeToPush() {
       applicationServerKey: applicationServerKey
     });
 
-    const subRes = await fetch(${API_BASE_URL}/staff/push/subscribe, {
+    const subRes = await fetch(`${API_BASE_URL}/staff/push/subscribe`, {
       method: 'POST',
       body: JSON.stringify(subscription),
       headers: { 'Content-Type': 'application/json' },
@@ -1280,8 +1280,7 @@ async function subscribeToPush() {
 
 
 document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && loggedInStaff) {
+    if (document.visibilityState === 'visible' && typeof loggedInStaff !== 'undefined' && loggedInStaff) {
         if (typeof subscribeToPush === 'function') subscribeToPush();
     }
 });
-
