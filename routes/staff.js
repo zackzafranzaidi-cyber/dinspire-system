@@ -214,10 +214,12 @@ router.get(
       aggregateSales(monthlyTreatmentData);
       
       const myTimePunch = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+      const tarikhStr = myTimePunch.toISOString().split("T")[0];
       const { data: punchData } = await supabase
         .from("punch_cards")
         .select("id")
         .eq("staff_id", staff_id)
+        .eq("tarikh", tarikhStr)
         .is("waktu_out", null);
       const isPunchedIn = (punchData && punchData.length > 0);
       

@@ -39,7 +39,7 @@ async function isStaffPunchedIn(staff_id) {
     .from("punch_cards")
     .select("id")
     .eq("staff_id", staff_id)
-    
+    .eq("tarikh", tarikhStr)
     .is("waktu_out", null);
 
   if (error || !data || data.length === 0) return false;
