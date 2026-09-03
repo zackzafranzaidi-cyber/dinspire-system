@@ -57,7 +57,7 @@ async function notifyOwner(title, body, url = "/owner/index.html") {
     const payload = JSON.stringify({
       title: title,
       body: body,
-      icon: "/icon.png",
+      icon: "/owner/icon_owner.png",
       url: url
     });
 
@@ -141,7 +141,7 @@ async function notifyStaff(staffId, title, body, url = '/staff/index.html') {
     const payload = JSON.stringify({
       title: title,
       body: body,
-      icon: '/icon.png',
+      icon: '/staff/icon_staf.png',
       url: url
     });
 
