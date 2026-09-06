@@ -72,9 +72,9 @@
 
   <body>
     <!-- INTRO ANIMATION (ORIGINAL SWOOSH) -->
-    <div class="preloader" style="z-index: 999999;">
+    <div class="preloader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #1a1a2e; display: flex; justify-content: center; align-items: center; z-index: 999999;">
         <div class="canvas">
-            <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1030.32 964.36">
+            <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1030.32 964.36" width="150" height="150">
                 <path class="intro-swoosh swoosh-1" d="M 150,482 A 365,365 0 1,1 880,482" />
                 <path class="intro-swoosh swoosh-2" d="M 880,482 A 365,365 0 1,1 150,482" />
                 <g class="logo-wrapper">
@@ -86,9 +86,9 @@
     </div>
 
     <!-- GLOBAL PRELOADER MESIN CLIPPER -->
-    <div class="loading-wrapper" id="preloader" style="--loader-color: #1877f2; --loader-color-shadow: rgba(24, 119, 242, 0.4); --loader-color-shadow-light: rgba(24, 119, 242, 0.1);">
+    <div class="loading-wrapper" id="preloader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: rgba(255, 255, 255, 0.75); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; --loader-color: #1877f2; --loader-color-shadow: rgba(24, 119, 242, 0.4); --loader-color-shadow-light: rgba(24, 119, 242, 0.1);">
         <div class="clipper-container">
-            <svg class="perfect-clipper" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <svg class="perfect-clipper" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                 <defs>
                     <mask id="switch-mask-customer">
                         <rect x="47" y="52" width="6" height="8" rx="2" fill="white" />
