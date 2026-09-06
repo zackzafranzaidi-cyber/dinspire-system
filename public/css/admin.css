@@ -33,6 +33,7 @@
 }
 
 body {
+  touch-action: manipulation;
   background-color: var(--bg-main);
   color: var(--text-main);
   display: flex;

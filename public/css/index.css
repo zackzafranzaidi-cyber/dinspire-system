@@ -20,6 +20,7 @@
 }
 
 body {
+  touch-action: manipulation;
   background-color: #e2e8f0; /* Latar belakang untuk luar container */
   display: flex;
   justify-content: center;
@@ -575,6 +576,7 @@ body {
   color: var(--primary-blue);
 }
 .card-body {
+  touch-action: manipulation;
   max-height: 0;
   overflow: hidden;
   opacity: 0;
@@ -584,6 +586,7 @@ body {
     margin-top 0.3s ease;
 }
 .rgb-border-container.active .card-body {
+  touch-action: manipulation;
   max-height: 600px;
   opacity: 1;
   margin-top: 15px;
@@ -847,6 +850,7 @@ select.input-field {
   justify-content: space-between;
 }
 .modal-body {
+  touch-action: manipulation;
   overflow-y: auto;
   flex: 1;
 }
@@ -1265,6 +1269,7 @@ select.input-field {
 }
 
 .checkout-body {
+  touch-action: manipulation;
   flex: 1;
   overflow-y: auto;
   padding: 10px 14px 20px;

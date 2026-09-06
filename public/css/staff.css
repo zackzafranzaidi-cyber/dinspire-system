@@ -23,6 +23,7 @@
 
 /* DIBUANG HAD KELUASAN (MAX-WIDTH) UNTUK PENUHKAN SKRIN */
 body {
+  touch-action: manipulation;
   background-color: #e2e8f0; /* Latar belakang untuk luar container */
   display: flex;
   justify-content: center;

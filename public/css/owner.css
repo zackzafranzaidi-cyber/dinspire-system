@@ -1,5 +1,6 @@
 /* Font ala-ala Aplikasi Perbankan Moden */
 body {
+  touch-action: manipulation;
   background-color: #f3f4f6;
   font-family:
     "Helvetica Neue",
@@ -225,6 +226,7 @@ body {
 /* RESPONSIVE TYPOGRAPHY MOBILE */
 @media (max-width: 480px) {
   body {
+  touch-action: manipulation;
     font-size: 11px !important;
   }
   .card {
