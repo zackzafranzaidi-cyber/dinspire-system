@@ -604,12 +604,21 @@ router.post(
       if (req.user.role === "staff") {
         const { data: staffData } = await supabase
           .from("staff")
-          .select("username, branches(nama_cawangan)")
+          .select("username, branch_id")
           .eq("id", req.user.id)
           .single();
+          
         if (staffData) {
           const staffName = staffData.username || req.user.username;
-          const branchName = staffData.branches ? staffData.branches.nama_cawangan : "Cawangan Tidak Diketahui";
+          let branchName = "Cawangan Tidak Diketahui";
+          if (staffData.branch_id) {
+             const { data: bData } = await supabase
+               .from("branches")
+               .select("nama_cawangan")
+               .eq("id", staffData.branch_id)
+               .single();
+             if (bData) branchName = bData.nama_cawangan;
+          }
           staffInfo = `${staffName} (${branchName})`;
         }
       } else if (req.user.role === "owner") {
