@@ -610,7 +610,7 @@ router.post(
           
         if (staffData) {
           const staffName = staffData.username || req.user.username;
-          let branchName = "Cawangan Tidak Diketahui";
+          let branchName = null;
           if (staffData.branch_id) {
              const { data: bData } = await supabase
                .from("branches")
@@ -618,6 +618,24 @@ router.post(
                .eq("id", staffData.branch_id)
                .single();
              if (bData) branchName = bData.nama_cawangan;
+          }
+          
+          if (!branchName) {
+            const now = new Date();
+            const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+            const tarikhStr = myTime.toISOString().split("T")[0];
+            const { data: punchData } = await supabase
+              .from("punch_cards")
+              .select("cawangan")
+              .eq("staff_id", req.user.id)
+              .eq("tarikh", tarikhStr)
+              .is("waktu_out", null)
+              .maybeSingle();
+            if (punchData && punchData.cawangan) {
+              branchName = punchData.cawangan;
+            } else {
+              branchName = "Cawangan Tidak Diketahui";
+            }
           }
           staffInfo = `${staffName} (${branchName})`;
         }
