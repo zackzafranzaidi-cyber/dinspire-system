@@ -599,7 +599,24 @@ router.post(
         },
       ]);
       if (error) throw error;
-      await notifyOwner("Walk-In Baharu!", `Pelanggan walk-in (${customer_name}) telah didaftarkan.`);
+
+      let staffInfo = req.user.username || "Staf";
+      if (req.user.role === "staff") {
+        const { data: staffData } = await supabase
+          .from("staff")
+          .select("username, branches(nama_cawangan)")
+          .eq("id", req.user.id)
+          .single();
+        if (staffData) {
+          const staffName = staffData.username || req.user.username;
+          const branchName = staffData.branches ? staffData.branches.nama_cawangan : "Cawangan Tidak Diketahui";
+          staffInfo = `${staffName} (${branchName})`;
+        }
+      } else if (req.user.role === "owner") {
+        staffInfo = "Owner";
+      }
+
+      await notifyOwner(`Walk-In: ${staffInfo}`, `Pelanggan walk-in (${customer_name}) telah didaftarkan.`);
       res.json({ status: "success", message: "Rekod Walk-In disimpan" });
     } catch (error) {
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
