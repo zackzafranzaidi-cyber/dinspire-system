@@ -1606,6 +1606,7 @@ function renderNotifications() {
   if (!currentUser) {
     container.innerHTML =
       '<div style="text-align:center; padding: 40px 20px; color:var(--text-muted); font-size:13px;">Sila Log Masuk untuk melihat status pesanan.</div>';
+    hideGlobalLoader();
     return;
   }
   container.innerHTML = '';
@@ -1924,6 +1925,11 @@ function hideGlobalLoader() {
 }
 
 function switchView(id) {
+  if (id === "notifications" && typeof currentUser !== 'undefined' && !currentUser) {
+    showToast("Sila Log Masuk untuk melihat status pesanan.");
+    id = "account";
+  }
+
   showGlobalLoader();
 
   document
