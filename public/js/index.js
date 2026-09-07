@@ -687,9 +687,41 @@ function renderPushPrompt() {
       <i class="fas fa-bell" style="font-size: 24px; color: var(--primary-blue); margin-bottom: 8px;"></i>
       <h3 style="font-size: 14px; margin-bottom: 6px; color: var(--text-dark);">Aktifkan Notifikasi</h3>
       <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Terima kemas kini status pesanan dan tempahan anda secara langsung.</p>
-      <button id="btn-allow-push" class="submit-btn" style="padding: 10px; font-size: 13px;" onclick="subscribeToPush('btn-allow-push')">SAYA SETUJU</button>
+      <button id="btn-allow-push" class="submit-btn" style="padding: 10px; font-size: 13px;" onclick="requestCustomerNotifPermission('btn-allow-push')">SAYA SETUJU</button>
     </div>
   `;
+}
+
+function requestCustomerNotifPermission(btnId) {
+  if (!('Notification' in window)) return;
+  let btn = document.getElementById(btnId);
+  if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+
+  try {
+    const p = Notification.requestPermission();
+    if (p && p.then) {
+      p.then(permission => {
+        if (permission === 'granted') {
+            subscribeToPush(btnId);
+        } else {
+            if (btn) btn.innerHTML = 'Ditolak (Ubah di Settings)';
+        }
+      }).catch(err => {
+        if (btn) btn.innerHTML = 'Ralat sistem';
+      });
+    } else {
+      // Fallback for older callback-based API (just in case)
+      Notification.requestPermission(permission => {
+        if (permission === 'granted') {
+            subscribeToPush(btnId);
+        } else {
+            if (btn) btn.innerHTML = 'Ditolak (Ubah di Settings)';
+        }
+      });
+    }
+  } catch (err) {
+    if (btn) btn.innerHTML = 'Ralat sistem';
+  }
 }
 
 async function subscribeToPush(btnId) {
@@ -698,18 +730,9 @@ async function subscribeToPush(btnId) {
     return;
   }
   let btn = btnId ? document.getElementById(btnId) : null;
-  if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
   
   try {
-    const permission = await new Promise((resolve) => {
-      const p = Notification.requestPermission(resolve);
-      if (p && p.then) p.then(resolve);
-    });
-    
-    if (permission !== 'granted') {
-      if (btn) btn.innerHTML = 'Ditolak (Ubah di Settings)';
-      return;
-    }
+    if (Notification.permission !== 'granted') return;
     let reg = await navigator.serviceWorker.getRegistration();
     if (!reg) {
         reg = await navigator.serviceWorker.register("/sw.js?v=20");
