@@ -641,9 +641,11 @@ function handleLogout(askConfirm = true) {
       document.getElementById("profile-phone").innerText = escapeHTML(
         currentUser.phone,
       );
-      document.getElementById("profile-avatar").src = escapeHTML(
-        currentUser.avatar_url || "./Profile/1.png",
-      );
+      let finalAvatar = currentUser.avatar_url || "/Profile/1.png";
+      if (finalAvatar.startsWith("./Profile/")) {
+        finalAvatar = finalAvatar.substring(1); // removes the dot, becomes /Profile/...
+      }
+      document.getElementById("profile-avatar").src = escapeHTML(finalAvatar);
       nameStr = escapeHTML(currentUser.name || currentUser.username);
     } else {
       currentUser = null;
@@ -721,7 +723,7 @@ function closeModal(id) {
 function generateAvatarGrid() {
   let html = "";
   for (let i = 1; i <= 24; i++)
-    html += `<img src="./Profile/${i}.png" onclick="selectAvatar(this, './Profile/${i}.png')">`;
+    html += `<img src="/Profile/${i}.png" onclick="selectAvatar(this, '/Profile/${i}.png')">`;
   document.getElementById("avatar-grid-container").innerHTML = html;
 }
 function selectAvatar(imgEl, path) {
@@ -1908,12 +1910,16 @@ function submitCustomerReview(event) {
   track2Reviews = track2Reviews.concat(track2Reviews);
 
   const renderCard = (r) => {
+    let finalAvatar = r.avatar || "/Profile/1.png";
+    if (finalAvatar.startsWith("./Profile/")) {
+      finalAvatar = finalAvatar.substring(1);
+    }
     let starsHtml = "★".repeat(r.stars || 5) + "☆".repeat(5 - (r.stars || 5));
     return `<div class="review-card">
                         <div class="review-header">
                             <div class="review-header-left">
                                 <div class="avatar-circle">
-                                    <img src="${r.avatar || "./Profile/1.png"}" onerror="this.src='./Profile/1.png'">
+                                    <img src="${finalAvatar}" onerror="this.src='/Profile/1.png'">
                                 </div>
                                 <div class="reviewer-info">
                                     <div class="reviewer-name">${escapeHTML(r.name)}</div>
