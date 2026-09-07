@@ -853,10 +853,15 @@ function processData() {
       b.Status === "Selesai" &&
       isWithinFilter(b.Date || b.Timestamp || b.created_at, filterType, now),
   );
-  let filteredOrders = masterData.orders.filter((o) =>
-    isWithinFilter(o.tarikh || o.Timestamp || o.created_at, filterType, now) &&
-    o.status !== "Batal" && o.status !== "Pending Verification"
+  let tableOrders = masterData.orders.filter((o) =>
+    isWithinFilter(o.tarikh || o.Timestamp || o.created_at, filterType, now)
   );
+  let filteredOrders = tableOrders.filter((o) => {
+    if (o.status === "Batal" || o.status === "Pending Verification") return false;
+    let r = o.resit || o.ReceiptLink || "";
+    if (typeof r === "string" && (r.includes("FPX_PENDING") || r.includes("FPX_FAILED"))) return false;
+    return true;
+  });
   let filteredPunch = (masterData.punchCard || []).filter((p) =>
     isWithinFilter(
       p.Tarikh || p.tarikh || p.Timestamp || p.created_at,
@@ -1075,7 +1080,7 @@ function processData() {
   renderCashTable(staffStats);
   renderAttendanceTable(filteredPunch);
   renderTxServisTable(filteredBookings);
-  renderTxProdukTable(filteredOrders);
+  renderTxProdukTable(tableOrders);
   renderReviewsTable(filteredReviews);
   renderPunchTable(filteredPunch);
   renderLeavesTable(filteredLeaves);
@@ -1418,11 +1423,14 @@ function renderTxProdukTable(orders) {
           : "";
 
       let stat = o.Status || o.status || "Baru";
+      if (typeof rLink === "string" && rLink.includes("FPX_PENDING")) stat = "FPX Pending";
+      if (typeof rLink === "string" && rLink.includes("FPX_FAILED")) stat = "FPX Gagal";
+
       let orderId = o.FullId || o.id;
       let badgeColor =
-        stat === "Pending Verification" 
+        stat === "Pending Verification" || stat === "FPX Pending"
           ? "bg-yellow-100 text-yellow-800"
-          : stat === "Rejected"
+          : stat === "Rejected" || stat === "FPX Gagal"
             ? "bg-red-100 text-red-700"
             : stat === "Preparing" || stat === "Baru" || stat === "Belum"
               ? "bg-orange-100 text-orange-700"
