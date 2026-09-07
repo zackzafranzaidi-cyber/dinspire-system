@@ -461,7 +461,15 @@ async function handleAdminImageUpload(inputEl, tabName, index, col) {
 
     // Kemas kini data terus ke dalam memori aplikasi
     updateData(tabName, index, col, compressedBase64);
-    inputEl.previousElementSibling.src = compressedBase64;
+    
+    // Cari elemen <img> yang sesuai untuk dikemas kini
+    const cardContainer = inputEl.closest('.poster-card, .product-card');
+    if (cardContainer) {
+      const imgEl = cardContainer.querySelector('img');
+      if (imgEl) imgEl.src = compressedBase64;
+    } else if (inputEl.previousElementSibling && inputEl.previousElementSibling.tagName === "IMG") {
+      inputEl.previousElementSibling.src = compressedBase64;
+    }
   } catch (error) {
     console.error("Gagal memampat imej:", error);
     Swal.fire({

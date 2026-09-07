@@ -1586,7 +1586,10 @@ async function confirmUnifiedPayment() {
       return alert("Sila muat naik resit transaksi anda untuk bayaran QR.");
     }
     try {
-      receiptBase64 = await readFileAsBase64(fileInput.files[0]);
+      receiptBase64 = await new Promise((resolve) => {
+        compressImage(fileInput.files[0], (base64) => resolve(base64));
+      });
+      if (!receiptBase64) throw new Error("Format tidak disokong");
     } catch (e) {
       return alert("Gagal membaca fail resit. Sila cuba lagi.");
     }
