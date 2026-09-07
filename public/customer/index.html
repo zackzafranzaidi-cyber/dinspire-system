@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.52";
+      const CURRENT_APP_VERSION = "1.1.53";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -69,8 +69,8 @@
     <link rel="manifest" href="/manifest.json?v=6">
     <meta name="theme-color" content="#1a1a2e">
     <style>
-      .intro-swoosh { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 30; }
-      .logo-path { fill: transparent; stroke: #ffffff; stroke-width: 15; }
+      .intro-swoosh { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 30; stroke-linecap: round; stroke-dasharray: 1200; stroke-dashoffset: 1200; }
+      .logo-path { fill: transparent; stroke: #ffffff; stroke-width: 15; stroke-dasharray: 8000; stroke-dashoffset: 8000; }
     </style>
 </head>
 
