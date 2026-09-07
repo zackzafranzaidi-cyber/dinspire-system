@@ -659,13 +659,49 @@ function handleLogout(askConfirm = true) {
     playGreetingAnimation(nameStr);
     
     if (currentUser) {
-      setTimeout(subscribeToPush, 2000);
+      setTimeout(() => {
+        if (Notification.permission === 'granted') {
+          subscribeToPush(); // silent sub update
+        } else {
+          renderPushPrompt();
+        }
+      }, 2000);
     }
   }
 
-async function subscribeToPush() {
+function renderPushPrompt() {
+  const container = document.getElementById("push-prompt-container");
+  if (!container) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    container.style.display = "none";
+    return;
+  }
+  if (Notification.permission === 'granted' || Notification.permission === 'denied') {
+    container.style.display = "none";
+    return;
+  }
+  container.style.display = "block";
+  container.innerHTML = `
+    <div style="background: rgba(24, 119, 242, 0.1); border: 1px dashed var(--primary-blue); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 16px;">
+      <i class="fas fa-bell" style="font-size: 24px; color: var(--primary-blue); margin-bottom: 8px;"></i>
+      <h3 style="font-size: 14px; margin-bottom: 6px; color: var(--text-dark);">Aktifkan Notifikasi</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Terima kemas kini status pesanan dan tempahan anda secara langsung.</p>
+      <button id="btn-allow-push" class="submit-btn" style="padding: 10px; font-size: 13px;" onclick="subscribeToPush('btn-allow-push')">SAYA SETUJU</button>
+    </div>
+  `;
+}
+
+async function subscribeToPush(btnId) {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  let btn = btnId ? document.getElementById(btnId) : null;
+  if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+  
   try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      if (btn) btn.innerHTML = 'Ditolak (Ubah di Settings)';
+      return;
+    }
     let reg = await navigator.serviceWorker.getRegistration();
     if (!reg) {
         reg = await navigator.serviceWorker.register("/sw.js?v=20");
@@ -705,8 +741,10 @@ async function subscribeToPush() {
     if (!subRes.ok) throw new Error("Gagal simpan langganan: " + subRes.status);
     
     console.log("Customer Push subscribed.");
+    if (btn && btn.parentElement) btn.parentElement.style.display = 'none';
   } catch (err) {
     console.warn("Push sub skipped/error", err);
+    if (btn) btn.innerHTML = 'Ralat, Sila cuba lagi.';
   }
 }
 
