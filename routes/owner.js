@@ -11,7 +11,7 @@ const aiLimiter = rateLimit({
   message: { status: "error", message: "Had pertanyaan AI tercapai. Sila tunggu 5 minit untuk menyejukkan enjin AI." }
 });
 
-const { addOwnerSubscription, notifyOwner, notifyStaff, publicVapidKey } = require("../utils/push");
+const { addOwnerSubscription, notifyOwner, notifyStaff, publicVapidKey, notifyCustomer } = require("../utils/push");
 
 router.get("/push/vapid-key", authenticate, requireRole(["owner"]), (req, res) => {
   // Sanitize VAPID key (buang \0, spaces, newlines jika user tersilap copy paste dalam .env Vercel)
@@ -549,15 +549,22 @@ router.post(
     order_id = String(order_id || "");
     try {
       if (action === "approve") {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("product_orders")
           .update({ status: "Preparing" })
-          .eq("id", order_id);
+          .eq("id", order_id)
+          .select("customer_id")
+          .single();
         if (error) throw error;
+        
+        if (data && data.customer_id) {
+          await notifyCustomer(data.customer_id, "Bayaran Produk Disahkan ✅", `Resit untuk pesanan #${order_id.substring(0,8).toUpperCase()} telah diluluskan. Produk anda kini dalam proses pembungkusan!`);
+        }
+        
         return res.json({ status: "success", message: "Bayaran produk diluluskan. Sila proses tempahan." });
       } else if (action === "reject") {
         // RESTORE STOK SEBAB REJECT
-        const { data: orderData } = await supabase.from("product_orders").select("senarai_produk").eq("id", order_id).maybeSingle();
+        const { data: orderData } = await supabase.from("product_orders").select("senarai_produk, customer_id").eq("id", order_id).maybeSingle();
         if (orderData && orderData.senarai_produk) {
             try {
                 const items = typeof orderData.senarai_produk === "string" ? JSON.parse(orderData.senarai_produk) : orderData.senarai_produk;
@@ -581,6 +588,11 @@ router.post(
           .update({ status: "Rejected" })
           .eq("id", order_id);
         if (error) throw error;
+        
+        if (orderData && orderData.customer_id) {
+          await notifyCustomer(orderData.customer_id, "Bayaran Produk Ditolak ❌", `Resit untuk pesanan #${order_id.substring(0,8).toUpperCase()} telah ditolak. Sila buat bayaran semula.`);
+        }
+        
         return res.json({ status: "success", message: "Bayaran ditolak. Resit dibatalkan." });
       } else {
         return res.status(400).json({ error: "Tindakan tidak sah" });

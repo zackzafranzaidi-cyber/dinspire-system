@@ -4,7 +4,7 @@ const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
 const schedule = require("node-schedule"); // [DIBAIKI] Ditambah untuk jadual SMS
 const { sendSMS } = require("../utils/sms");
-const { notifyOwner, addStaffSubscription, publicVapidKey } = require("../utils/push");
+const { notifyOwner, addStaffSubscription, publicVapidKey, notifyCustomer } = require("../utils/push");
 
 router.get("/push/vapid-key", authenticate, requireRole(["staff", "owner"]), (req, res) => {
   const cleanKey = publicVapidKey.replace(/[^A-Za-z0-9\-_]/g, '');
@@ -712,7 +712,7 @@ router.post(
           .from(tableName)
           .update({ status: "Belum" })
           .eq("no_booking", order_no)
-          .select("tarikh, masa, no_phone, nama_pelanggan")
+          .select("tarikh, masa, no_phone, nama_pelanggan, customer_id")
           .single();
           
         if (error) throw error;
@@ -728,13 +728,25 @@ router.post(
             });
           }
         }
+
+        if (data && data.customer_id) {
+          await notifyCustomer(data.customer_id, "Bayaran Disahkan ✅", `Resit untuk tempahan ${order_no} telah diluluskan.`);
+        }
+
         return res.json({ status: "success", message: "Bayaran diluluskan." });
       } else if (action === "reject") {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from(tableName)
           .update({ status: "Rejected" })
-          .eq("no_booking", order_no);
+          .eq("no_booking", order_no)
+          .select("customer_id")
+          .single();
         if (error) throw error;
+
+        if (data && data.customer_id) {
+          await notifyCustomer(data.customer_id, "Bayaran Ditolak ❌", `Resit untuk tempahan ${order_no} telah ditolak. Sila semak semula.`);
+        }
+
         return res.json({ status: "success", message: "Bayaran ditolak. Sila maklumkan kepada pelanggan." });
       } else {
         return res.status(400).json({ error: "Tindakan tidak sah" });
