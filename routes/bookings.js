@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const cache = require("../utils/cache");
 const schedule = require("node-schedule");
 const { sendSMS } = require("../utils/sms");
-const { notifyOwner, notifyStaff } = require("../utils/push");
+const { notifyOwner, notifyStaff, notifyCustomer, addCustomerSubscription, publicVapidKey } = require("../utils/push");
 
 // ==========================================
 // [DIBAIKI] Fungsi Keselamatan: Semak Magic Number Fail (Bukan sekadar Regex)
@@ -106,6 +106,23 @@ const bookingLocks = new Set();
 const oncallLocks = new Set();
 const reviewLocks = new Set(); // [DIBAIKI] Mengelak klon Ulasan 1 Bintang (Review Race Condition)
 const completionLocks = new Set(); // [DIBAIKI] Mengelak Race Condition semasa penyiapan pesanan
+
+// ==========================================
+// [BAHARU] Langgan Push Notification Pelanggan
+// ==========================================
+router.post("/push/subscribe", authenticate, requireRole(["customer"]), async (req, res) => {
+  try {
+    const subscription = req.body;
+    await addCustomerSubscription(req.user.id, subscription);
+    res.json({ status: "success", message: "Push subscribed successfully" });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "Failed to subscribe" });
+  }
+});
+
+router.get("/push/vapid-key", authenticate, requireRole(["customer"]), (req, res) => {
+  res.json({ publicKey: publicVapidKey });
+});
 
 // ==========================================
 // [FUNGSI BAHARU] Semak Ketersediaan Staf (Cuti & Tempahan Aktif)
@@ -398,7 +415,7 @@ router.put(
       else if (orderNo.startsWith("DBC")) tableName = "oncall_records";
 
       // Fetch the booking data to get time and service_fee
-      const { data: bData } = await supabase.from(tableName).select("tarikh, masa, service_fee").eq("no_booking", orderNo).maybeSingle();
+      const { data: bData } = await supabase.from(tableName).select("tarikh, masa, service_fee, customer_id").eq("no_booking", orderNo).maybeSingle();
 
       // [DIBAIKI] Time-Check: Selesai hanya boleh ditekan selepas masa berlalu
       if (tableName !== "oncall_records") { // walkin tiada masa depan, oncall bergantung
@@ -427,6 +444,10 @@ router.put(
 
       const { error } = await query;
       if (error) throw error;
+      
+      if (bData && bData.customer_id) {
+        notifyCustomer(bData.customer_id, "Tempahan Selesai! 🎉", `Terima kasih! Tempahan anda (${orderNo}) telah diselesaikan.`).catch(console.error);
+      }
 
       completionLocks.delete(orderNo);
       res.json({ status: "success", message: "Servis disahkan selesai" });
@@ -452,6 +473,9 @@ router.put(
       if (orderNo.startsWith("TR")) tableName = "treatment_records";
       else if (orderNo.startsWith("DBC")) tableName = "oncall_records";
 
+      // Fetch customer_id to notify them
+      const { data: bData } = await supabase.from(tableName).select("customer_id").eq("no_booking", orderNo).maybeSingle();
+
       let cancelledBy = req.user.role === "staff" ? "staff" : "admin";
       let query = supabase
         .from(tableName)
@@ -463,6 +487,10 @@ router.put(
 
       const { error } = await query;
       if (error) throw error;
+      
+      if (bData && bData.customer_id) {
+        notifyCustomer(bData.customer_id, "Tempahan Dibatalkan ❌", `Maaf, tempahan anda (${orderNo}) telah dibatalkan oleh pihak kedai.`).catch(console.error);
+      }
 
       res.json({ status: "success", message: "Tempahan telah dibatalkan." });
     } catch (error) {
@@ -1110,6 +1138,7 @@ router.put(
           const shippedMsg = `Dinspire Barbershop - Hai ${cust.name}, Pesanan anda telah dihantar! No Tracking: ${safeTrackingNo}. Terima kasih kerana membeli-belah dengan Dinspire!`;
           await sendSMS(cust.phone, shippedMsg, false);
         }
+        notifyCustomer(order.customer_id, "Pesanan Dihantar! 🚚", `Pesanan E-Commerce anda telah dihantar. No Tracking: ${safeTrackingNo}`).catch(console.error);
       }
       res.json({
         status: "success",

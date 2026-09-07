@@ -175,10 +175,93 @@ async function notifyStaff(staffId, title, body, url = '/staff/index.html') {
   }
 }
 
+// Simpan langganan Customer ke dalam jadual settings
+async function addCustomerSubscription(customerId, subscription) {
+  try {
+    const key = 'customer_push_' + customerId;
+    let { data: settingData } = await supabase
+      .from('settings')
+      .select('setting_value')
+      .eq('setting_key', key);
+
+    let subs = [];
+    if (settingData && settingData.length > 0 && settingData[0].setting_value) {
+      try { subs = JSON.parse(settingData[0].setting_value); } catch(e) {}
+    }
+
+    const exists = subs.find(s => s.endpoint === subscription.endpoint);
+    if (!exists) {
+      subs.push(subscription);
+      const { error } = await supabase.from('settings').upsert({
+        setting_key: key,
+        setting_value: JSON.stringify(subs),
+        description: 'Customer Push Subscriptions ' + customerId
+      });
+      if (error) throw error;
+    }
+  } catch (error) {
+    console.error('Gagal simpan customer subscription push:', error);
+    throw error;
+  }
+}
+
+// Hantar Push Notification kepada peranti Customer tertentu
+async function notifyCustomer(customerId, title, body, url = '/index.html') {
+  try {
+    const key = 'customer_push_' + customerId;
+    let { data: settingData } = await supabase
+      .from('settings')
+      .select('setting_value')
+      .eq('setting_key', key);
+
+    if (!settingData || settingData.length === 0 || !settingData[0].setting_value) return 0;
+
+    let subs = [];
+    try { subs = JSON.parse(settingData[0].setting_value); } catch(e) {}
+
+    const payload = JSON.stringify({
+      title: title,
+      body: body,
+      icon: '/icon.png',
+      url: url
+    });
+
+    let validSubs = [];
+    let updated = false;
+
+    for (let sub of subs) {
+      try {
+        await webpush.sendNotification(sub, payload);
+        validSubs.push(sub);
+      } catch (error) {
+        if (error.statusCode === 404 || error.statusCode === 410) {
+          updated = true;
+        } else {
+          validSubs.push(sub);
+          console.error('Ralat hantar customer push:', error);
+        }
+      }
+    }
+
+    if (updated) {
+      await supabase.from('settings').update({
+        setting_value: JSON.stringify(validSubs)
+      }).eq('setting_key', key);
+    }
+
+    return validSubs.length;
+  } catch (error) {
+    console.error('Gagal broadcast customer push:', error);
+    return 0;
+  }
+}
+
 module.exports = {
   addOwnerSubscription,
   notifyOwner,
   addStaffSubscription,
   notifyStaff,
+  addCustomerSubscription,
+  notifyCustomer,
   publicVapidKey
 };

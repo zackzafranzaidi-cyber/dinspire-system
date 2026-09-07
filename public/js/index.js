@@ -655,7 +655,58 @@ function handleLogout(askConfirm = true) {
     }
     
     playGreetingAnimation(nameStr);
+    
+    if (currentUser) {
+      setTimeout(subscribeToPush, 2000);
+    }
   }
+
+async function subscribeToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    let reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+        reg = await navigator.serviceWorker.register("/sw.js?v=20");
+    }
+    const res = await fetch(`${API_BASE_URL}/bookings/push/vapid-key`, {credentials: 'include'});
+    if (!res.ok) throw new Error("Gagal dapatkan VAPID key: " + res.status);
+    
+    const { publicKey } = await res.json();
+    
+    const urlB64ToUint8Array = (base64String) => {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    };
+
+    const applicationServerKey = urlB64ToUint8Array(publicKey.trim());
+    
+    let subscription = await reg.pushManager.getSubscription();
+    if (!subscription) {
+      subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: applicationServerKey
+      });
+    }
+
+    const subRes = await fetch(`${API_BASE_URL}/bookings/push/subscribe`, {
+      method: 'POST',
+      body: JSON.stringify(subscription),
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    });
+    if (!subRes.ok) throw new Error("Gagal simpan langganan: " + subRes.status);
+    
+    console.log("Customer Push subscribed.");
+  } catch (err) {
+    console.warn("Push sub skipped/error", err);
+  }
+}
 
 function openAvatarModal() {
   document.getElementById("avatar-modal-overlay").classList.add("active");
