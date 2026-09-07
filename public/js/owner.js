@@ -930,7 +930,7 @@ function processData() {
   let productRev = 0;
   let productOrderCount = filteredOrders.length;
   let totalShippingFees = 0;
-  filteredOrders.forEach((o) => {
+  tableOrders.forEach((o) => {
     try {
       let rawItems = o.Items || o.senarai_produk;
       let items =
@@ -938,18 +938,21 @@ function processData() {
       let cost = 0;
       for (let k in items) cost += items[k].qty * items[k].price;
       o._calculatedTotal = cost;
-      productRev += cost;
-      let shippingFee = parseFloat(o.shipping_fee) || 0;
-      totalShippingFees += shippingFee;
       
-      let resit = (o.resit || "").toLowerCase();
-      let totalPayment = cost + shippingFee; // Masukkan shipping fee ke dalam pecahan bayaran
-      if (resit.includes("fpx")) {
-        payData.fpx += totalPayment;
-      } else if (resit.includes("http")) {
-        payData.qr += totalPayment;
-      } else {
-        payData.lain += totalPayment;
+      if (filteredOrders.includes(o)) {
+        productRev += cost;
+        let shippingFee = parseFloat(o.shipping_fee) || 0;
+        totalShippingFees += shippingFee;
+        
+        let resit = (o.resit || "").toLowerCase();
+        let totalPayment = cost + shippingFee; // Masukkan shipping fee ke dalam pecahan bayaran
+        if (resit.includes("fpx")) {
+          payData.fpx += totalPayment;
+        } else if (resit.includes("http")) {
+          payData.qr += totalPayment;
+        } else {
+          payData.lain += totalPayment;
+        }
       }
     } catch (e) {
       o._calculatedTotal = 0;
@@ -1466,7 +1469,7 @@ function renderTxProdukTable(orders) {
                             <div class="text-[10px] text-gray-400 mt-1 leading-none truncate">${escapeHTML(pNames.join(", ") || "Pesanan Produk")}</div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
-                            <div class="text-[12px] font-semibold text-blue-600 tracking-wide leading-none">+RM ${(parseFloat(o._calculatedTotal) || 0).toFixed(2)}</div>
+                            <div class="text-[12px] font-semibold text-blue-600 tracking-wide leading-none">+RM ${((parseFloat(o._calculatedTotal) || 0) + (parseFloat(o.shipping_fee) || 0)).toFixed(2)}</div>
                         </div>
                     </div>
                 </div>
