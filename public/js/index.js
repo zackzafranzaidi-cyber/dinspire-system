@@ -1730,7 +1730,7 @@ function compressImage(file, callback) {
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      callback(canvas.toDataURL("image/jpeg", 0.7));
+      callback(canvas.toDataURL("image/webp", 0.7));
     };
     img.src = e.target.result;
   };
