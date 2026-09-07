@@ -660,6 +660,7 @@ function handleLogout(askConfirm = true) {
     
     if (currentUser) {
       setTimeout(() => {
+        if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
         if (Notification.permission === 'granted') {
           subscribeToPush(); // silent sub update
         } else {
@@ -672,7 +673,7 @@ function handleLogout(askConfirm = true) {
 function renderPushPrompt() {
   const container = document.getElementById("push-prompt-container");
   if (!container) return;
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
     container.style.display = "none";
     return;
   }
@@ -692,12 +693,19 @@ function renderPushPrompt() {
 }
 
 async function subscribeToPush(btnId) {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (btnId) document.getElementById(btnId).innerHTML = 'Tidak Disokong';
+    return;
+  }
   let btn = btnId ? document.getElementById(btnId) : null;
   if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
   
   try {
-    const permission = await Notification.requestPermission();
+    const permission = await new Promise((resolve) => {
+      const p = Notification.requestPermission(resolve);
+      if (p && p.then) p.then(resolve);
+    });
+    
     if (permission !== 'granted') {
       if (btn) btn.innerHTML = 'Ditolak (Ubah di Settings)';
       return;
