@@ -958,10 +958,21 @@ function renderScheduleTime() {
 
 async function fetchShopData() {
   showGlobalLoader();
+  let success = false;
+  while (!success) {
+    try {
+      const timestamp = new Date().getTime();
+      const res = await fetch(`${API_BASE_URL}/shop-data?t=${timestamp}`);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      shopData = await res.json();
+      success = true;
+    } catch (err) {
+      console.warn("Sedang memuatkan pangkalan data (Cold Start)...", err.message);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+  }
+  
   try {
-    const timestamp = new Date().getTime();
-    const res = await fetch(`${API_BASE_URL}/shop-data?t=${timestamp}`);
-    shopData = await res.json();
     let bOpts =
       `<option value="" disabled selected>Pilih Cawangan</option>` +
       (shopData.Branches || [])
