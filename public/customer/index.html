@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.49";
+      const CURRENT_APP_VERSION = "1.1.50";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -72,7 +72,7 @@
 
   <body>
     <!-- INTRO ANIMATION (ORIGINAL SWOOSH) -->
-    <div class="preloader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #1a1a2e; display: flex; justify-content: center; align-items: center; z-index: 999999;">
+    <div class="preloader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #1a1a2e; display: flex; justify-content: center; align-items: center; padding-bottom: 12vh; z-index: 999999;">
         <div class="canvas">
             <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1030.32 964.36" width="150" height="150">
                 <path class="intro-swoosh swoosh-1" fill="none" stroke="rgba(255, 255, 255, 0.8)" stroke-width="30" d="M 150,482 A 365,365 0 1,1 880,482" />
