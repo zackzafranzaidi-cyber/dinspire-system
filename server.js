@@ -229,6 +229,7 @@ const ownerRoutes = require("./routes/owner");
 const adminRoutes = require("./routes/admin");
 
 // 4. Gunakan routes
+app.get("/api/ping", (req, res) => res.status(200).send("pong"));
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/staff", staffRoutes);
