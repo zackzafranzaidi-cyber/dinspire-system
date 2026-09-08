@@ -645,13 +645,8 @@ function renderHistoryList() {
       let serviceName = escapeHTML(
         b.service ? b.service.name : b.services ? b.services.name : "Servis",
       );
-      let badgeClass =
-        b.status === "Batal" || b.status === "Rejected"
-          ? "badge-pending"
-          : b.payment_method === "QR"
-            ? "badge-qr"
-            : "badge-cash";
-      let method = b.status === "Batal" ? "Dibatalkan" : b.status === "Rejected" ? "Rejected" : b.payment_method;
+      let badgeClass = b.payment_method === "QR" || b.payment_method === "FPX" ? "badge-qr" : "badge-cash";
+      let method = b.payment_method;
       
       let editBtn = "";
       if (b.status === "Rejected") {
