@@ -176,21 +176,14 @@ router.get(
             lng: b.lng,
             imageUrl: b.gambar,
           })),
-          Barbers: (stData || [])
-            .filter((s) => s.jenis_staf === "In-Branch")
-            .map((s) => ({
-              id: s.id,
-              name: s.username,
-              branch_id: s.branch_id,
-              can_haircut: s.can_haircut !== false, // Fallback true if null/undefined
-              can_treatment: s.can_treatment !== false,
-            })),
-          OnCallBarbers: (stData || [])
-            .filter((s) => s.jenis_staf === "On-Call")
-            .map((s) => ({ id: s.id, name: s.username })),
-          GeneralStaff: (stData || [])
-            .filter((s) => s.jenis_staf === "General")
-            .map((s) => ({ id: s.id, name: s.username })),
+          Staff: (stData || []).map((s) => ({
+            id: s.id,
+            name: s.username,
+            jenis_staf: s.jenis_staf,
+            branch_id: s.branch_id,
+            can_haircut: s.can_haircut !== false, // Fallback true if null/undefined
+            can_treatment: s.can_treatment !== false,
+          })),
           Products: (prData || []).map((p) => ({
             id: p.id,
             name: p.nama,
@@ -363,24 +356,11 @@ router.post(
       }));
       await syncData(
         "staff",
-        [
-          ...(data.Barbers || []).map((x) => ({
-            ...x,
-            jenis_staf: "In-Branch",
-          })),
-          ...(data.OnCallBarbers || []).map((x) => ({
-            ...x,
-            jenis_staf: "On-Call",
-          })),
-          ...(data.GeneralStaff || []).map((x) => ({
-            ...x,
-            jenis_staf: "General",
-          })),
-        ],
+        data.Staff || [],
         (i) => ({
           id: i.id,
           username: i.name,
-          jenis_staf: i.jenis_staf,
+          jenis_staf: i.jenis_staf || "In-Branch",
           branch_id: i.branch_id || null,
           can_haircut: i.can_haircut !== false,
           can_treatment: i.can_treatment !== false,

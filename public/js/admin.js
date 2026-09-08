@@ -24,14 +24,12 @@ const SCHEMAS = {
   Haircuts: ["id", "name", "desc", "price"],
   Treatments: ["id", "name", "desc", "price"],
   Branches: ["id", "name", "location", "imageUrl", "lat", "lng"],
-  Barbers: ["id", "name", "branch_id", "kemahiran"],
+  Staff: ["id", "name", "jenis_staf", "branch_id", "kemahiran"],
   OnCall: ["id", "name", "price"],
-  OnCallBarbers: ["id", "name"],
   WalkInServices: ["id", "name", "price"],
   WalkInTreatments: ["id", "name", "price"],
   Products: ["id", "name", "price", "imageUrl", "stok"],
   Posters: ["id", "imageUrl"],
-  GeneralStaff: ["id", "name"],
 };
 
 let currentTab = "Haircuts";
@@ -172,10 +170,8 @@ function switchTab(tabName, el) {
     Haircuts: "Haircuts (Booking)",
     Treatments: "Treatments (Booking)",
     Branches: "Branches",
-    Barbers: "Barbers (Staff)",
-    GeneralStaff: "General Staff",
+    Staff: "Kesemua Staf & Pekerja",
     OnCall: "On-Call Services",
-    OnCallBarbers: "On-Call Barbers",
     WalkInServices: "Walk-In Haircuts",
     WalkInTreatments: "Walk-In Treatments",
     Products: "Products",
@@ -275,26 +271,37 @@ function renderTable(tabName) {
       } else if (c === "imageUrl") {
         let currentImg = row[c] || "https://via.placeholder.com/40?text=IMG";
         html += `<td><div style="display:flex; align-items:center; gap:10px;"><img src="${currentImg}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid #ccc;"><input type="file" accept="image/*" onchange="handleAdminImageUpload(this, '${tabName}', ${index}, '${c}')" style="font-size: 11px; width: 160px;"></div></td>`;
-      } else if (c === "branch_id" && tabName === "Barbers") {
-        let opts = `<option value="" disabled selected>-- Pilih Cawangan --</option>`;
-        (appData["Branches"] || []).forEach((b) => {
-          let sel = row[c] === b.id ? "selected" : "";
-          opts += `<option value="${b.id}" ${sel}>${escapeHTML(b.name)}</option>`;
-        });
-        html += `<td><select onchange="updateData('${tabName}', ${index}, '${c}', this.value)" style="padding:10px; border-radius:8px; border:1px solid #E5E5EA; width:100%; outline:none; font-weight:600; font-family:inherit; background:#F4F5F8;">${opts}</select></td>`;
-      } else if (c === "kemahiran" && tabName === "Barbers") {
-        let chkH = row.can_haircut !== false ? "checked" : "";
-        let chkT = row.can_treatment !== false ? "checked" : "";
-        html += `<td>
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text-main);">
-              <input type="checkbox" ${chkH} onchange="updateCapabilities(${index}, 'can_haircut', this.checked)" style="width:16px; height:16px; accent-color:var(--primary-blue);"> Guntingan
-            </label>
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text-main);">
-              <input type="checkbox" ${chkT} onchange="updateCapabilities(${index}, 'can_treatment', this.checked)" style="width:16px; height:16px; accent-color:#FF9500;"> Rawatan
-            </label>
-          </div>
-        </td>`;
+      } else if (c === "jenis_staf" && tabName === "Staff") {
+        let opts = ["In-Branch", "On-Call", "General"].map(j => `<option value="${j}" ${row[c] === j ? "selected" : ""}>${j}</option>`).join("");
+        html += `<td><select onchange="updateData('${tabName}', ${index}, '${c}', this.value); setTimeout(()=>renderTable('${tabName}'), 100);" style="padding:10px; border-radius:8px; border:1px solid #E5E5EA; width:100%; outline:none; font-weight:600; font-family:inherit; background:#F4F5F8;">${opts}</select></td>`;
+      } else if (c === "branch_id" && tabName === "Staff") {
+        if (row.jenis_staf === "On-Call") {
+           html += `<td><div style="color:#888; font-size:12px; font-style:italic;">Tidak Berkenaan</div></td>`;
+        } else {
+           let opts = `<option value="" disabled selected>-- Pilih Cawangan --</option>`;
+           (appData["Branches"] || []).forEach((b) => {
+             let sel = row[c] === b.id ? "selected" : "";
+             opts += `<option value="${b.id}" ${sel}>${escapeHTML(b.name)}</option>`;
+           });
+           html += `<td><select onchange="updateData('${tabName}', ${index}, '${c}', this.value)" style="padding:10px; border-radius:8px; border:1px solid #E5E5EA; width:100%; outline:none; font-weight:600; font-family:inherit; background:#F4F5F8;">${opts}</select></td>`;
+        }
+      } else if (c === "kemahiran" && tabName === "Staff") {
+        if (row.jenis_staf === "General") {
+           html += `<td><div style="color:#888; font-size:12px; font-style:italic;">Tidak Berkenaan</div></td>`;
+        } else {
+          let chkH = row.can_haircut !== false ? "checked" : "";
+          let chkT = row.can_treatment !== false ? "checked" : "";
+          html += `<td>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text-main);">
+                <input type="checkbox" ${chkH} onchange="updateCapabilities(${index}, 'can_haircut', this.checked)" style="width:16px; height:16px; accent-color:var(--primary-blue);"> Guntingan
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text-main);">
+                <input type="checkbox" ${chkT} onchange="updateCapabilities(${index}, 'can_treatment', this.checked)" style="width:16px; height:16px; accent-color:#FF9500;"> Rawatan
+              </label>
+            </div>
+          </td>`;
+        }
       } else if (tabName === "Branches" && c === "location") {
         html += `<td>
           <div class="input-row" style="display:flex; gap:10px;">
@@ -500,6 +507,12 @@ function addRow(tabName) {
   let newObj = {};
   SCHEMAS[tabName].forEach((col) => (newObj[col] = ""));
   
+  if (tabName === "Staff") {
+    newObj.jenis_staf = "In-Branch";
+    newObj.can_haircut = true;
+    newObj.can_treatment = false;
+  }
+  
   if (tabName === "Branches") {
     let maxNum = 0;
     (appData[tabName] || []).forEach(b => {
@@ -550,7 +563,7 @@ async function saveAllData() {
     cleanData[tab] = (appData[tab] || []).map((item) => {
       let cleanItem = {};
       SCHEMAS[tab].forEach((col) => {
-        if (tab === "Barbers" && col === "kemahiran") {
+        if (tab === "Staff" && col === "kemahiran") {
           cleanItem.can_haircut = item.can_haircut;
           cleanItem.can_treatment = item.can_treatment;
         } else {
@@ -709,7 +722,7 @@ async function approveReset(staffId, staffName) {
 }
 
 async function updateCapabilities(index, fieldName, isChecked) {
-  const staff = appData.Barbers[index];
+  const staff = appData.Staff[index];
   staff[fieldName] = isChecked;
   
   try {
@@ -726,12 +739,12 @@ async function updateCapabilities(index, fieldName, isChecked) {
       Swal.fire({ icon: "error", title: "Ralat", text: result.message });
       // Revert the checkbox if failed
       staff[fieldName] = !isChecked;
-      renderTable('Barbers');
+      renderTable('Staff');
     }
   } catch (err) {
     Swal.fire({ icon: "error", title: "Ralat Sistem", text: "Gagal menyimpan." });
     staff[fieldName] = !isChecked;
-    renderTable('Barbers');
+    renderTable('Staff');
   }
 }
 
