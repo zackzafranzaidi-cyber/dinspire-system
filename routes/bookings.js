@@ -1255,13 +1255,6 @@ router.post("/webhook/fpx", async (req, res) => {
     const paymentData = toyyibpay.parseWebhook(req.body);
     const { reference, status, transaction_id } = paymentData;
     
-    // [DIBAIKI] Semakan Berkembar Server-to-Server
-    let receiptValue = `FPX_FAILED:${transaction_id}`;
-    if (status === "paid") {
-      const isValid = await toyyibpay.verifyTransaction(transaction_id, reference);
-      if (isValid) receiptValue = `FPX_PAID:${transaction_id}`;
-    }
-    
     // Tentukan table mana nak di-update (Guntingan, Rawatan, Oncall, Produk)
     let tableName = "booking_records";
     if (reference.startsWith("TR")) tableName = "treatment_records";
@@ -1273,6 +1266,19 @@ router.post("/webhook/fpx", async (req, res) => {
     const idValue = tableName === "product_orders" ? reference.replace("PRD-", "") : reference;
     
     const { data: existingRecord } = await supabase.from(tableName).select("*").eq(idColumn, idValue).single();
+
+    // Dapatkan billCode sebenar yang disimpan dalam DB
+    let actualBillCode = transaction_id;
+    if (existingRecord && existingRecord.resit && existingRecord.resit.includes(":")) {
+      actualBillCode = existingRecord.resit.split(":")[1];
+    }
+
+    // [DIBAIKI] Semakan Berkembar Server-to-Server
+    let receiptValue = `FPX_FAILED:${transaction_id}`;
+    if (status === "paid") {
+      const isValid = await toyyibpay.verifyTransaction(actualBillCode, reference);
+      if (isValid) receiptValue = `FPX_PAID:${transaction_id}`;
+    }
 
     // 2. KEMASKINI DATABASE
     const { error } = await supabase
@@ -1318,14 +1324,6 @@ router.get("/fpx/verify", async (req, res) => {
   }
 
   try {
-    // [DIBAIKI] Semakan Berkembar Server-to-Server (Bukan sekadar query parameters)
-    const isSuccess = status_id === "1";
-    let receiptValue = `FPX_FAILED:${transaction_id}`;
-    if (isSuccess) {
-      const isValid = await toyyibpay.verifyTransaction(transaction_id, order_id);
-      if (isValid) receiptValue = `FPX_PAID:${transaction_id}`;
-    }
-
     let tableName = "booking_records";
     if (order_id.startsWith("TR")) tableName = "treatment_records";
     else if (order_id.startsWith("DBC")) tableName = "oncall_records";
@@ -1336,6 +1334,19 @@ router.get("/fpx/verify", async (req, res) => {
     const idValue = tableName === "product_orders" ? order_id.replace("PRD-", "") : order_id;
     
     const { data: existingRecord } = await supabase.from(tableName).select("*").eq(idColumn, idValue).single();
+
+    let actualBillCode = transaction_id;
+    if (existingRecord && existingRecord.resit && existingRecord.resit.includes(":")) {
+      actualBillCode = existingRecord.resit.split(":")[1];
+    }
+
+    // [DIBAIKI] Semakan Berkembar Server-to-Server (Bukan sekadar query parameters)
+    const isSuccess = status_id === "1";
+    let receiptValue = `FPX_FAILED:${transaction_id}`;
+    if (isSuccess) {
+      const isValid = await toyyibpay.verifyTransaction(actualBillCode, order_id);
+      if (isValid) receiptValue = `FPX_PAID:${transaction_id}`;
+    }
 
     const { error } = await supabase
       .from(tableName)
