@@ -9,6 +9,7 @@ const schedule = require("node-schedule");
 const supabase = require("./config/db");
 const logger = require("./utils/logger"); // Import Winston logger
 const { sendSMS } = require("./utils/sms");
+const { notifyCustomer } = require("./utils/push");
 const { pruneYearlyData, generateMonthlyArchiveData, generateArchiveDataByDateRange, runDailyCleanup } = require("./utils/archiver");
 const app = express();
 require("events").EventEmitter.defaultMaxListeners = 50; // [DIBAIKI] Tingkatkan had event listeners untuk trafik tinggi
@@ -290,7 +291,7 @@ async function recoverSMSReminders() {
     // Tarik tempahan 'Aktif'
     const { data: bookings } = await supabase
       .from("booking_records")
-      .select("no_booking, tarikh, masa, no_phone")
+      .select("no_booking, tarikh, masa, customer_id")
       .eq("status", "Aktif");
 
     if (bookings) {
@@ -301,8 +302,9 @@ async function recoverSMSReminders() {
         
         if (reminderTime > new Date()) {
           schedule.scheduleJob(reminderTime, async function() {
-            const reminderMsg = `Dinspire Barbershop - Hai ${b.nama_pelanggan || "Pelanggan"}, Peringatan mesra! Tempahan anda (${b.no_booking}) akan bermula pada ${b.masa}. Sila hadir awal.`;
-            await sendSMS(b.no_phone, reminderMsg, false);
+            if (b.customer_id) {
+              await notifyCustomer(b.customer_id, "Peringatan Tempahan ✂️", `Peringatan mesra! Tempahan anda (${b.no_booking}) akan bermula pada ${b.masa}. Sila hadir awal.`);
+            }
           });
         }
       });
@@ -323,11 +325,8 @@ async function recoverSMSReminders() {
         
         if (reminderTime > new Date()) {
           schedule.scheduleJob(reminderTime, async function() {
-            // Need to get customer's phone for oncall
-            const { data: cust } = await supabase.from("customers").select("phone, name").eq("id", o.customer_id).maybeSingle();
-            if (cust && cust.phone) {
-              const oncallMsg = `Dinspire Barbershop - Hai ${cust.name || "Pelanggan"}, Peringatan! Sila bersedia di lokasi anda, Barber On-Call anda akan tiba dalam masa 2 jam.`;
-              await sendSMS(cust.phone, oncallMsg, false);
+            if (o.customer_id) {
+              await notifyCustomer(o.customer_id, "Peringatan On-Call 🚗", "Barber On-Call anda akan tiba di lokasi dalam masa 2 jam. Sila bersedia!");
             }
           });
         }

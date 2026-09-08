@@ -723,8 +723,9 @@ router.post(
           const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
           if (reminderTime > new Date()) {
             schedule.scheduleJob(reminderTime, async function() {
-              const reminderMsg = `Dinspire Barbershop - Hai ${data.nama_pelanggan || "Pelanggan"}, Peringatan mesra! Tempahan anda (${order_no}) akan bermula pada ${data.masa}. Sila hadir awal.`;
-              await sendSMS(data.no_phone, reminderMsg, false);
+              if (data.customer_id) {
+                await notifyCustomer(data.customer_id, "Peringatan Tempahan ✂️", `Peringatan mesra! Tempahan anda (${order_no}) akan bermula pada ${data.masa}. Sila hadir awal.`);
+              }
             });
           }
         }
