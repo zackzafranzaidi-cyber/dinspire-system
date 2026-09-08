@@ -346,8 +346,10 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
       if (error) throw error;
     }
 
-    await notifyOwner("Tempahan Baharu!", `Satu tempahan ${booking_type === "treatment" ? "rawatan" : "guntingan"} diterima pada ${booking_date} ${booking_time} (No Bil: ${order_no})`);
-    await notifyStaff(staff_id, "Tempahan Baharu!", `Anda mendapat tempahan pelanggan pada ${booking_date} ${booking_time}`);
+    if (payment_method === "qr") {
+      await notifyOwner("Tempahan Baharu!", `Satu tempahan ${booking_type === "treatment" ? "rawatan" : "guntingan"} diterima pada ${booking_date} ${booking_time} (No Bil: ${order_no})`);
+      await notifyStaff(staff_id, "Tempahan Baharu!", `Anda mendapat tempahan pelanggan pada ${booking_date} ${booking_time}`);
+    }
 
     bookingLocks.delete(lockKey); // [DIBAIKI] MEMORY LEAK FIX
     if (payment_method === "qr") {
@@ -804,8 +806,10 @@ router.post(
 
       if (error) throw error;
       
-      await notifyOwner("Tempahan On-Call!", `Satu tempahan On-Call diterima dari ${cust.name}.`);
-      await notifyStaff(barber, "Tempahan On-Call!", `Anda mendapat tugasan On-Call dari ${cust.name} di lokasi ${address}`);
+      if (payment_method === "qr") {
+        await notifyOwner("Tempahan On-Call!", `Satu tempahan On-Call diterima dari ${cust.name}.`);
+        await notifyStaff(barber, "Tempahan On-Call!", `Anda mendapat tugasan On-Call dari ${cust.name} di lokasi ${address}`);
+      }
 
       // Peringatan SMS On-Call dibuang kerana kini diuruskan oleh Stateless Polling di server.js
       if (payment_method === "qr") {
@@ -973,7 +977,9 @@ router.post(
 
       if (error) throw error;
       
-      await notifyOwner("Pesanan Produk!", `Satu pesanan E-Commerce baru diterima dari ${cust.name}.`);
+      if (payment_method === "qr") {
+        await notifyOwner("Pesanan Produk!", `Satu pesanan E-Commerce baru diterima dari ${cust.name}.`);
+      }
 
       if (payment_method === "qr") {
         res.json({
@@ -1262,18 +1268,35 @@ router.post("/webhook/fpx", async (req, res) => {
     else if (reference.startsWith("DBC")) tableName = "oncall_records";
     else if (reference.startsWith("PRD")) tableName = "product_orders";
 
+    // Semak rekod sedia ada untuk elak notifikasi berganda
+    const idColumn = tableName === "product_orders" ? "id" : "no_booking";
+    const idValue = tableName === "product_orders" ? reference.replace("PRD-", "") : reference;
+    
+    const { data: existingRecord } = await supabase.from(tableName).select("*").eq(idColumn, idValue).single();
+
     // 2. KEMASKINI DATABASE
-    // Kita tak tukar column 'status' dari 'Belum' supaya slot tak terlepas.
-    // Tapi kita kemas kini resit dengan tanda FPX_PAID. 
-    // Untuk produk, status 'Preparing' kekal.
     const { error } = await supabase
       .from(tableName)
       .update({ resit: receiptValue })
-      .eq(tableName === "product_orders" ? "id" : "no_booking", tableName === "product_orders" ? reference.replace("PRD-", "") : reference);
+      .eq(idColumn, idValue);
       
     if (error) {
       console.error("Gagal mengemaskini status webhook:", error);
       return res.status(500).json({ status: "error", message: "Database update failed" });
+    }
+    
+    // 3. HANTAR PUSH NOTIFICATION JIKA BERJAYA (Dari PENDING ke PAID)
+    if (existingRecord && existingRecord.resit && !existingRecord.resit.startsWith("FPX_PAID") && receiptValue.startsWith("FPX_PAID")) {
+      if (tableName === "product_orders") {
+        await notifyOwner("Pesanan Produk FPX!", `Satu pesanan E-Commerce (FPX Berjaya) diterima dari ${existingRecord.nama_pembeli || "Pelanggan"}.`);
+      } else if (tableName === "oncall_records") {
+        await notifyOwner("Tempahan On-Call FPX!", `Satu tempahan On-Call (FPX Berjaya) diterima dari ${existingRecord.nama_pelanggan || "Pelanggan"}.`);
+        if (existingRecord.staff_id) await notifyStaff(existingRecord.staff_id, "Tempahan On-Call FPX!", `Anda mendapat tugasan On-Call (Telah Dibayar) dari ${existingRecord.nama_pelanggan || "Pelanggan"}.`);
+      } else {
+        const typeLabel = tableName === "treatment_records" ? "rawatan" : "guntingan";
+        await notifyOwner("Tempahan Baharu FPX!", `Satu tempahan ${typeLabel} (FPX Berjaya) diterima pada ${existingRecord.tarikh} ${existingRecord.masa} (No Bil: ${reference})`);
+        if (existingRecord.staff_id) await notifyStaff(existingRecord.staff_id, "Tempahan Baharu FPX!", `Anda mendapat tempahan pelanggan (Telah Dibayar) pada ${existingRecord.tarikh} ${existingRecord.masa}`);
+      }
     }
 
     // Beritahu gateway FPX yang kita terima webhook ini dengan berjaya
@@ -1308,26 +1331,40 @@ router.get("/fpx/verify", async (req, res) => {
     else if (order_id.startsWith("DBC")) tableName = "oncall_records";
     else if (order_id.startsWith("PRD")) tableName = "product_orders";
 
-    // Semak status semasa
-    const { data: existingData } = await supabase
+    // Semak rekod sedia ada untuk elak notifikasi berganda
+    const idColumn = tableName === "product_orders" ? "id" : "no_booking";
+    const idValue = tableName === "product_orders" ? order_id.replace("PRD-", "") : order_id;
+    
+    const { data: existingRecord } = await supabase.from(tableName).select("*").eq(idColumn, idValue).single();
+
+    const { error } = await supabase
       .from(tableName)
-      .select("resit")
-      .eq(tableName === "product_orders" ? "id" : "no_booking", tableName === "product_orders" ? order_id.replace("PRD-", "") : order_id)
-      .single();
+      .update({ resit: receiptValue })
+      .eq(idColumn, idValue);
 
-    if (existingData && existingData.resit && (typeof existingData.resit === "string" && existingData.resit.startsWith("FPX_PENDING:"))) {
-      // Hanya kemaskini jika ia masih PENDING
-      const { error } = await supabase
-        .from(tableName)
-        .update({ resit: receiptValue })
-        .eq(tableName === "product_orders" ? "id" : "no_booking", tableName === "product_orders" ? order_id.replace("PRD-", "") : order_id);
-
-      if (error) {
-        console.error("Gagal mengemaskini status verify FPX:", error);
+    if (error) {
+      console.error("Gagal mengemaskini status verify FPX:", error);
+    }
+    
+    // HANTAR PUSH NOTIFICATION JIKA BERJAYA (Dari PENDING ke PAID)
+    if (existingRecord && existingRecord.resit && !existingRecord.resit.startsWith("FPX_PAID") && receiptValue.startsWith("FPX_PAID")) {
+      if (tableName === "product_orders") {
+        await notifyOwner("Pesanan Produk FPX!", `Satu pesanan E-Commerce (FPX Berjaya) diterima dari ${existingRecord.nama_pembeli || "Pelanggan"}.`);
+      } else if (tableName === "oncall_records") {
+        await notifyOwner("Tempahan On-Call FPX!", `Satu tempahan On-Call (FPX Berjaya) diterima dari ${existingRecord.nama_pelanggan || "Pelanggan"}.`);
+        if (existingRecord.staff_id) await notifyStaff(existingRecord.staff_id, "Tempahan On-Call FPX!", `Anda mendapat tugasan On-Call (Telah Dibayar) dari ${existingRecord.nama_pelanggan || "Pelanggan"}.`);
+      } else {
+        const typeLabel = tableName === "treatment_records" ? "rawatan" : "guntingan";
+        await notifyOwner("Tempahan Baharu FPX!", `Satu tempahan ${typeLabel} (FPX Berjaya) diterima pada ${existingRecord.tarikh} ${existingRecord.masa} (No Bil: ${order_id})`);
+        if (existingRecord.staff_id) await notifyStaff(existingRecord.staff_id, "Tempahan Baharu FPX!", `Anda mendapat tempahan pelanggan (Telah Dibayar) pada ${existingRecord.tarikh} ${existingRecord.masa}`);
       }
     }
 
-    res.status(200).json({ status: "success", message: "Verification processed" });
+    if (isSuccess) {
+      res.status(200).json({ status: "success", message: "Verification processed" });
+    } else {
+      res.status(200).json({ status: "success", message: "Verification processed (Payment Failed)" });
+    }
   } catch (error) {
     console.error("Ralat FPX Verify:", error);
     res.status(500).json({ status: "error", message: "Ralat pelayan" });
