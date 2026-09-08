@@ -726,17 +726,21 @@ router.post(
       } else if (action === "reject") {
         const { data, error } = await supabase
           .from(tableName)
-          .update({ status: "Rejected" })
+          .update({ status: "Batal" })
           .eq("no_booking", order_no)
           .select("customer_id")
           .single();
-        if (error) throw error;
-
-        if (data && data.customer_id) {
-          await notifyCustomer(data.customer_id, "Bayaran Ditolak ❌", `Resit untuk tempahan ${order_no} telah ditolak. Sila semak semula.`);
+          
+        if (error) {
+          console.error("Ralat kemaskini Batal:", error);
+          throw error;
         }
 
-        return res.json({ status: "success", message: "Bayaran ditolak. Sila maklumkan kepada pelanggan." });
+        if (data && data.customer_id) {
+          await notifyCustomer(data.customer_id, "Bayaran Ditolak ❌", `Resit untuk tempahan ${order_no} tidak sah. Tempahan telah dibatalkan.`);
+        }
+
+        return res.json({ status: "success", message: "Bayaran ditolak dan tempahan dibatalkan." });
       } else {
         return res.status(400).json({ error: "Tindakan tidak sah" });
       }
