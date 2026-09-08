@@ -1072,6 +1072,21 @@ router.get(
         });
       });
 
+      const orderIds = allNotifications.filter(n => n.type === "service").map(n => n.id);
+      let reviewedSet = new Set();
+      if (orderIds.length > 0) {
+        // [DIBAIKI] Halang ralat 'Request URI Too Large' jika orderIds terlalu banyak
+        // Kita pecahkan kepada batch 100 jika perlu (atau hadkan query)
+        const safeOrderIds = orderIds.slice(0, 100);
+        const { data: reviews } = await supabase.from("reviews").select("no_booking").in("no_booking", safeOrderIds);
+        (reviews || []).forEach(r => reviewedSet.add(r.no_booking));
+      }
+      allNotifications.forEach(n => {
+        if (n.type === "service") {
+          n.is_reviewed = reviewedSet.has(n.id);
+        }
+      });
+
       allNotifications.sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );

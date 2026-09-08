@@ -440,6 +440,36 @@
         </div>
       </div>
 
+      <div class="custom-modal-overlay" id="review-modal-overlay">
+        <div class="custom-modal" style="padding:20px;">
+          <div class="modal-header" style="display: flex; justify-content: space-between; width: 100%">
+            <span data-i18n="review-title" style="font-size: 16px; font-weight: 700;">Give Customer Review</span>
+            <button onclick="closeModal('review-modal-overlay')" style="background: none; border: none; font-size: 18px; color:var(--text-muted);">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="review-form">
+              <input type="hidden" id="review-orderno" />
+              <div class="form-group" style="text-align: center; margin-bottom: 15px">
+                <label style="margin-bottom: 8px; display: block" data-i18n="review-stars-label">How many stars?</label>
+                <div class="star-rating-ui" id="review-stars-ui">
+                  <i class="fas fa-star active" data-val="1"></i>
+                  <i class="fas fa-star active" data-val="2"></i>
+                  <i class="fas fa-star active" data-val="3"></i>
+                  <i class="fas fa-star active" data-val="4"></i>
+                  <i class="fas fa-star active" data-val="5"></i>
+                </div>
+                <input type="hidden" id="review-stars" value="5" />
+              </div>
+              <div class="form-group">
+                <label data-i18n="review-comment">Comment & Review</label>
+                <input type="text" id="review-text" class="input-field" data-i18n-placeholder="review-comment-placeholder" placeholder="Your comment..." />
+              </div>
+              <button type="submit" class="submit-btn" id="btn-review-submit" data-i18n="review-btn-submit" style="width: 100%; margin: 0">Submit Review</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
       <div class="custom-modal-overlay" id="avatar-modal-overlay">
         <div class="custom-modal">
           <div
@@ -942,63 +972,7 @@
                 Logout
               </button>
             </div>
-            <div
-              class="rgb-border-container active"
-              style="margin-bottom: 20px"
-            >
-              <div class="card-inner rgb-border-inner" style="padding: 20px">
-                <h3 style="font-size: 15px; margin-bottom: 10px" data-i18n="review-title">
-                  Give Customer Review
-                </h3>
-
-                <form>
-                  <div
-                    class="form-group"
-                    style="text-align: center; margin-bottom: 15px"
-                  >
-                    <label style="margin-bottom: 8px; display: block" data-i18n="review-stars-label"
-                      >How many stars?</label
-                    >
-                    <div class="star-rating-ui" id="review-stars-ui">
-                      <i class="fas fa-star active" data-val="1"></i
-                      ><i class="fas fa-star active" data-val="2"></i>
-                      <i class="fas fa-star active" data-val="3"></i
-                      ><i class="fas fa-star active" data-val="4"></i
-                      ><i class="fas fa-star active" data-val="5"></i>
-                    </div>
-                    <input type="hidden" id="review-stars" value="5" />
-                  </div>
-                  <div class="form-group">
-                    <label data-i18n="review-order-no">Order No (e.g., #ORD12345)</label
-                    ><input
-                      type="text"
-                      id="review-orderno"
-                      class="input-field"
-                      data-i18n-placeholder="review-order-placeholder"
-                      placeholder="#ORD12345"
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label data-i18n="review-comment">Comment & Review</label
-                    ><input
-                      type="text"
-                      id="review-text"
-                      class="input-field"
-                      data-i18n-placeholder="review-comment-placeholder"
-                      placeholder="Your comment..."
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    class="submit-btn"
-                    id="btn-review-submit"
-                    data-i18n="review-btn-submit"
-                  >
-                    Submit Review
-                  </button>
-                </form>
-              </div>
-            </div>
+            <!-- Review Section Moved to Modal -->
             <div style="padding: 0">
               <div class="section-title" style="margin-left: 0" data-i18n="account-activities">
                 Your Activity List

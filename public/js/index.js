@@ -219,7 +219,7 @@ function initEventListeners() {
     .getElementById("logout-btn")
     ?.addEventListener("click", handleLogout);
   document
-    .querySelector("#account-logged-in form")
+    .getElementById("review-form")
     ?.addEventListener("submit", submitCustomerReview);
   document
     .querySelectorAll(".bottom-nav .nav-item")
@@ -1809,11 +1809,22 @@ function renderNotifications() {
                 : o.status === "Belum"
                   ? "background:#FFF3E0; color:#E65100;"
                   : "background:#E8F5E9; color:#2E7D32;";
-          let displayStatus =
-            o.status === "Belum" ? "AKTIF" : o.status.toUpperCase();
+          let displayStatus = o.status === "Belum" ? "AKTIF" : o.status.toUpperCase();
             
           let actionBtnService = "";
-          if (o.status === "Rejected") {
+          let wrapperCursor = "";
+          let wrapperOnclick = "";
+
+          if (o.status === "Selesai") {
+              if (o.is_reviewed) {
+                  displayStatus = "REVIEWED";
+                  badgeStyle = "background:#E1F5FE; color:#0288D1;";
+              } else {
+                  wrapperCursor = "cursor:pointer;";
+                  wrapperOnclick = `onclick="openReviewModal('${o.id}')"`;
+                  actionBtnService = `<div style="margin-top:12px; font-size:12px; color:var(--primary-blue); font-weight:700; text-align:right;"><i class="fas fa-star"></i> Klik untuk Review</div>`;
+              }
+          } else if (o.status === "Rejected") {
               actionBtnService = `<a href="https://wa.me/60174836277?text=Sila hubungi pihak kedai kerana tempahan saya ditolak. NO: ${o.id}" target="_blank" class="submit-btn" style="display:block; text-align:center; text-decoration:none; margin-top:12px; padding:12px; background:#E53935; color:white;"><i class="fab fa-whatsapp mr-2"></i> Hubungi Kedai</a>`;
           } else if (o.status === "Batal") {
               if (o.cancelled_by === 'admin') {
@@ -1823,7 +1834,7 @@ function renderNotifications() {
               }
           }
           
-          servicesHtml += `<div style="background:var(--bg-surface); padding:14px; border-radius:10px; margin-bottom:10px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02);"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:13px; font-weight:800; color:var(--primary-blue); font-family:monospace;">NO: ${o.id}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${displayStatus}</span></div><div style="font-size:14px; font-weight:700; margin-top:8px; color:var(--text-main);">${o.service_name}</div><div style="font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600;"><i class="fas fa-calendar-alt"></i> ${o.date} &nbsp; <i class="fas fa-clock"></i> ${o.time}</div>${actionBtnService}</div>`;
+          servicesHtml += `<div ${wrapperOnclick} style="background:var(--bg-surface); padding:14px; border-radius:10px; margin-bottom:10px; border:1px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.02); ${wrapperCursor}"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><span style="font-size:13px; font-weight:800; color:var(--primary-blue); font-family:monospace;">NO: ${o.id}</span><span style="font-size:10px; font-weight:800; padding:6px 10px; border-radius:8px; ${badgeStyle}">${displayStatus}</span></div><div style="font-size:14px; font-weight:700; margin-top:8px; color:var(--text-main);">${o.service_name}</div><div style="font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600;"><i class="fas fa-calendar-alt"></i> ${o.date} &nbsp; <i class="fas fa-clock"></i> ${o.time}</div>${actionBtnService}</div>`;
         }
       });
       
@@ -1860,6 +1871,15 @@ function confirmOrderReceived(id) {
       }
     });
 }
+function openReviewModal(orderNo) {
+  document.getElementById("review-orderno").value = orderNo;
+  document.getElementById("review-text").value = "";
+  // Reset stars to 5
+  document.getElementById("review-stars").value = "5";
+  document.querySelectorAll("#review-stars-ui i").forEach(s => s.classList.add("active"));
+  document.getElementById("review-modal-overlay").classList.add("active");
+}
+
 function submitCustomerReview(event) {
   event.preventDefault();
   const orderNo = document.getElementById("review-orderno").value.trim();
@@ -1882,6 +1902,8 @@ function submitCustomerReview(event) {
       if (data && data.status === "success") {
         showToast("Terima kasih!");
         event.target.reset();
+        closeModal("review-modal-overlay");
+        renderNotifications();
         fetchShopData().then(() => renderHomeReviews());
       } else {
         alert(data && data.message ? data.message : "Ralat ketika menghantar ulasan.");
