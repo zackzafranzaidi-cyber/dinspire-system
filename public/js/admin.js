@@ -275,7 +275,7 @@ function renderTable(tabName) {
         let opts = ["In-Branch", "On-Call", "General"].map(j => `<option value="${j}" ${row[c] === j ? "selected" : ""}>${j}</option>`).join("");
         html += `<td><select onchange="updateData('${tabName}', ${index}, '${c}', this.value); setTimeout(()=>renderTable('${tabName}'), 100);" style="padding:10px; border-radius:8px; border:1px solid #E5E5EA; width:100%; outline:none; font-weight:600; font-family:inherit; background:#F4F5F8;">${opts}</select></td>`;
       } else if (c === "branch_id" && tabName === "Staff") {
-        if (row.jenis_staf === "On-Call") {
+        if (row.jenis_staf === "On-Call" || row.jenis_staf === "General") {
            html += `<td><div style="color:#888; font-size:12px; font-style:italic;">Tidak Berkenaan</div></td>`;
         } else {
            let opts = `<option value="" disabled selected>-- Pilih Cawangan --</option>`;
