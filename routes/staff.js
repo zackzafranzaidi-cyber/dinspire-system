@@ -128,7 +128,7 @@ router.get(
 
       let allBookings = [];
 
-      const mapStatus = (s) => s === "Pending Verification" ? "Pending Verification" : (s === "Belum" ? "Aktif" : (s === "Rejected" ? "Rejected" : "Selesai"));
+      const mapStatus = (s) => s === "Pending Verification" ? "Pending Verification" : (s === "Belum" ? "Aktif" : (s === "Rejected" ? "Rejected" : (s === "Batal" ? "Batal" : "Selesai")));
 
       (bookings || []).forEach((b) => {
         allBookings.push({
