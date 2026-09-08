@@ -717,19 +717,7 @@ router.post(
           
         if (error) throw error;
 
-        // Jadualkan SMS 2 Jam
-        if (data && data.tarikh && data.masa && data.no_phone) {
-          const bookingDateTime = new Date(`${data.tarikh}T${data.masa}`);
-          const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
-          if (reminderTime > new Date()) {
-            schedule.scheduleJob(reminderTime, async function() {
-              if (data.customer_id) {
-                await notifyCustomer(data.customer_id, "Peringatan Tempahan ✂️", `Peringatan mesra! Tempahan anda (${order_no}) akan bermula pada ${data.masa}. Sila hadir awal.`);
-              }
-            });
-          }
-        }
-
+        // Penjadualan Peringatan dibuang kerana kini diuruskan oleh Stateless Polling di server.js
         if (data && data.customer_id) {
           await notifyCustomer(data.customer_id, "Bayaran Disahkan ✅", `Resit untuk tempahan ${order_no} telah diluluskan.`);
         }

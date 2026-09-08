@@ -229,7 +229,10 @@ const ownerRoutes = require("./routes/owner");
 const adminRoutes = require("./routes/admin");
 
 // 4. Gunakan routes
-app.get("/api/ping", (req, res) => res.status(200).send("pong"));
+app.get("/api/ping", (req, res) => {
+  processReminders().catch(e => console.error(e));
+  res.status(200).send("pong");
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/staff", staffRoutes);
@@ -283,69 +286,59 @@ app.use((err, req, res, next) => {
 });
 
 // ========================================================
-// [DIBAIKI] Auto-Recovery SMS Jadual In-Memory
+// [DIBAIKI] Stateless Database-Driven Cron Job
 // ========================================================
-async function recoverSMSReminders() {
+async function processReminders() {
   try {
-    console.log("Menyemak pemulihan SMS Peringatan...");
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' }); // YYYY-MM-DD
+    const now = new Date();
     
-    // Tarik tempahan 'Aktif'
-    const { data: bookings } = await supabase
-      .from("booking_records")
-      .select("no_booking, tarikh, masa, customer_id")
-      .eq("status", "Aktif");
-
-    if (bookings) {
-      bookings.forEach((b) => {
-        if (!b.tarikh || !b.masa) return;
-        const bDate = new Date(`${b.tarikh}T${b.masa}+08:00`);
-        const reminderTime = new Date(bDate.getTime() - 2 * 60 * 60 * 1000);
+    const tables = ["booking_records", "treatment_records", "oncall_records"];
+    
+    for (let t of tables) {
+      // Kita tarik semua tempahan hari ini yang berstatus Belum/Aktif
+      const { data: records } = await supabase
+        .from(t)
+        .select("no_booking, tarikh, masa, customer_id, reminder_sent")
+        .in("status", ["Belum", "Aktif"])
+        .eq("tarikh", today)
+        .neq("reminder_sent", true); // Abaikan yang sudah dihantar
         
-        if (reminderTime > new Date()) {
-          schedule.scheduleJob(reminderTime, async function() {
-            if (b.customer_id) {
-              await notifyCustomer(b.customer_id, "Peringatan Tempahan ✂️", `Peringatan mesra! Tempahan anda (${b.no_booking}) akan bermula pada ${b.masa}. Sila hadir awal.`);
+      if (records && records.length > 0) {
+        for (let r of records) {
+          if (!r.masa) continue;
+          
+          const rDate = new Date(`${r.tarikh}T${r.masa}+08:00`);
+          // Berapa milisaat lagi sebelum tempahan bermula?
+          const timeDiff = rDate.getTime() - now.getTime();
+          
+          // Jika kurang atau sama dengan 2 jam (2 * 60 * 60 * 1000 = 7200000) dan masih belum bermula
+          if (timeDiff > 0 && timeDiff <= 7200000) {
+            // Hantar Notifikasi!
+            if (r.customer_id) {
+              const msgType = t === "oncall_records" ? "Peringatan On-Call 🚗" : "Peringatan Tempahan ✂️";
+              const msgBody = t === "oncall_records" 
+                ? "Barber On-Call anda akan tiba di lokasi dalam masa 2 jam. Sila bersedia!"
+                : `Peringatan mesra! Tempahan anda (${r.no_booking}) akan bermula pada ${r.masa}. Sila hadir awal.`;
+                
+              await notifyCustomer(r.customer_id, msgType, msgBody);
             }
-          });
+            // Tandakan sebagai telah dihantar di Supabase
+            await supabase.from(t).update({ reminder_sent: true }).eq("no_booking", r.no_booking);
+          }
         }
-      });
-      console.log(`Berjaya memulihkan ${bookings.length} jadual SMS Tempahan.`);
+      }
     }
-
-    // Tarik oncall 'Aktif'
-    const { data: oncalls } = await supabase
-      .from("oncall_records")
-      .select("no_booking, tarikh, masa, customer_id")
-      .eq("status", "Aktif");
-      
-    if (oncalls) {
-      oncalls.forEach((o) => {
-        if (!o.tarikh || !o.masa) return;
-        const oDate = new Date(`${o.tarikh}T${o.masa}+08:00`);
-        const reminderTime = new Date(oDate.getTime() - 2 * 60 * 60 * 1000);
-        
-        if (reminderTime > new Date()) {
-          schedule.scheduleJob(reminderTime, async function() {
-            if (o.customer_id) {
-              await notifyCustomer(o.customer_id, "Peringatan On-Call 🚗", "Barber On-Call anda akan tiba di lokasi dalam masa 2 jam. Sila bersedia!");
-            }
-          });
-        }
-      });
-      console.log(`Berjaya memulihkan ${oncalls.length} jadual SMS On-Call.`);
-    }
-
   } catch (error) {
-    console.error("Gagal memulihkan SMS jadual:", error);
+    console.error("Gagal memproses peringatan stateless:", error);
   }
 }
 
 // Mulakan Pelayan
 const PORT = process.env.PORT || 3000;
-// Mulakan pelayan pada port yang ditetapkan (Trigger Restart)
 const server = app.listen(PORT, async () => {
   console.log(`Server Dinspire berjalan di port ${PORT}`);
-  await recoverSMSReminders(); // Jalankan Auto-Recovery selepas pelayan hidup
+  // Tidak perlu lagi schedule recovery kerana kita guna Stateless Polling di /api/ping!
 });
 
 // [DIBAIKI] Penalaan Soket TCP Keep-Alive

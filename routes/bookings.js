@@ -807,18 +807,7 @@ router.post(
       await notifyOwner("Tempahan On-Call!", `Satu tempahan On-Call diterima dari ${cust.name}.`);
       await notifyStaff(barber, "Tempahan On-Call!", `Anda mendapat tugasan On-Call dari ${cust.name} di lokasi ${address}`);
 
-      try {
-        // [DIBAIKI] Zon Masa Peringatan
-        const bookingDateTime = new Date(`${date}T${time}+08:00`);
-        const reminderTime = new Date(bookingDateTime.getTime() - 2 * 60 * 60 * 1000);
-        if (reminderTime > new Date()) {
-          schedule.scheduleJob(reminderTime, async function() {
-            await notifyCustomer(customer_id, "Peringatan On-Call 🚗", "Barber On-Call anda akan tiba di lokasi dalam masa 2 jam. Sila bersedia!");
-          });
-        }
-      } catch (e) {
-        console.error("Gagal menetapkan jadual peringatan SMS On-Call:", e);
-      }
+      // Peringatan SMS On-Call dibuang kerana kini diuruskan oleh Stateless Polling di server.js
       if (payment_method === "qr") {
         res.json({
           status: "success",
