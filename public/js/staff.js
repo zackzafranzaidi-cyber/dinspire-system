@@ -674,7 +674,13 @@ function renderHistoryList() {
       }
       let contactBtns = callLink || waLink ? `<div style="display:flex; margin-top:10px;">${callLink}${waLink}</div>` : "";
 
-      return `<div class="list-card" style="opacity: 0.85;"><div class="list-header"><span class="cust-name">${customerName}</span><span class="badge ${badgeClass}">${method}</span></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh Selesai:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <br><strong>Kutipan:</strong> RM ${b.final_price || b.price}${editBtn}</div>${contactBtns}</div>`;
+      let statusBadge = "";
+      if (b.status === "Batal" || b.status === "Rejected") {
+          statusBadge = `<span class="badge badge-pending" style="margin-left: 5px;">BATAL</span>`;
+      } else if (b.status === "Selesai") {
+          statusBadge = `<span class="badge" style="background:var(--success); color:white; margin-left: 5px;">SELESAI</span>`;
+      }
+      return `<div class="list-card" style="opacity: 0.85;"><div class="list-header"><span class="cust-name">${customerName}</span><div><span class="badge ${badgeClass}">${method}</span>${statusBadge}</div></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh Selesai:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <br><strong>Kutipan:</strong> RM ${b.final_price || b.price}${editBtn}</div>${contactBtns}</div>`;
     })
     .join("");
 }
