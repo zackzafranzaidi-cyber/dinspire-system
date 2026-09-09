@@ -17,7 +17,7 @@ Sistem ini mempunyai lima (5) titik akses:
 1. **Portal Pelanggan (`public/customer/index.html`):** Aplikasi web mudah alih (*Mobile-First PWA*) untuk pendaftaran akaun, tempahan servis (Gunting, Rawatan, On-Call), pembelian produk E-Commerce, pembayaran QR/FPX, penjejakan pesanan, dan penghantaran ulasan.
 2. **Papan Pemuka Pemilik (`public/owner/index.html`):** Suite analitik eksekutif mengandungi penapisan jualan harian/mingguan/bulanan/tahunan, carta Chart.js, Ejen AI Dinspire, pengurusan pesanan, kelulusan cuti, kehadiran GPS, dan laporan kewangan.
 3. **Papan Pemuka Staf (`public/staff/index.html`):** Portal mudah alih untuk pekerja merekod pelanggan Walk-In, menyelesaikan tempahan aktif, mendaftar kedatangan (Punch In/Out) dengan GPS *Geofencing*, dan pengurusan cuti bulanan/kecemasan.
-4. **Papan Pemuka Pentadbir (`public/admin.html`):** Panel CMS Master Data berbentuk hamparan jadual untuk menguruskan 13 modul data (Senarai Servis, Produk, Cawangan, Staf, Tetapan Sistem, dan lain-lain).
+4. **Papan Pemuka Pentadbir (`public/admin.html`):** Panel CMS Master Data berbentuk hamparan jadual untuk menguruskan 11 modul data (Kesemua staf kini disatukan dalam satu jadual dengan fungsi dropdown, berserta Senarai Servis, Produk, Cawangan, Tetapan Sistem, dan lain-lain).
 5. **Pemuat Turun Arkib (`public/owner/archive-download.html`):** Halaman pembantu yang menjana laporan Excel (`.xlsx`) dan memampatkan resit-resit ke dalam fail `.zip` untuk dimuat turun.
 
 ### 1.2 Pemasangan Laluan API (`server.js`)
@@ -37,7 +37,7 @@ Pelayan menjalankan beberapa tugas berjadual secara automatik:
 - **Pembersihan Cuti Lepas (`0 0 1 * *`):** Setiap 1hb bulan pada tengah malam, buang rekod cuti yang sudah tamat tempoh.
 - **Pembersihan Harian (`0 3 * * *`):** Setiap pukul 3:00 pagi.
 - **Pemotongan Data Tahunan (`0 0 1 2 *`):** Setiap 1hb Februari pada tengah malam melalui `pruneYearlyData()`.
-- **Pemulihan SMS Automatik:** Semasa pelayan dimulakan, `recoverSMSReminders()` menjadualkan semula peringatan SMS 2 jam sebelum tempahan aktif.
+- **Peringatan Notifikasi (Push Notifications):** Rutin `processReminders()` dijalankan melalui cron setiap 5 minit (`*/5 * * * *`) dan secara automatik apabila pelayan dimulakan (wake-up), menggantikan sistem SMS lama. Ia menyemak dan menolak *Push Notification* (Web-Push) kepada pelanggan 2 jam sebelum waktu tempahan.
 
 ---
 
@@ -96,9 +96,9 @@ Sistem Dinspire telah dilengkapi dengan pelbagai lapisan sekuriti pelayan:
 
 ---
 
-## 4. Sistem Log Masuk & Notifikasi Automatik (Auth & SMS)
+## 4. Sistem Log Masuk & Notifikasi Automatik (Auth & Push Notifications)
 
-### 4.1 Aliran Pengesahan
+### 4.1 Aliran Pengesahan (SMS Terhad Kepada OTP)
 
 1. **Pendaftaran Pelanggan (OTP):** Pelanggan mendaftar menggunakan nombor telefon. Kod OTP 6 digit dijanakan menggunakan `crypto` dan dihantar melalui SMS. OTP sah selama 5 minit. Percubaan salah melebihi 3 kali akan menghapuskan rekod OTP (*Brute-Force Protection*). Nama pelanggan melalui penapisan XSS (*HTML Tag Stripping*).
 
@@ -112,10 +112,12 @@ Sistem Dinspire telah dilengkapi dengan pelbagai lapisan sekuriti pelayan:
 
 6. **Permohonan Reset Kata Laluan Staf:** Staf boleh memohon reset. Admin melihat senarai permohonan di panel CMS dan meluluskannya (kata laluan direset ke `123123` secara automatik).
 
-### 4.2 Penjadualan SMS Automatik (`node-schedule`)
+### 4.2 Web-Push Notifications (Menggantikan SMS Operasi)
 
-- **Tempahan Servis:** SMS peringatan dijadualkan tepat **2 jam** sebelum masa tempahan pelanggan bermula. SMS ini dijadualkan semula secara automatik apabila pelayan dimulakan semula (*Auto-Recovery*).
-- **Pembelian Produk:** SMS pemberitahuan penghantaran tercetus automatik apabila pemilik mengemaskini *Tracking Number* pesanan.
+Semua makluman operasi yang sebelum ini menggunakan SMS kini telah digantikan dengan **Web-Push Notifications** bagi menjimatkan kos dan lebih pantas:
+- **Peringatan Tempahan (2 Jam Sebelum):** Rutin `processReminders()` akan menyemak dan menolak *Push Notification* secara statik (melalui cron 5-minit dan pencetus `app.listen` semasa server mula-mula dihidupkan/terjaga).
+- **Pembelian Produk:** Notifikasi penghantaran dihantar secara langsung apabila pemilik/admin mengemaskini *Tracking Number*.
+- **Tempahan Selesai & Ulasan:** Setelah tempahan selesai, notifikasi boleh ditekan oleh pengguna terus ke tetingkap modal untuk memberi ulasan (Review Modal), tanpa perlu memasukkan nombor *order* secara manual di tab Akaun.
 
 ---
 
