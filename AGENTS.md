@@ -271,7 +271,7 @@ Sistem menggunakan **20 jadual** dalam skema `public` Supabase PostgreSQL.
 | `owners` | Pemilik kedai | `id (uuid PK)`, `username (UNIQUE)`, `password_hash` |
 | `admins` | Pentadbir sistem | `id (uuid PK)`, `username (UNIQUE)`, `password_hash` |
 | `staff` | Pekerja (Barber/Am) | `id (uuid PK)`, `username (UNIQUE)`, `password_hash`, `jenis_staf`, `branch_id`, `must_change_password`, `reset_requested`, `can_haircut`, `can_treatment` |
-| `branches` | Cawangan kedai | `id (varchar PK)`, `nama_cawangan`, `lokasi`, `lat`, `lng` |
+| `branches` | Cawangan kedai | `id (varchar PK)`, `nama_cawangan`, `lokasi`, `lat`, `lng`, `gambar` |
 | `otps` | Kod OTP sementara | `phone (PK)`, `otp_code`, `expires_at` |
 | `settings` | Tetapan sistem (yuran, komisen) | `setting_key (PK)`, `setting_value`, `description` |
 
@@ -287,10 +287,10 @@ Sistem menggunakan **20 jadual** dalam skema `public` Supabase PostgreSQL.
 
 | Jadual | Keterangan | FK Utama |
 |--------|-----------|----------|
-| `booking_records` | Rekod tempahan dalam talian (Gunting) | `jenis_haircut → haircuts(id)`, `staff_id → staff(id)` |
-| `treatment_records` | Rekod tempahan rawatan | `jenis_rawatan → treatments(id)`, `staff_id → staff(id)` |
+| `booking_records` | Rekod tempahan dalam talian (Gunting) | `jenis_haircut → haircuts(id)`, `staff_id → staff(id)`, `reminder_sent` |
+| `treatment_records` | Rekod tempahan rawatan | `jenis_rawatan → treatments(id)`, `staff_id → staff(id)`, `reminder_sent` |
 | `walkin_records` | Rekod pelanggan Walk-In (Gunting & Treatment Walk-in) | `jenis_potongan → haircuts(id)`, `staff_id → staff(id)` |
-| `oncall_records` | Rekod tempahan On-Call | `jenis_haircut → haircuts(id)`, `staff_id → staff(id)` |
+| `oncall_records` | Rekod tempahan On-Call | `jenis_haircut → haircuts(id)`, `staff_id → staff(id)`, `reminder_sent` |
 | `product_orders` | Rekod pesanan E-Commerce | `customer_id`, `senarai_produk (JSONB)`, `tracking_no`, `shipping_fee` |
 
 ### 7.4 Jadual Sokongan
