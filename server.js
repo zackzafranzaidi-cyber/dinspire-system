@@ -48,6 +48,7 @@ setInterval(() => {
 // ========================================================
 schedule.scheduleJob({ rule: "*/5 * * * *", tz: "Asia/Kuala_Lumpur" }, async () => {
   try {
+    processReminders().catch(console.error);
     const timeLimit = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     
     // Padam tempahan yang masih belum dibayar (FPX_PENDING) melebihi 15 minit
@@ -338,7 +339,8 @@ async function processReminders() {
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, async () => {
   console.log(`Server Dinspire berjalan di port ${PORT}`);
-  // Tidak perlu lagi schedule recovery kerana kita guna Stateless Polling di /api/ping!
+  // Jalankan segera apabila pelayan mula (terjaga dari sleep)
+  processReminders().catch(console.error);
 });
 
 // [DIBAIKI] Penalaan Soket TCP Keep-Alive
