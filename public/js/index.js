@@ -2086,22 +2086,23 @@ function hideGlobalLoader() {
   }
 }
 
-function switchView(id) {
-  if (id === "notifications" && typeof currentUser !== 'undefined' && !currentUser) {
-    showToast("Sila Log Masuk untuk melihat status pesanan.");
-    id = "account";
-  }
-
-  showGlobalLoader();
-
-  document
-    .querySelectorAll(".view-section")
-    .forEach((s) => s.classList.remove("active"));
-  document.getElementById("view-" + id)?.classList.add("active");
-  document
-    .querySelectorAll(".nav-item")
-    .forEach((n) => n.classList.remove("active"));
-  document.getElementById("nav-" + id)?.classList.add("active");
+  function switchView(id) {
+    if (id === "notifications" && typeof currentUser !== 'undefined' && !currentUser) {
+      showToast("Sila Log Masuk untuk melihat status pesanan.");
+      id = "account";
+    }
+  
+    showGlobalLoader();
+  
+    document
+      .querySelectorAll(".view-section")
+      .forEach((s) => s.classList.remove("active"));
+    document.getElementById("view-" + id)?.classList.add("active");
+    document
+      .querySelectorAll(".nav-item, .sidebar-nav-item")
+      .forEach((n) => n.classList.remove("active"));
+    document.getElementById("nav-" + id)?.classList.add("active");
+    document.getElementById("sidebar-nav-" + id)?.classList.add("active");
   window.scrollTo(0, 0);
   if (id === "notifications") {
     renderNotifications();
