@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.67";
+      const CURRENT_APP_VERSION = "1.1.68";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -104,8 +104,31 @@
         if (!isStandalone) {
           var bNav = document.querySelector(".bottom-nav");
           if (bNav) bNav.style.setProperty("display", "none", "important");
-          var vContent = document.querySelector(".view-content");
-          if (vContent) vContent.style.setProperty("padding-bottom", "calc(110px + env(safe-area-inset-bottom))", "important");
+          var style = document.createElement("style");
+          style.innerHTML = `
+            @media (max-width: 767px) {
+              html, body {
+                overflow: auto !important;
+                height: auto !important;
+                min-height: 100vh !important;
+              }
+              .mobile-container {
+                overflow: visible !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                max-height: none !important;
+              }
+              .view-content {
+                overflow: visible !important;
+                height: auto !important;
+                padding-bottom: env(safe-area-inset-bottom) !important;
+              }
+              .checkout-sheet, .edit-cart-sheet, .checkout-bar {
+                position: fixed !important;
+              }
+            }
+          `;
+          document.head.appendChild(style);
           var btns = document.querySelectorAll(".sidebar-toggle-btn");
           btns.forEach(function(b) { b.style.setProperty("display", "block", "important"); });
         }
