@@ -76,7 +76,7 @@
 
   <body>
     <!-- INTRO ANIMATION (ORIGINAL SWOOSH) -->
-    <div class="preloader" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #1877f2; display: flex; justify-content: center; align-items: center; z-index: 999999;">
+    <div class="preloader" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #1877f2; justify-content: center; align-items: center; z-index: 999999;">
         <div class="canvas">
             <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1030.32 964.36" width="150" height="150">
                 <path class="intro-swoosh swoosh-1" d="M 150,482 A 365,365 0 1,1 880,482" />
@@ -89,16 +89,19 @@
         </div>
     </div>
     <script>
-      // Only show D intro animation if running as a standalone WebApp (PWA)
-      if (!window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
-        var intro = document.querySelector(".preloader");
-        if (intro) intro.style.display = "none";
-      } else {
+      // STRICT STANDALONE CHECK: Only SHOW intro animation if running as a standalone WebApp (PWA)
+      var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      var intro = document.querySelector(".preloader");
+      if (isStandalone && intro) {
+        intro.style.display = "flex"; // Reveal it
+        
         // Fallback: Ensure intro screen is removed after 4.5 seconds in case CSS animation fails
         setTimeout(function() {
-          var p = document.querySelector(".preloader");
-          if (p) { p.style.transition = "opacity 0.5s ease-out"; p.style.opacity = "0"; setTimeout(function(){ p.style.display = "none"; }, 500); }
+          if (intro) { intro.style.transition = "opacity 0.5s ease-out"; intro.style.opacity = "0"; setTimeout(function(){ intro.remove(); }, 500); }
         }, 4500);
+      } else if (intro) {
+        // Destroy completely for normal browsers
+        intro.remove();
       }
     </script>
 
