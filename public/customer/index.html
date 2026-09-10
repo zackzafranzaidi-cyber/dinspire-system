@@ -89,11 +89,17 @@
         </div>
     </div>
     <script>
-      // Fallback: Ensure intro screen is removed after 4.5 seconds in case CSS animation fails
-      setTimeout(function() {
-        var p = document.querySelector(".preloader");
-        if (p) { p.style.transition = "opacity 0.5s ease-out"; p.style.opacity = "0"; setTimeout(function(){ p.style.display = "none"; }, 500); }
-      }, 4500);
+      // Only show D intro animation if running as a standalone WebApp (PWA)
+      if (!window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
+        var intro = document.querySelector(".preloader");
+        if (intro) intro.style.display = "none";
+      } else {
+        // Fallback: Ensure intro screen is removed after 4.5 seconds in case CSS animation fails
+        setTimeout(function() {
+          var p = document.querySelector(".preloader");
+          if (p) { p.style.transition = "opacity 0.5s ease-out"; p.style.opacity = "0"; setTimeout(function(){ p.style.display = "none"; }, 500); }
+        }, 4500);
+      }
     </script>
 
     <!-- GLOBAL PRELOADER MESIN CLIPPER -->
