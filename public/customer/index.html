@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.63";
+      const CURRENT_APP_VERSION = "1.1.64";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -104,6 +104,8 @@
         if (!isStandalone) {
           var bNav = document.querySelector(".bottom-nav");
           if (bNav) bNav.style.setProperty("display", "none", "important");
+          var vContent = document.querySelector(".view-content");
+          if (vContent) vContent.style.setProperty("padding-bottom", "calc(20px + env(safe-area-inset-bottom))", "important");
           var btns = document.querySelectorAll(".sidebar-toggle-btn");
           btns.forEach(function(b) { b.style.setProperty("display", "block", "important"); });
         }
@@ -176,7 +178,7 @@
       body.browser-mode .sidebar-toggle-btn {
         display: block !important;
       }
-      body.browser-mode .view-section {
+      body.browser-mode .view-content {
         padding-bottom: 20px !important;
       }
     </style>
