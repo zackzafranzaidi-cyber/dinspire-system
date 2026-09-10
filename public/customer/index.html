@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.62";
+      const CURRENT_APP_VERSION = "1.1.63";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -99,7 +99,15 @@
         setTimeout(function() {
           if (intro) { intro.style.transition = "opacity 0.5s ease-out"; intro.style.opacity = "0"; setTimeout(function(){ intro.remove(); }, 500); }
         }, 4500);
-      } else { document.documentElement.classList.add("browser-mode"); if (intro) { intro.remove(); } }
+      } else { document.body.classList.add("browser-mode"); if (intro) { intro.remove(); }
+      document.addEventListener("DOMContentLoaded", function() {
+        if (!isStandalone) {
+          var bNav = document.querySelector(".bottom-nav");
+          if (bNav) bNav.style.setProperty("display", "none", "important");
+          var btns = document.querySelectorAll(".sidebar-toggle-btn");
+          btns.forEach(function(b) { b.style.setProperty("display", "block", "important"); });
+        }
+      }); }
     </script>
 
         <!-- SIDEBAR FOR BROWSER MODE -->
@@ -162,13 +170,13 @@
         display: none; background: none; border: none; font-size: 22px; color: var(--text-main); 
         padding: 0; margin-right: 15px; cursor: pointer;
       }
-      html.browser-mode .bottom-nav {
+      body.browser-mode .bottom-nav {
         display: none !important;
       }
-      html.browser-mode .sidebar-toggle-btn {
+      body.browser-mode .sidebar-toggle-btn {
         display: block !important;
       }
-      html.browser-mode .view-section {
+      body.browser-mode .view-section {
         padding-bottom: 20px !important;
       }
     </style>
