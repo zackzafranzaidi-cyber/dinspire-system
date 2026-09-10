@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.60";
+      const CURRENT_APP_VERSION = "1.1.61";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -99,7 +99,7 @@
         setTimeout(function() {
           if (intro) { intro.style.transition = "opacity 0.5s ease-out"; intro.style.opacity = "0"; setTimeout(function(){ intro.remove(); }, 500); }
         }, 4500);
-      } else if (intro) {
+      } else { document.documentElement.classList.add("browser-mode"); if (intro) {
         // Destroy completely for normal browsers
         intro.remove();
       }
