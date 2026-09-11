@@ -679,6 +679,16 @@ function toggleTxTab(type) {
   document.getElementById("tx-servis-view").classList.add("hidden");
   document.getElementById("tx-produk-view").classList.add("hidden");
   document.getElementById("tx-" + type + "-view").classList.remove("hidden");
+  
+  if (type === 'servis') {
+     let totalSelesai = 0;
+     if (typeof masterData !== "undefined" && masterData.bookings) {
+         masterData.bookings.forEach(b => { if (b.Status === "Selesai") totalSelesai++; });
+     }
+     localStorage.setItem('din_seen_tx_servis_count', totalSelesai);
+     updateOwnerBadges();
+     document.querySelectorAll('.servis-new-dot').forEach(el => el.style.display = 'none');
+  }
 }
 
 function togglePunchTab(type) {
@@ -858,9 +868,8 @@ function processData() {
       b.Status === "Selesai" &&
       isWithinFilter(b.Date || b.Timestamp || b.created_at, filterType, now),
   );
-  let tableOrders = masterData.orders.filter((o) =>
-    isWithinFilter(o.tarikh || o.Timestamp || o.created_at, filterType, now)
-  );
+  let allPendingOrders = masterData.orders.filter(o => o.status === "Pending Verification" || o.status === "Preparing");
+    let tableOrders = masterData.orders.filter((o) => isWithinFilter(o.tarikh || o.Timestamp || o.created_at, filterType, now)).filter(o => o.status !== "Pending Verification" && o.status !== "Preparing");
   let filteredOrders = tableOrders.filter((o) => {
     if (o.status === "Batal" || o.status === "Pending Verification") return false;
     let r = o.resit || o.ReceiptLink || "";
@@ -1088,7 +1097,7 @@ function processData() {
   renderCashTable(staffStats);
   renderAttendanceTable(filteredPunch);
   renderTxServisTable(filteredBookings);
-  renderTxProdukTable(tableOrders);
+  renderTxProdukTable(tableOrders, allPendingOrders);
   renderReviewsTable(filteredReviews);
   renderPunchTable(filteredPunch);
   renderLeavesTable(filteredLeaves);
@@ -1312,47 +1321,27 @@ function renderCashTable(stats) {
 
 function renderTxServisTable(bookings) {
   const tbody = document.getElementById("table-tx-servis");
-  let data = [...bookings].sort(
-    (a, b) => Date.parse(b.Timestamp || b.Date) - Date.parse(a.Timestamp || a.Date),
-  );
+  let data = [...bookings].sort((a, b) => Date.parse(b.Timestamp || b.Date) - Date.parse(a.Timestamp || a.Date));
   if (data.length === 0) {
-    tbody.innerHTML = `<tr><td class="text-center py-6 text-gray-400 italic text-xs" data-i18n="table-no-record">${i18n[currentLang]["table-no-record"] || "Tiada Rekod"}</td></tr>`;
+    tbody.innerHTML = `<tr><td class="text-center py-6 text-gray-400 italic text-xs" data-i18n="table-no-record">${i18n[currentLang] && i18n[currentLang]["table-no-record"] ? i18n[currentLang]["table-no-record"] : "Tiada Rekod"}</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = data
-    .map((b, index) => {
+  tbody.innerHTML = data.map((b, index) => {
       let d = b.Timestamp ? new Date(b.Timestamp) : new Date(b.Date);
       let tFormat = "";
       if (!isNaN(d)) {
-        const months = [
-          "Jan",
-          "Feb",
-          "Mac",
-          "Apr",
-          "Mei",
-          "Jun",
-          "Jul",
-          "Ogo",
-          "Sep",
-          "Okt",
-          "Nov",
-          "Dis",
-        ];
+        const months = ["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"];
         tFormat = `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]}, ${b.Time || ""}`;
       } else {
         tFormat = b.Date + " " + (b.Time || "");
       }
 
       let typeStr = b.Type || "Booking";
-      let badge =
-        typeStr.toLowerCase().includes("walk") || b.Category === "Walk-In"
-          ? "bg-purple-100 text-purple-700"
-          : "bg-gray-200 text-gray-700";
-      let btn =
-        b.ReceiptLink && b.ReceiptLink.includes("http")
-          ? `<button onclick="event.stopPropagation(); openReceiptModal('${b.ReceiptLink}')" class="mt-2 bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-xs font-bold w-full transition shadow-sm">Lihat Resit</button>`
-          : "";
+      let badge = (typeStr.toLowerCase().includes("walk") || b.Category === "Walk-In") ? "bg-purple-100 text-purple-700" : "bg-gray-200 text-gray-700";
+      let btn = b.ReceiptLink && b.ReceiptLink.includes("http") ? `<button onclick="event.stopPropagation(); openReceiptModal('${b.ReceiptLink}')" class="mt-2 bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-xs font-bold w-full transition shadow-sm">Lihat Resit</button>` : "";
+
+      let dotHtml = (window.newSelesaiCount && index < window.newSelesaiCount) ? '<div class="servis-new-dot w-2 h-2 rounded-full bg-red-500 animate-pulse ml-2 inline-block relative -top-0.5"></div>' : '';
 
       return `
         <tr class="block w-full !bg-white border border-gray-100 rounded-lg mb-1.5 shadow-sm hover:shadow-md transition">
@@ -1361,7 +1350,7 @@ function renderTxServisTable(bookings) {
                     <div class="text-[9px] text-gray-400 mb-0.5 leading-none tracking-wide">${tFormat}</div>
                     <div class="flex justify-between items-center mt-0.5">
                         <div class="max-w-[70%] text-left">
-                            <div class="text-[12px] text-gray-800 uppercase font-bold leading-none">${escapeHTML(b.Username || "PELANGGAN")}</div>
+                            <div class="text-[12px] text-gray-800 uppercase font-bold leading-none">${escapeHTML(b.Username || "PELANGGAN")}${dotHtml}</div>
                             <div class="text-[10px] text-gray-400 mt-1 leading-none truncate">${escapeHTML(b.ServiceName || "-")}</div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
@@ -1380,186 +1369,109 @@ function renderTxServisTable(bookings) {
                 </div>
             </td>
         </tr>`;
-    })
-    .join("");
+    }).join("");
 }
 
-function renderTxProdukTable(orders) {
+function renderTxProdukTable(completedOrders, pendingOrders = []) {
   const tbody = document.getElementById("table-tx-produk");
-  let data = [...orders].sort(
-    (a, b) => Date.parse(b.Timestamp) - Date.parse(a.Timestamp),
-  );
-  if (data.length === 0) {
-    tbody.innerHTML = `<tr><td class="text-center py-6 text-gray-400 italic text-xs" data-i18n="table-no-record">${i18n[currentLang]["table-no-record"] || "Tiada Rekod"}</td></tr>`;
-    return;
-  }
+  let html = "";
+  
+  const mapOrderToHTML = (o, index) => {
+    let rawItems = o.Items || o.senarai_produk;
+    let pNames = [];
+    try {
+      let itm = typeof rawItems === "string" ? JSON.parse(rawItems) : rawItems;
+      for (let k in itm) pNames.push(`${itm[k].name} (x${itm[k].qty})`);
+    } catch (e) {}
+    let timestampVal = o.Timestamp || o.created_at;
+    let d = new Date(timestampVal);
+    let tFormat = "";
+    if (!isNaN(d)) {
+      const months = ["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"];
+      tFormat = `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]}, ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    } else {
+      tFormat = o.Timestamp;
+    }
 
-  tbody.innerHTML = data
-    .map((o, index) => {
-      let rawItems = o.Items || o.senarai_produk;
-      let pNames = [];
-      try {
-        let itm =
-          typeof rawItems === "string" ? JSON.parse(rawItems) : rawItems;
-        for (let k in itm) pNames.push(`${itm[k].name} (x${itm[k].qty})`);
-      } catch (e) {}
-      let timestampVal = o.Timestamp || o.created_at;
-      let d = new Date(timestampVal);
-      let tFormat = "";
-      if (!isNaN(d)) {
-        const months = [
-          "Jan",
-          "Feb",
-          "Mac",
-          "Apr",
-          "Mei",
-          "Jun",
-          "Jul",
-          "Ogo",
-          "Sep",
-          "Okt",
-          "Nov",
-          "Dis",
-        ];
-        tFormat = `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]}, ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-      } else {
-        tFormat = o.Timestamp;
-      }
+    let rLink = o.ReceiptLink || o.resit;
+    let btn = rLink && rLink.includes("http") ? `<button onclick="event.stopPropagation(); openReceiptModal('${rLink}')" class="bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-xs font-bold w-full transition shadow-sm mt-2">Lihat Resit</button>` : "";
 
-      let rLink = o.ReceiptLink || o.resit;
-      let btn =
-        rLink && rLink.includes("http")
-          ? `<button onclick="event.stopPropagation(); openReceiptModal('${rLink}')" class="bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-xs font-bold w-full transition shadow-sm mt-2">Lihat Resit</button>`
-          : "";
+    let stat = o.Status || o.status || "Baru";
+    if (typeof rLink === "string" && rLink.includes("FPX_PENDING")) stat = "FPX Pending";
+    if (typeof rLink === "string" && rLink.includes("FPX_FAILED")) stat = "FPX Gagal";
 
-      let stat = o.Status || o.status || "Baru";
-      if (typeof rLink === "string" && rLink.includes("FPX_PENDING")) stat = "FPX Pending";
-      if (typeof rLink === "string" && rLink.includes("FPX_FAILED")) stat = "FPX Gagal";
+    let orderId = o.FullId || o.id;
+    let badgeColor = (stat === "Pending Verification" || stat === "FPX Pending") ? "bg-yellow-100 text-yellow-800" : (stat === "Rejected" || stat === "FPX Gagal") ? "bg-red-100 text-red-700" : (stat === "Preparing" || stat === "Baru" || stat === "Belum") ? "bg-orange-100 text-orange-700" : (stat === "Shipped") ? "bg-blue-100 text-blue-700" : "bg-emerald-100 text-emerald-700";
 
-      let orderId = o.FullId || o.id;
-      let badgeColor =
-        stat === "Pending Verification" || stat === "FPX Pending"
-          ? "bg-yellow-100 text-yellow-800"
-          : stat === "Rejected" || stat === "FPX Gagal"
-            ? "bg-red-100 text-red-700"
-            : stat === "Preparing" || stat === "Baru" || stat === "Belum"
-              ? "bg-orange-100 text-orange-700"
-              : stat === "Shipped"
-                ? "bg-blue-100 text-blue-700"
-                : "bg-emerald-100 text-emerald-700";
+    let actionArea = "";
+    if (stat === "Pending Verification") {
+      actionArea = `<div class="mt-3 flex gap-2 w-full" onclick="event.stopPropagation()">
+          <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 shadow-sm whitespace-nowrap">Approve</button>
+          <button onclick="verifyProductPayment('${orderId}', 'reject')" class="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 shadow-sm whitespace-nowrap">Reject</button>
+      </div>`;
+    } else if (stat === "Rejected") {
+      actionArea = `<div class="mt-3 flex w-full" onclick="event.stopPropagation()">
+          <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm whitespace-nowrap">Undo Reject</button>
+      </div>`;
+    } else if (stat === "Preparing" || stat === "Baru" || stat === "Belum") {
+      actionArea = `<div class="mt-3 flex flex-wrap gap-2 items-center" onclick="event.stopPropagation()">
+               <input type="text" id="track-${orderId}" placeholder="No Tracking" class="flex-1 border border-gray-300 px-3 py-1.5 text-xs rounded-lg min-w-[120px] outline-none focus:border-blue-500 shadow-sm">
+               <button onclick="updateTracking('${orderId}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-blue-700 font-bold shadow-sm whitespace-nowrap">Kemas Kini</button>
+             </div>`;
+    }
 
-      let actionArea = "";
-      if (stat === "Pending Verification") {
-        actionArea = `<div class="mt-3 flex gap-2 w-full" onclick="event.stopPropagation()">
-            <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 shadow-sm whitespace-nowrap">Approve</button>
-            <button onclick="verifyProductPayment('${orderId}', 'reject')" class="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 shadow-sm whitespace-nowrap">Reject</button>
-        </div>`;
-      } else if (stat === "Rejected") {
-        actionArea = `<div class="mt-3 flex w-full" onclick="event.stopPropagation()">
-            <button onclick="verifyProductPayment('${orderId}', 'approve')" class="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm whitespace-nowrap">Undo Reject</button>
-        </div>`;
-      } else if (stat === "Preparing" || stat === "Baru" || stat === "Belum") {
-        actionArea = `<div class="mt-3 flex flex-wrap gap-2 items-center" onclick="event.stopPropagation()">
-                 <input type="text" id="track-${orderId}" placeholder="No Tracking" class="flex-1 border border-gray-300 px-3 py-1.5 text-xs rounded-lg min-w-[120px] outline-none focus:border-blue-500 shadow-sm">
-                 <button onclick="updateTracking('${orderId}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-blue-700 font-bold shadow-sm whitespace-nowrap">Kemas Kini</button>
-               </div>`;
-      }
-
-      return `
-        <tr class="block w-full !bg-white border border-gray-100 rounded-lg mb-1.5 shadow-sm hover:shadow-md transition">
-            <td class="block w-full p-0">
-                <div class="px-3 py-1.5 cursor-pointer" onclick="document.getElementById('det-p-${index}').classList.toggle('hidden')">
-                    <div class="text-[9px] text-gray-400 mb-0.5 leading-none tracking-wide">${tFormat}</div>
-                    <div class="flex justify-between items-center mt-0.5">
-                        <div class="max-w-[70%] text-left">
-                            <div class="text-[12px] text-gray-800 uppercase font-bold leading-none">${escapeHTML(o.User || o.nama_pembeli || "PELANGGAN")}</div>
-                            <div class="text-[10px] text-gray-400 mt-1 leading-none truncate">${escapeHTML(pNames.join(", ") || "Pesanan Produk")}</div>
-                        </div>
-                        <div class="text-right flex flex-col justify-center">
-                            <div class="text-[12px] font-semibold text-blue-600 tracking-wide leading-none">+RM ${((parseFloat(o._calculatedTotal) || 0) + (parseFloat(o.shipping_fee) || 0)).toFixed(2)}</div>
-                        </div>
-                    </div>
-                </div>
-                <div id="det-p-${index}" class="hidden bg-gray-50 px-3 py-2 text-xs text-gray-700 border-t border-gray-100 rounded-b-lg">
-                    <div class="mb-2 flex items-center gap-2"><span class="px-2 py-0.5 rounded text-[8px] font-bold ${badgeColor} uppercase tracking-wider">Status: ${escapeHTML(stat)}</span></div>
-                    <div class="grid grid-cols-2 gap-y-2 gap-x-4">
-                        <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">No. Order</span><span class="font-bold text-gray-900">#${escapeHTML(o.OrderNo || String(o.id).substring(0, 8).toUpperCase() || "-")}</span></div>
-                        <div class="col-span-2"><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">Alamat Penghantaran</span><span class="font-bold text-gray-900 whitespace-normal leading-relaxed">${escapeHTML(o.Address || o.lokasi_penghantaran || "-")}</span></div>
-                    </div>
-                    ${actionArea}
-                    ${btn}
-                </div>
-            </td>
+    return `<tr class="border-b border-gray-100 block mb-4 bg-white rounded-xl shadow-sm hover:shadow transition border overflow-hidden p-3 relative cursor-pointer" onclick="toggleAccordion('prod-acc-${index}')">
+          <td class="block">
+            <div class="flex justify-between items-start w-full">
+              <div>
+                <span class="text-[10px] text-gray-500 font-bold tracking-wider">${tFormat}</span>
+                <div class="font-black text-gray-800 text-sm md:text-base mt-0.5 leading-tight">${escapeHTML(o.Name || o.nama_pembeli || "-")}</div>
+                <div class="text-[10px] text-gray-400 font-medium mt-1 uppercase tracking-wider">${escapeHTML(o.Delivery || o.kaedah_penghantaran || "-")}</div>
+              </div>
+              <div class="text-right flex flex-col items-end">
+                <span class="font-black text-blue-600 text-sm md:text-base">+RM ${parseFloat(o._calculatedTotal || o.Total_Sales || o.Total || 0).toFixed(2)}</span>
+                <span class="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase ${badgeColor}">${stat}</span>
+              </div>
+            </div>
+            
+            <div id="prod-acc-${index}" class="hidden mt-3 pt-3 border-t border-gray-100 w-full text-left">
+              <div class="grid grid-cols-2 gap-y-2 text-xs">
+                <div class="text-gray-500 font-semibold tracking-wider text-[10px] uppercase">No Telefon:</div>
+                <div class="text-gray-800 font-medium break-words">${escapeHTML(o.Phone || o.no_telefon || "-")}</div>
+                <div class="text-gray-500 font-semibold tracking-wider text-[10px] uppercase">Alamat:</div>
+                <div class="text-gray-800 font-medium break-words">${escapeHTML(o.Address || o.alamat_penghantaran || "-")}</div>
+                <div class="text-gray-500 font-semibold tracking-wider text-[10px] uppercase">No. Tracking:</div>
+                <div class="text-gray-800 font-medium break-words">${escapeHTML(o.Tracking || o.tracking_no || "-")}</div>
+                <div class="text-gray-500 font-semibold tracking-wider text-[10px] uppercase">Item:</div>
+                <div class="text-gray-800 font-medium"><ul class="list-disc pl-3 text-[11px] leading-relaxed text-gray-600">${pNames.map((n) => `<li>${escapeHTML(n)}</li>`).join("")}</ul></div>
+              </div>
+              ${btn}
+              ${actionArea}
+            </div>
+            <div class="w-full text-center mt-2 text-gray-300 text-[10px]"><i class="fas fa-chevron-down"></i></div>
+          </td>
         </tr>`;
-    })
-    .join("");
-}
+  };
 
-async function updateTracking(fullOrderId) {
-  const inputEl = document.getElementById("track-" + fullOrderId);
-  const trackingNo = inputEl ? inputEl.value.trim() : "";
+  if (pendingOrders && pendingOrders.length > 0) {
+    let pendingData = [...pendingOrders].sort((a, b) => Date.parse(b.Timestamp || b.created_at) - Date.parse(a.Timestamp || a.created_at));
+    html += `<tr><td class="pt-2 pb-2"><div class="flex items-center gap-2 mb-1 pl-1"><div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div><h3 class="text-[10px] font-bold text-red-500 uppercase tracking-widest">Tindakan Diperlukan (${pendingOrders.length})</h3></div></td></tr>`;
+    html += pendingData.map((o, idx) => mapOrderToHTML(o, 'p'+idx)).join("");
+  }
 
-  if (!trackingNo)
-    return alert(
-      "Sila masukkan Nombor Tracking yang sah di dalam kotak teks bersebelahan butang Kemas Kini.",
-    );
-
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/bookings/products/${fullOrderId}/ship`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ tracking_no: trackingNo }),
-      },
-    );
-    const data = await res.json();
-
-    if (data.status === "success") {
-      alert(
-        "Berjaya! Pesanan telah ditukar ke status 'Shipped'.\nPelanggan akan menerima notifikasi ini.",
-      );
-      fetchOwnerDashboardData();
-      switchTab(currentActiveTab);
-    } else {
-      alert("Ralat: " + data.message);
+  let compData = [...completedOrders].sort((a, b) => Date.parse(b.Timestamp || b.created_at) - Date.parse(a.Timestamp || a.created_at));
+  if (compData.length > 0) {
+    if (pendingOrders && pendingOrders.length > 0) {
+       html += `<tr><td class="pt-4 pb-2"><h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Sejarah Pesanan (${document.getElementById('timeFilter').options[document.getElementById('timeFilter').selectedIndex].text})</h3></td></tr>`;
     }
-  } catch (e) {
-    alert("Ralat pelayan. Sila cuba lagi.");
-  }
-}
-
-// ==========================================
-// [BAHARU] VERIFY PRODUCT PAYMENT
-// ==========================================
-async function verifyProductPayment(orderId, action) {
-  if (action === 'reject') {
-    if (!confirm("Pasti mahu menolak resit bayaran ini?")) return;
-  } else {
-    if (!confirm("Sahkan resit dan luluskan tempahan produk ini?")) return;
+    html += compData.map((o, idx) => mapOrderToHTML(o, 'c'+idx)).join("");
   }
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/owner/verify-product-payment`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({ order_id: orderId, action: action }),
-    });
-
-    const data = await res.json();
-    if (data.status === "success") {
-      alert(data.message || "Berjaya dikemaskini.");
-      fetchOwnerDashboardData(); // Refresh UI
-    } else {
-      alert("Ralat: " + data.message);
-    }
-  } catch (err) {
-    alert("Ralat pelayan memproses pengesahan.");
+  if (html === "") {
+    html = `<tr><td class="text-center py-6 text-gray-400 italic text-xs" data-i18n="table-no-record">${i18n[currentLang] && i18n[currentLang]["table-no-record"] ? i18n[currentLang]["table-no-record"] : "Tiada Rekod"}</td></tr>`;
   }
+
+  tbody.innerHTML = html;
 }
 
 function renderReviewsTable(reviews) {
@@ -2639,8 +2551,17 @@ function toggleRevTab(tab) {
 
   if (tab === "reviews") {
     document.getElementById("rev-list-view").classList.remove("hidden");
+    if (typeof masterData !== "undefined" && masterData.reviews) {
+        localStorage.setItem('din_seen_reviews_count', masterData.reviews.length);
+    }
+    updateOwnerBadges();
+    document.querySelectorAll('.review-new-dot').forEach(el => el.style.display = 'none');
   } else if (tab === "marketing") {
     document.getElementById("rev-marketing-view").classList.remove("hidden");
+    if (typeof marketingCustomers !== "undefined" && marketingCustomers) {
+        localStorage.setItem('din_seen_wa_count', marketingCustomers.length);
+    }
+    updateOwnerBadges();
     fetchMarketingData();
   }
 }
@@ -2667,6 +2588,20 @@ async function fetchMarketingData() {
   }
 }
 
+window.markWaClicked = function(phone) {
+  let clicked = localStorage.getItem('din_wa_clicked_phones');
+  clicked = clicked ? JSON.parse(clicked) : [];
+  if (!clicked.includes(phone)) {
+    clicked.push(phone);
+    localStorage.setItem('din_wa_clicked_phones', JSON.stringify(clicked));
+  }
+  
+  const dot = document.getElementById('wa-dot-' + phone);
+  if (dot) dot.style.display = 'none';
+  
+  updateOwnerBadges();
+};
+
 function renderMarketingTable() {
   const container = document.getElementById("table-marketing");
   if (!marketingCustomers || marketingCustomers.length === 0) {
@@ -2684,19 +2619,26 @@ function renderMarketingTable() {
     </thead>
     <tbody class="divide-y divide-gray-200 bg-white">`;
 
+  let clicked = window.waClicked || [];
   marketingCustomers.forEach((c) => {
-    // create whatsapp message
     const linkGrup1 = "https://chat.whatsapp.com/EkfdpBSuTML196bdnSm0QT?s=cl&p=a&ilr=1&amv=0";
     const linkGrup2 = "https://chat.whatsapp.com/IvYFBzcpFr3IEctsrhnhq1?s=cl&p=a&ilr=1&amv=0";
     
-    const waText = encodeURIComponent(`Salam sejahtera ${c.name}, kami dari Dinspire Barbershop ingin menjemput anda sertai group WhatsApp rasmi kami untuk promosi terkini!\n\nSila klik salah satu link di bawah:\nGrup 1: ${linkGrup1}\nGrup 2: ${linkGrup2}`);
+    const waText = encodeURIComponent(`Salam sejahtera ${c.name}, kami dari Dinspire Barbershop ingin menjemput anda sertai group WhatsApp rasmi kami untuk promosi terkini!
+
+Sila klik salah satu link di bawah:
+Grup 1: ${linkGrup1}
+Grup 2: ${linkGrup2}`);
     const waLink = `https://wa.me/${c.phone}?text=${waText}`;
 
+    let showDot = !clicked.includes(c.phone);
+    let dotHtml = showDot ? `<div id="wa-dot-${c.phone}" class="w-2 h-2 rounded-full bg-red-500 animate-pulse inline-block ml-2 mb-0.5"></div>` : '';
+
     html += `<tr class="hover:bg-gray-50 transition border-b border-gray-100">
-      <td class="py-3 px-4 font-bold text-gray-800 text-xs sm:text-sm whitespace-normal">${escapeHTML(c.name)} <br/><span class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-normal">${c.source}</span></td>
+      <td class="py-3 px-4 font-bold text-gray-800 text-xs sm:text-sm whitespace-normal">${escapeHTML(c.name)} ${dotHtml}<br/><span class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-normal">${c.source}</span></td>
       <td class="py-3 px-4 font-semibold text-gray-600 text-xs sm:text-sm whitespace-nowrap">${c.phone}</td>
       <td class="py-3 px-4 text-center">
-        <a href="${waLink}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs shadow-sm font-bold transition inline-flex items-center justify-center">
+        <a href="${waLink}" target="_blank" onclick="window.markWaClicked('${c.phone}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs shadow-sm font-bold transition inline-flex items-center justify-center">
           <i class="fab fa-whatsapp text-sm mr-1"></i> Jemput
         </a>
       </td>
@@ -3370,73 +3312,73 @@ async function subscribeToPush() {
 
 // UPDATE OWNER BADGES
 function updateOwnerBadges() {
-   if (typeof masterData === "undefined" || !masterData) return;
-   
-   let countTxServis = 0;
-   if (masterData.bookings) {
-       masterData.bookings.forEach(b => {
-          if (b.Status === "Pending Verification" || b.Status === "Belum") countTxServis++;
-       });
-   }
-   
-   let countTxProduk = 0;
-   if (masterData.orders) {
-       masterData.orders.forEach(o => {
-          if (o.status === "Pending Verification" || o.status === "Preparing") countTxProduk++;
-       });
-   }
-   
-   let countKecemasan = 0;
-   if (masterData.staffLeaves) {
-       masterData.staffLeaves.forEach(l => {
-          if (l.jenis_cuti === "Kecemasan" && l.status === "Pending") countKecemasan++;
-       });
-   }
-   
-        let countReviews = 0;
-     if (masterData.reviews) {
-         countReviews = masterData.reviews.length;
-     }
-     
-     let seenReviewsCount = parseInt(localStorage.getItem('din_seen_reviews_count')) || 0;
-     let hasNewReviews = countReviews > seenReviewsCount;
-
-     const updateBadgeNumber = (id, count) => {
-      const el = document.getElementById(id);
-      if (el) {
-         if (count > 0) {
-            el.innerText = count > 99 ? "99+" : count;
-            el.style.display = "inline-block";
-         } else {
-            el.style.display = "none";
-         }
-      }
-   };
-   
-   const updateBadgeDot = (id, hasItem) => {
-      const el = document.getElementById(id);
-      if (el) {
-         el.style.display = hasItem ? "inline-block" : "none";
-      }
-   };
-   
-   updateBadgeNumber("badge-tx-servis", countTxServis);
-   updateBadgeNumber("badge-tx-produk", countTxProduk);
-   updateBadgeNumber("badge-punch-kecemasan", countKecemasan);
-   updateBadgeNumber("badge-rev-list", hasNewReviews ? (countReviews - seenReviewsCount) : 0);
-   
-   updateBadgeDot("badge-mob-transactions", (countTxServis > 0 || countTxProduk > 0));
-   updateBadgeDot("badge-mob-reviews", hasNewReviews);
-   updateBadgeDot("badge-mob-punch", (countKecemasan > 0));
-}
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('message', event => {
-    if (event.data && event.data.type === 'NEW_NOTIFICATION') {
-      if (typeof fetchOwnerDashboardData === 'function') {
-         fetchOwnerDashboardData(true);
-      }
+    if (typeof masterData === "undefined" || !masterData) return;
+    
+    let totalSelesai = 0;
+    if (masterData.bookings) {
+        masterData.bookings.forEach(b => {
+            if (b.Status === "Selesai") totalSelesai++;
+        });
     }
-  });
+    let seenSelesai = parseInt(localStorage.getItem('din_seen_tx_servis_count')) || 0;
+    window.newSelesaiCount = Math.max(0, totalSelesai - seenSelesai);
+
+    let countTxProduk = 0;
+    if (masterData.orders) {
+        masterData.orders.forEach(o => {
+           if (o.status === "Pending Verification" || o.status === "Preparing") countTxProduk++;
+        });
+    }
+
+    let countKecemasan = 0;
+    if (masterData.staffLeaves) {
+        masterData.staffLeaves.forEach(l => {
+           if (l.jenis_cuti === "Kecemasan" && l.status === "Pending") countKecemasan++;
+        });
+    }
+
+    let countReviews = 0;
+    if (masterData.reviews) countReviews = masterData.reviews.length;
+    let seenReviewsCount = parseInt(localStorage.getItem('din_seen_reviews_count')) || 0;
+    let hasNewReviews = countReviews > seenReviewsCount;
+
+    let waClickedRaw = localStorage.getItem('din_wa_clicked_phones');
+    window.waClicked = waClickedRaw ? JSON.parse(waClickedRaw) : [];
+    
+    let totalWa = 0;
+    if (typeof marketingCustomers !== "undefined" && marketingCustomers) {
+        totalWa = marketingCustomers.length;
+    }
+    let seenWa = parseInt(localStorage.getItem('din_seen_wa_count')) || 0;
+    let newWaCount = Math.max(0, totalWa - seenWa);
+
+    const updateBadgeNumber = (id, count) => {
+       const el = document.getElementById(id);
+       if (el) {
+          if (count > 0) {
+             el.innerText = count > 99 ? "99+" : count;
+             el.style.display = "inline-block";
+          } else {
+             el.style.display = "none";
+          }
+       }
+    };
+    
+    const updateBadgeDot = (id, hasItem) => {
+       const el = document.getElementById(id);
+       if (el) {
+          el.style.display = hasItem ? "inline-block" : "none";
+       }
+    };
+    
+    updateBadgeNumber("badge-tx-servis", window.newSelesaiCount);
+    updateBadgeNumber("badge-tx-produk", countTxProduk);
+    updateBadgeNumber("badge-punch-kecemasan", countKecemasan);
+    updateBadgeNumber("badge-rev-list", hasNewReviews ? (countReviews - seenReviewsCount) : 0);
+    updateBadgeNumber("badge-rev-marketing", newWaCount);
+    
+    updateBadgeDot("badge-mob-transactions", (window.newSelesaiCount > 0 || countTxProduk > 0));
+    updateBadgeDot("badge-mob-reviews", (hasNewReviews || newWaCount > 0));
+    updateBadgeDot("badge-mob-punch", countKecemasan > 0);
 }
-/* END OF FILE */
+

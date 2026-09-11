@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.56";
+      const CURRENT_APP_VERSION = "1.1.57";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -1192,7 +1192,7 @@
             <input type="radio" id="tab-rev-list" name="rev-tabs" onchange="toggleRevTab('reviews')" checked />
             <label for="tab-rev-list"><span data-i18n="rev-list">Maklum Balas</span> <span id="badge-rev-list" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <input type="radio" id="tab-rev-marketing" name="rev-tabs" onchange="toggleRevTab('marketing')" />
-            <label for="tab-rev-marketing"><span data-i18n="rev-marketing">Pemasaran WA</span></label>
+            <label for="tab-rev-marketing"><span data-i18n="rev-marketing">Pemasaran WA</span> <span id="badge-rev-marketing" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <div class="slider"></div>
           </div>
         </div>
@@ -1552,7 +1552,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=46"></script>
+    <script src="../js/owner.js?v=33"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>
