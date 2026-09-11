@@ -1356,7 +1356,7 @@ async function updateStaffBadges() {
    
    // Profile Badge (Leaves)
    try {
-       const res = await fetch(\\/staff/my-leaves\, { credentials: "include" });
+       const res = await fetch(API_BASE_URL + '/staff/my-leaves', { credentials: "include" });
        if (res.ok) {
            const data = await res.json();
            let hasApproved = false;

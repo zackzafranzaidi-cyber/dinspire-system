@@ -2404,7 +2404,7 @@ function updateCustomerBadges(orders) {
   if (orders) {
     processOrders(orders);
   } else {
-    fetchWithAuth(\\/bookings/my-orders\)
+    fetchWithAuth(API_BASE_URL + '/bookings/my-orders')
       .then(res => res ? res.json() : null)
       .then(data => {
         if (data && data.status === 'success' && data.orders) {
