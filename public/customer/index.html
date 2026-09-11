@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.70";
+      const CURRENT_APP_VERSION = "1.1.71";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -147,34 +147,6 @@
         }
       }); }
     </script>
-
-        <!-- SIDEBAR FOR BROWSER MODE -->
-    <div class="sidebar-overlay" id="browser-sidebar" onclick="closeSidebar(event)">
-      <div class="sidebar-content" id="browser-sidebar-content">
-        <div class="sidebar-header">
-          <h2 style="font-size: 20px; font-weight: 700; color: #1877f2; margin: 0;">Dinspire</h2>
-          <button onclick="closeSidebar(event)" style="background: none; border: none; font-size: 24px; color: var(--text-muted);">&times;</button>
-        </div>
-        <div class="sidebar-nav-item active" id="sidebar-nav-home" onclick="switchView('home'); closeSidebar(event)">
-          <i class="fas fa-home"></i> <span data-i18n="nav-home">Home</span>
-        </div>
-        <div class="sidebar-nav-item" id="sidebar-nav-services" onclick="switchView('services'); closeSidebar(event)">
-          <i class="fas fa-cut"></i> <span data-i18n="nav-services">Services</span>
-        </div>
-        <div class="sidebar-nav-item" id="sidebar-nav-products" onclick="switchView('products'); closeSidebar(event)">
-          <i class="fas fa-shopping-bag"></i> <span data-i18n="nav-products">Products</span>
-        </div>
-        <div class="sidebar-nav-item" id="sidebar-nav-notifications" onclick="switchView('notifications'); closeSidebar(event)">
-          <i class="fas fa-bell"></i> <span data-i18n="nav-notif">Notifications</span>
-        </div>
-        <div class="sidebar-nav-item" id="sidebar-nav-account" onclick="switchView('account'); closeSidebar(event)">
-          <i class="fas fa-user"></i> <span data-i18n="nav-account">Account</span>
-        </div>
-      </div>
-    </div>
-    
-    <style>
-      </style>
     
     
 
