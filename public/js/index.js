@@ -1740,6 +1740,12 @@ function compressImage(file, callback) {
 }
 
 function renderNotifications() {
+  const badge = document.getElementById("badge-notifications");
+  if (badge) badge.style.display = "none";
+  if (typeof window.currentActiveOrdersCount !== "undefined") {
+      localStorage.setItem("din_seen_notif_count", window.currentActiveOrdersCount);
+  }
+
   const container = document.getElementById("notifications-list-container");
   if (!currentUser) {
     container.innerHTML =
@@ -2390,15 +2396,21 @@ function updateCustomerBadges(orders) {
         if (['Pending Verification', 'Belum'].includes(o.status)) activeCount++;
       }
     });
+    
+    const seenCount = parseInt(localStorage.getItem('din_seen_notif_count')) || 0;
     const badge = document.getElementById('badge-notifications');
     if (badge) {
-      if (activeCount > 0) {
-        badge.innerText = activeCount > 99 ? '99+' : activeCount;
+      if (activeCount > seenCount) {
+        let displayCount = activeCount - seenCount;
+        badge.innerText = displayCount > 99 ? '99+' : displayCount;
         badge.style.display = 'block';
       } else {
         badge.style.display = 'none';
       }
     }
+    
+    // Simpan ke window object untuk digunakan semasa buka tab
+    window.currentActiveOrdersCount = activeCount;
   };
 
   if (orders) {

@@ -1341,7 +1341,7 @@ async function updateStaffBadges() {
    if (typeof staffData !== 'undefined' && staffData && staffData.bookings) {
        let bookingCount = 0;
        staffData.bookings.forEach(b => {
-           if (b.status === 'Pending Verification' || b.status === 'Belum') bookingCount++;
+           if (b.status === 'Pending Verification' || b.status === 'Aktif') bookingCount++;
        });
        const badgeBooking = document.getElementById('badge-booking');
        if (badgeBooking) {
