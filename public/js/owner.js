@@ -1107,6 +1107,7 @@ function processData() {
     countOnCall,
     filterType,
   );
+  updateOwnerBadges();
 }
 
 async function fetchDashboardInsights(
@@ -1134,7 +1135,8 @@ async function fetchDashboardInsights(
 
   if (currentInsightAbortController) {
     currentInsightAbortController.abort();
-  }
+    updateOwnerBadges();
+}
   currentInsightAbortController = new AbortController();
 
   const timeLabels = {
