@@ -569,6 +569,11 @@ function hideGlobalLoader() {
 }
 
 function switchTab(tabName, element = null) {
+  if (tabName === 'reviews' && masterData.reviews) {
+      localStorage.setItem('din_seen_reviews_count', masterData.reviews.length);
+      const b = document.getElementById('badge-mob-reviews');
+      if (b) b.style.display = 'none';
+  }
   if (typeof requestNotifPermission === "function" && !hasRequestedNotif) {
       requestNotifPermission();
   }
@@ -3375,7 +3380,7 @@ function updateOwnerBadges() {
    let countTxProduk = 0;
    if (masterData.orders) {
        masterData.orders.forEach(o => {
-          if (o.status === "Pending Verification" || o.status === "Preparing" || o.status === "Shipped") countTxProduk++;
+          if (o.status === "Pending Verification" || o.status === "Preparing") countTxProduk++;
        });
    }
    
@@ -3386,12 +3391,15 @@ function updateOwnerBadges() {
        });
    }
    
-   let countReviews = 0;
-   if (masterData.reviews) {
-       countReviews = masterData.reviews.length;
-   }
-   
-   const updateBadgeNumber = (id, count) => {
+        let countReviews = 0;
+     if (masterData.reviews) {
+         countReviews = masterData.reviews.length;
+     }
+     
+     let seenReviewsCount = parseInt(localStorage.getItem('din_seen_reviews_count')) || 0;
+     let hasNewReviews = countReviews > seenReviewsCount;
+
+     const updateBadgeNumber = (id, count) => {
       const el = document.getElementById(id);
       if (el) {
          if (count > 0) {
@@ -3413,9 +3421,20 @@ function updateOwnerBadges() {
    updateBadgeNumber("badge-tx-servis", countTxServis);
    updateBadgeNumber("badge-tx-produk", countTxProduk);
    updateBadgeNumber("badge-punch-kecemasan", countKecemasan);
-   updateBadgeNumber("badge-rev-list", countReviews);
+   updateBadgeNumber("badge-rev-list", hasNewReviews ? (countReviews - seenReviewsCount) : 0);
    
    updateBadgeDot("badge-mob-transactions", (countTxServis > 0 || countTxProduk > 0));
-   updateBadgeDot("badge-mob-reviews", (countReviews > 0));
+   updateBadgeDot("badge-mob-reviews", hasNewReviews);
    updateBadgeDot("badge-mob-punch", (countKecemasan > 0));
 }
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data && event.data.type === 'NEW_NOTIFICATION') {
+      if (typeof fetchOwnerDashboardData === 'function') {
+         fetchOwnerDashboardData(true);
+      }
+    }
+  });
+}
+/* END OF FILE */

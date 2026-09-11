@@ -1373,3 +1373,13 @@ async function updateStaffBadges() {
        }
    } catch(e) {}
 }
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data && event.data.type === 'NEW_NOTIFICATION') {
+      if (typeof loadDashboardData === 'function') {
+         loadDashboardData();
+      }
+    }
+  });
+}
+/* END OF FILE */

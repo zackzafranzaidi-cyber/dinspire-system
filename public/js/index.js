@@ -1742,8 +1742,9 @@ function compressImage(file, callback) {
 function renderNotifications() {
   const badge = document.getElementById("badge-notifications");
   if (badge) badge.style.display = "none";
-  if (typeof window.currentActiveOrdersCount !== "undefined") {
-      localStorage.setItem("din_seen_notif_count", window.currentActiveOrdersCount);
+  localStorage.setItem("din_unread_badge", "0");
+  if (window.latestOrderStates) {
+      localStorage.setItem("din_order_states", JSON.stringify(window.latestOrderStates));
   }
 
   const container = document.getElementById("notifications-list-container");
@@ -2388,29 +2389,43 @@ function updateCustomerBadges(orders) {
   }
   
   const processOrders = (ordersList) => {
-    let activeCount = 0;
-    ordersList.forEach(o => {
-      if (o.type === 'product') {
-        if (['Pending Verification', 'Preparing', 'Shipped'].includes(o.status)) activeCount++;
-      } else {
-        if (['Pending Verification', 'Belum'].includes(o.status)) activeCount++;
-      }
-    });
-    
-    const seenCount = parseInt(localStorage.getItem('din_seen_notif_count')) || 0;
+    let cachedStr = localStorage.getItem('din_order_states');
+    let windowStates = {};
+    ordersList.forEach(o => windowStates[o.id || o.no_booking] = o.status);
+    window.latestOrderStates = windowStates;
+
     const badge = document.getElementById('badge-notifications');
+    if (!cachedStr) {
+        localStorage.setItem('din_order_states', JSON.stringify(windowStates));
+        if (badge) badge.style.display = 'none';
+        return;
+    }
+
+    let cachedStates = JSON.parse(cachedStr);
+    let newUpdatesCount = 0;
+    
+    ordersList.forEach(o => {
+       let id = o.id || o.no_booking;
+       if (cachedStates[id] !== o.status) {
+           newUpdatesCount++;
+       }
+    });
+
+    let pendingUnread = parseInt(localStorage.getItem('din_unread_badge') || '0');
+    if (newUpdatesCount > 0) {
+        pendingUnread += newUpdatesCount;
+        localStorage.setItem('din_unread_badge', pendingUnread);
+        localStorage.setItem('din_order_states', JSON.stringify(windowStates));
+    }
+
     if (badge) {
-      if (activeCount > seenCount) {
-        let displayCount = activeCount - seenCount;
-        badge.innerText = displayCount > 99 ? '99+' : displayCount;
+      if (pendingUnread > 0) {
+        badge.innerText = pendingUnread > 99 ? '99+' : pendingUnread;
         badge.style.display = 'block';
       } else {
         badge.style.display = 'none';
       }
     }
-    
-    // Simpan ke window object untuk digunakan semasa buka tab
-    window.currentActiveOrdersCount = activeCount;
   };
 
   if (orders) {
@@ -2426,3 +2441,18 @@ function updateCustomerBadges(orders) {
       .catch(err => console.error('Error updating badge:', err));
   }
 }
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data && event.data.type === 'NEW_NOTIFICATION') {
+      let pendingUnread = parseInt(localStorage.getItem('din_unread_badge') || '0');
+      pendingUnread++;
+      localStorage.setItem('din_unread_badge', pendingUnread);
+      const badge = document.getElementById('badge-notifications');
+      if (badge) {
+        badge.innerText = pendingUnread > 99 ? '99+' : pendingUnread;
+        badge.style.display = 'block';
+      }
+    }
+  });
+}
+/* END OF FILE */
