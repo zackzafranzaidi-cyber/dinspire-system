@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.69";
+      const CURRENT_APP_VERSION = "1.1.70";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -102,8 +102,9 @@
       } else { document.body.classList.add("browser-mode"); if (intro) { intro.remove(); }
       document.addEventListener("DOMContentLoaded", function() {
         if (!isStandalone) {
-          var bNav = document.querySelector(".bottom-nav");
-          if (bNav) bNav.style.setProperty("display", "none", "important");
+          var themeMeta = document.querySelector("meta[name='theme-color']");
+          if (themeMeta) themeMeta.setAttribute("content", "#f4f5f8");
+          
           var style = document.createElement("style");
           style.innerHTML = `
             @media (max-width: 767px) {
@@ -122,7 +123,20 @@
               .view-content {
                 overflow: visible !important;
                 height: auto !important;
-                padding-bottom: env(safe-area-inset-bottom) !important;
+                padding-bottom: 85px !important;
+              }
+              .bottom-nav {
+                position: fixed !important;
+                bottom: 0 !important;
+                height: 65px !important;
+                padding-bottom: 0 !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border-top: none !important;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.06) !important;
+                border-top-left-radius: 20px !important;
+                border-top-right-radius: 20px !important;
               }
               .checkout-sheet, .edit-cart-sheet, .checkout-bar {
                 position: fixed !important;
@@ -130,10 +144,6 @@
             }
           `;
           document.head.appendChild(style);
-          var themeMeta = document.querySelector("meta[name='theme-color']");
-          if (themeMeta) themeMeta.setAttribute("content", "#f4f5f8");
-          var btns = document.querySelectorAll(".sidebar-toggle-btn");
-          btns.forEach(function(b) { b.style.setProperty("display", "block", "important"); });
         }
       }); }
     </script>
@@ -164,66 +174,9 @@
     </div>
     
     <style>
-      /* SIDEBAR STYLES */
-      .sidebar-overlay {
-        display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-        background: rgba(0,0,0,0.5); z-index: 1000000; opacity: 0; transition: opacity 0.3s;
-      }
-      .sidebar-overlay.open {
-        display: block; opacity: 1;
-      }
-      .sidebar-content {
-        position: absolute; top: 0; left: -260px; width: 260px; height: 100%; 
-        background: white; transition: left 0.3s; display: flex; flex-direction: column; 
-        box-shadow: 2px 0 10px rgba(0,0,0,0.1); padding-top: 20px;
-      }
-      .sidebar-overlay.open .sidebar-content {
-        left: 0;
-      }
-      .sidebar-header {
-        display: flex; justify-content: space-between; align-items: center; 
-        padding: 0 20px 20px; border-bottom: 1px solid #f1f1f1; margin-bottom: 10px;
-      }
-      .sidebar-nav-item {
-        padding: 15px 25px; display: flex; align-items: center; gap: 15px; 
-        font-size: 16px; color: var(--text-muted); cursor: pointer; transition: 0.2s;
-      }
-      .sidebar-nav-item i {
-        font-size: 18px; width: 20px; text-align: center;
-      }
-      .sidebar-nav-item.active {
-        color: #1877f2; background: #f0fdf4; border-right: 4px solid #1877f2; font-weight: bold;
-      }
-      .sidebar-toggle-btn {
-        display: none; background: none; border: none; font-size: 22px; color: var(--text-main); 
-        padding: 0; margin-right: 15px; cursor: pointer;
-      }
-      body.browser-mode .bottom-nav {
-        display: none !important;
-      }
-      body.browser-mode .sidebar-toggle-btn {
-        display: block !important;
-      }
-      /* body.browser-mode .view-content {
-        padding-bottom: 20px !important; } */
-      }
-    </style>
+      </style>
     
-    <script>
-      function openSidebar() {
-        var overlay = document.getElementById("browser-sidebar");
-        overlay.style.display = "block";
-        void overlay.offsetWidth;
-        overlay.classList.add("open");
-      }
-      function closeSidebar(e) {
-        if (e && e.target && e.target.id === "browser-sidebar-content") return;
-        if (e && e.target && e.target.closest && e.target.closest("#browser-sidebar-content") && e.currentTarget && e.currentTarget.id === "browser-sidebar") return;
-        var overlay = document.getElementById("browser-sidebar");
-        overlay.classList.remove("open");
-        setTimeout(function() { overlay.style.display = "none"; }, 300);
-      }
-    </script>
+    
 
     <!-- GLOBAL PRELOADER MESIN CLIPPER -->
     <div class="loading-wrapper" id="preloader" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.75); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; --loader-color: #1877f2; --loader-color-shadow: rgba(24, 119, 242, 0.4); --loader-color-shadow-light: rgba(24, 119, 242, 0.1);">
@@ -634,7 +587,6 @@
         <div id="view-home" class="view-section active">
           <div class="header">
               <div style="display: flex; align-items: center;">
-                <button class="sidebar-toggle-btn" onclick="openSidebar()"><i class="fas fa-ellipsis-v"></i></button>
                 <div>
                   <h1 id="home-greeting-container"><span data-i18n="home-welcome">Hello</span> <span id="home-welcome-name" data-i18n="home-guest">new friend :)</span></h1>
                 <div class="location" data-i18n="home-location">Dinspire home</div>
@@ -716,7 +668,6 @@
         <div id="view-services" class="view-section">
           <div class="header">
               <div style="display: flex; align-items: center;">
-                <button class="sidebar-toggle-btn" onclick="openSidebar()"><i class="fas fa-ellipsis-v"></i></button>
                 <div>
                   <h1 data-i18n="services-title">Service Booking</h1>
                 <div class="location" data-i18n="services-location">Dinspire Main Branch</div>
@@ -827,7 +778,6 @@
         <div id="view-products" class="view-section">
           <div class="header">
               <div style="display: flex; align-items: center;">
-                <button class="sidebar-toggle-btn" onclick="openSidebar()"><i class="fas fa-ellipsis-v"></i></button>
                 <div>
                   <h1 data-i18n="products-title">Premium Product Store</h1>
                 <div class="location" data-i18n="products-location">Dinspire Care Products</div>
@@ -857,7 +807,6 @@
         <div id="view-notifications" class="view-section">
             <div class="header">
               <div style="display: flex; align-items: center;">
-                <button class="sidebar-toggle-btn" onclick="openSidebar()"><i class="fas fa-ellipsis-v"></i></button>
                 <div>
                   <h1 data-i18n="notif-title">General Notifications</h1>
                 <div class="location" data-i18n="notif-location">Latest Booking Updates</div>
@@ -874,7 +823,6 @@
         <div id="view-account" class="view-section">
           <div class="header">
               <div style="display: flex; align-items: center;">
-                <button class="sidebar-toggle-btn" onclick="openSidebar()"><i class="fas fa-ellipsis-v"></i></button>
                 <div>
                   <h1 data-i18n="account-title">Account Profile</h1>
                 <div class="location" data-i18n="account-location">Customer Information Management</div>
