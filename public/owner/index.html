@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.52";
+      const CURRENT_APP_VERSION = "1.1.53";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -1733,7 +1733,7 @@
         if ("serviceWorker" in navigator) {
           window.addEventListener("load", () => {
             navigator.serviceWorker
-              .register("/owner/sw.js?v=34");
+              .register("/owner/sw.js?v=35");
             });
         }
     </script>

@@ -58,6 +58,12 @@ self.addEventListener('push', function(event) {
             };
             event.waitUntil(
                 self.registration.showNotification(data.title, options)
+                .then(() => self.clients.matchAll({ type: "window", includeUncontrolled: true }))
+                .then(clients => {
+                  clients.forEach(client => {
+                    client.postMessage({ type: "NEW_NOTIFICATION", data: data });
+                  });
+                })
             );
         } catch(e) {
             console.error('Push data parse error:', e);
