@@ -3363,27 +3363,26 @@ async function subscribeToPush() {
 
 // UPDATE OWNER BADGES
 function updateOwnerBadges() {
-   if (typeof masterData === 'undefined' || !masterData) return;
+   if (typeof masterData === "undefined" || !masterData) return;
    
-   // Calculate counts
    let countTxServis = 0;
    if (masterData.bookings) {
        masterData.bookings.forEach(b => {
-          if (b.Status === 'Pending Verification' || b.Status === 'Belum') countTxServis++;
+          if (b.Status === "Pending Verification" || b.Status === "Belum") countTxServis++;
        });
    }
    
    let countTxProduk = 0;
    if (masterData.orders) {
        masterData.orders.forEach(o => {
-          if (o.status === 'Pending Verification' || o.status === 'Preparing' || o.status === 'Shipped') countTxProduk++;
+          if (o.status === "Pending Verification" || o.status === "Preparing" || o.status === "Shipped") countTxProduk++;
        });
    }
    
    let countKecemasan = 0;
    if (masterData.staffLeaves) {
        masterData.staffLeaves.forEach(l => {
-          if (l.jenis_cuti === 'Kecemasan' && l.status === 'Pending') countKecemasan++;
+          if (l.jenis_cuti === "Kecemasan" && l.status === "Pending") countKecemasan++;
        });
    }
    
@@ -3392,47 +3391,31 @@ function updateOwnerBadges() {
        countReviews = masterData.reviews.length;
    }
    
-   // Helper function to update numbered badge
    const updateBadgeNumber = (id, count) => {
       const el = document.getElementById(id);
       if (el) {
          if (count > 0) {
-            el.innerText = count > 99 ? '99+' : count;
-            el.style.display = 'inline-block';
+            el.innerText = count > 99 ? "99+" : count;
+            el.style.display = "inline-block";
          } else {
-            el.style.display = 'none';
+            el.style.display = "none";
          }
       }
    };
    
-   // Helper function to update dot badge
    const updateBadgeDot = (id, hasItem) => {
       const el = document.getElementById(id);
       if (el) {
-         el.style.display = hasItem ? 'inline-block' : 'none';
+         el.style.display = hasItem ? "inline-block" : "none";
       }
    };
    
-   // Update Numbered Badges
-   updateBadgeNumber('badge-tx-servis', countTxServis);
-   updateBadgeNumber('badge-tx-produk', countTxProduk);
-   updateBadgeNumber('badge-punch-kecemasan', countKecemasan);
-   updateBadgeNumber('badge-rev-list', countReviews);
+   updateBadgeNumber("badge-tx-servis", countTxServis);
+   updateBadgeNumber("badge-tx-produk", countTxProduk);
+   updateBadgeNumber("badge-punch-kecemasan", countKecemasan);
+   updateBadgeNumber("badge-rev-list", countReviews);
    
-   // Update Mobile Dot Badges
-   updateBadgeDot('badge-mob-transactions', (countTxServis > 0 || countTxProduk > 0));
-   updateBadgeDot('badge-mob-reviews', (countReviews > 0));
-   updateBadgeDot('badge-mob-punch', (countKecemasan > 0));
-};
-   
-   // Update Numbered Badges
-   updateBadgeNumber('badge-tx-servis', countTxServis);
-   updateBadgeNumber('badge-tx-produk', countTxProduk);
-   updateBadgeNumber('badge-punch-kecemasan', countKecemasan);
-   updateBadgeNumber('badge-rev-list', countReviews);
-   
-   // Update Mobile Dot Badges
-   updateBadgeDot('badge-mob-transactions', (countTxServis > 0 || countTxProduk > 0));
-   updateBadgeDot('badge-mob-reviews', (countReviews > 0));
-   updateBadgeDot('badge-mob-punch', (countKecemasan > 0));
+   updateBadgeDot("badge-mob-transactions", (countTxServis > 0 || countTxProduk > 0));
+   updateBadgeDot("badge-mob-reviews", (countReviews > 0));
+   updateBadgeDot("badge-mob-punch", (countKecemasan > 0));
 }
