@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.55";
+      const CURRENT_APP_VERSION = "1.1.56";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -1144,16 +1144,14 @@
               onchange="toggleTxTab('servis')"
               checked
             />
-            <label for="tab-tx-servis" data-i18n="tx-service-list"
-              >Senarai Servis <span id="badge-tx-servis" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
+            <label for="tab-tx-servis"><span data-i18n="tx-service-list">Senarai Servis</span> <span id="badge-tx-servis" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <input
               type="radio"
               id="tab-tx-produk"
               name="tx-tabs"
               onchange="toggleTxTab('produk')"
             />
-            <label for="tab-tx-produk" data-i18n="tx-product-orders"
-              >Pesanan Produk <span id="badge-tx-produk" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
+            <label for="tab-tx-produk"><span data-i18n="tx-product-orders">Pesanan Produk</span> <span id="badge-tx-produk" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <div class="slider"></div>
           </div>
         </div>
@@ -1192,9 +1190,9 @@
         <div class="flex justify-center md:justify-start mb-6">
           <div class="segmented-control">
             <input type="radio" id="tab-rev-list" name="rev-tabs" onchange="toggleRevTab('reviews')" checked />
-            <label for="tab-rev-list" data-i18n="rev-list">Maklum Balas <span id="badge-rev-list" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
+            <label for="tab-rev-list"><span data-i18n="rev-list">Maklum Balas</span> <span id="badge-rev-list" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <input type="radio" id="tab-rev-marketing" name="rev-tabs" onchange="toggleRevTab('marketing')" />
-            <label for="tab-rev-marketing" data-i18n="rev-marketing">Pemasaran WA</label>
+            <label for="tab-rev-marketing"><span data-i18n="rev-marketing">Pemasaran WA</span></label>
             <div class="slider"></div>
           </div>
         </div>
@@ -1234,11 +1232,11 @@
         <div class="flex justify-center md:justify-start mb-6">
           <div class="segmented-control three-tabs">
             <input type="radio" id="tab-punch-hadir" name="punch-tabs" onchange="togglePunchTab('hadir')" checked />
-            <label for="tab-punch-hadir" data-i18n="punch-attendance">Kehadiran <span id="badge-punch-hadir" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
+            <label for="tab-punch-hadir"><span data-i18n="punch-attendance">Kehadiran</span> <span id="badge-punch-hadir" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <input type="radio" id="tab-punch-cuti" name="punch-tabs" onchange="togglePunchTab('cuti')" />
-            <label for="tab-punch-cuti" data-i18n="punch-leaves">Cuti <span id="badge-punch-cuti" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
+            <label for="tab-punch-cuti"><span data-i18n="punch-leaves">Cuti</span> <span id="badge-punch-cuti" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <input type="radio" id="tab-punch-kecemasan" name="punch-tabs" onchange="togglePunchTab('kecemasan')" />
-            <label for="tab-punch-kecemasan" style="color: #ff4757;" data-i18n="punch-emergency">Kecemasan <span id="badge-punch-kecemasan" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
+            <label for="tab-punch-kecemasan" style="color: #ff4757;"><span data-i18n="punch-emergency">Kecemasan</span> <span id="badge-punch-kecemasan" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <div class="slider"></div>
           </div>
         </div>
