@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.33";
+      const CURRENT_APP_VERSION = "1.1.34";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -55,6 +55,67 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      var isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+      
+      var intro = document.querySelector(".loading-wrapper");
+      if (isStandalone && intro) {
+         // Keep intro
+      } else {
+         if (intro) intro.style.display = "none";
+      }
+      document.addEventListener("DOMContentLoaded", function() {
+
+        if (!isStandalone) {
+          var themeMeta = document.querySelector("meta[name='theme-color']");
+          if (themeMeta) themeMeta.setAttribute("content", "#f4f5f8");
+          
+          var style = document.createElement("style");
+          style.innerHTML = `
+            @media (max-width: 767px) {
+              html, body {
+                overflow: auto !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                background-color: #ffffff !important;
+              }
+              .mobile-container {
+                overflow: visible !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                max-height: none !important;
+                animation: none !important;
+                transform: none !important;
+                opacity: 1 !important;
+              }
+              .view-content {
+                overflow: visible !important;
+                height: auto !important;
+                padding-bottom: 85px !important;
+              }
+              .bottom-nav {
+                position: fixed !important;
+                bottom: 0 !important;
+                height: 65px !important;
+                padding-bottom: 0 !important;
+                background: #ffffff !important;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border-top: none !important;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.06) !important;
+                border-top-left-radius: 20px !important;
+                border-top-right-radius: 20px !important;
+              }
+              #login-screen, #change-password-screen, #forgot-password-screen {
+                position: fixed !important;
+              }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+      });
+    </script>
 </head>
   <body>
     <!-- GLOBAL PRELOADER MESIN CLIPPER -->
