@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.71";
+      const CURRENT_APP_VERSION = "1.1.72";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -119,6 +119,9 @@
                 height: auto !important;
                 min-height: 100vh !important;
                 max-height: none !important;
+                animation: none !important;
+                transform: none !important;
+                opacity: 1 !important;
               }
               .view-content {
                 overflow: visible !important;
