@@ -43,6 +43,7 @@ function updateLanguage(lang) {
   if (typeof playGreetingAnimation === "function" && typeof currentUser !== "undefined") {
     let nameStr = currentUser ? escapeHTML(currentUser.name || currentUser.username) : (i18n_index[lang] ? i18n_index[lang]["home-guest"].replace(" :)", "") : "new friend");
     playGreetingAnimation(nameStr);
+    updateCustomerBadges();
   }
 
   // Re-render dynamic sections if data exists
@@ -657,6 +658,7 @@ function handleLogout(askConfirm = true) {
     }
     
     playGreetingAnimation(nameStr);
+    updateCustomerBadges();
     
     if (currentUser) {
       setTimeout(() => {
@@ -1761,8 +1763,9 @@ function renderNotifications() {
         return;
       }
       
-      let servicesHtml = "";
-      let productsHtml = "";
+      updateCustomerBadges(data.orders);
+        let servicesHtml = "";
+        let productsHtml = "";
 
       data.orders.forEach((o) => {
         if (o.type === "product") {
@@ -2368,3 +2371,46 @@ async function submitResetBooking() {
 }
 
 
+
+
+// UPDATE NOTIFICATION BADGE
+function updateCustomerBadges(orders) {
+  if (!currentUser) {
+    const badge = document.getElementById('badge-notifications');
+    if (badge) badge.style.display = 'none';
+    return;
+  }
+  
+  const processOrders = (ordersList) => {
+    let activeCount = 0;
+    ordersList.forEach(o => {
+      if (o.type === 'product') {
+        if (['Pending Verification', 'Preparing', 'Shipped'].includes(o.status)) activeCount++;
+      } else {
+        if (['Pending Verification', 'Belum'].includes(o.status)) activeCount++;
+      }
+    });
+    const badge = document.getElementById('badge-notifications');
+    if (badge) {
+      if (activeCount > 0) {
+        badge.innerText = activeCount > 99 ? '99+' : activeCount;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  };
+
+  if (orders) {
+    processOrders(orders);
+  } else {
+    fetchWithAuth(\\/bookings/my-orders\)
+      .then(res => res ? res.json() : null)
+      .then(data => {
+        if (data && data.status === 'success' && data.orders) {
+          processOrders(data.orders);
+        }
+      })
+      .catch(err => console.error('Error updating badge:', err));
+  }
+}

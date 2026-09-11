@@ -1145,8 +1145,7 @@
               checked
             />
             <label for="tab-tx-servis" data-i18n="tx-service-list"
-              >Senarai Servis</label
-            >
+              >Senarai Servis <span id="badge-tx-servis" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <input
               type="radio"
               id="tab-tx-produk"
@@ -1154,8 +1153,7 @@
               onchange="toggleTxTab('produk')"
             />
             <label for="tab-tx-produk" data-i18n="tx-product-orders"
-              >Pesanan Produk</label
-            >
+              >Pesanan Produk <span id="badge-tx-produk" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <div class="slider"></div>
           </div>
         </div>
@@ -1194,7 +1192,7 @@
         <div class="flex justify-center md:justify-start mb-6">
           <div class="segmented-control">
             <input type="radio" id="tab-rev-list" name="rev-tabs" onchange="toggleRevTab('reviews')" checked />
-            <label for="tab-rev-list" data-i18n="rev-list">Maklum Balas</label>
+            <label for="tab-rev-list" data-i18n="rev-list">Maklum Balas <span id="badge-rev-list" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <input type="radio" id="tab-rev-marketing" name="rev-tabs" onchange="toggleRevTab('marketing')" />
             <label for="tab-rev-marketing" data-i18n="rev-marketing">Pemasaran WA</label>
             <div class="slider"></div>
@@ -1236,11 +1234,11 @@
         <div class="flex justify-center md:justify-start mb-6">
           <div class="segmented-control three-tabs">
             <input type="radio" id="tab-punch-hadir" name="punch-tabs" onchange="togglePunchTab('hadir')" checked />
-            <label for="tab-punch-hadir" data-i18n="punch-attendance">Kehadiran</label>
+            <label for="tab-punch-hadir" data-i18n="punch-attendance">Kehadiran <span id="badge-punch-hadir" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <input type="radio" id="tab-punch-cuti" name="punch-tabs" onchange="togglePunchTab('cuti')" />
-            <label for="tab-punch-cuti" data-i18n="punch-leaves">Cuti</label>
+            <label for="tab-punch-cuti" data-i18n="punch-leaves">Cuti <span id="badge-punch-cuti" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <input type="radio" id="tab-punch-kecemasan" name="punch-tabs" onchange="togglePunchTab('kecemasan')" />
-            <label for="tab-punch-kecemasan" style="color: #ff4757;" data-i18n="punch-emergency">Kecemasan</label>
+            <label for="tab-punch-kecemasan" style="color: #ff4757;" data-i18n="punch-emergency">Kecemasan <span id="badge-punch-kecemasan" class="nav-badge-number" style="display:none; position:relative; top:-2px; right:auto; margin-left:4px;">0</span></label>
             <div class="slider"></div>
           </div>
         </div>
@@ -1475,8 +1473,7 @@
           onclick="switchTab('transactions')"
           id="mob-nav-transactions"
           class="nav-item flex flex-col items-center justify-center w-full h-full text-[#9ca3af] hover:text-white transition"
-          ><i class="fas fa-exchange-alt text-lg mb-1"></i
-          ><span
+          ><div class="relative inline-block"><i class="fas fa-exchange-alt text-lg mb-1"></i><span id="badge-mob-transactions" class="nav-badge-dot" style="display:none; top:-2px; right:-6px;"></span></div><span
             class="text-[9px] font-bold tracking-wider"
             data-i18n="mob-nav-orders"
             >Pesanan</span
@@ -1499,8 +1496,7 @@
           onclick="switchTab('reviews')"
           id="mob-nav-reviews"
           class="nav-item flex flex-col items-center justify-center w-full h-full text-[#9ca3af] hover:text-white transition"
-          ><i class="fas fa-star text-lg mb-1"></i
-          ><span
+          ><div class="relative inline-block"><i class="fas fa-star text-lg mb-1"></i><span id="badge-mob-reviews" class="nav-badge-dot" style="display:none; top:-2px; right:-6px;"></span></div><span
             class="text-[9px] font-bold tracking-wider"
             data-i18n="mob-nav-reviews"
             >Ulasan</span
@@ -1511,8 +1507,7 @@
           onclick="switchTab('punch')"
           id="mob-nav-punch"
           class="nav-item flex flex-col items-center justify-center w-full h-full text-[#9ca3af] hover:text-white transition"
-          ><i class="fas fa-fingerprint text-lg mb-1"></i
-          ><span
+          ><div class="relative inline-block"><i class="fas fa-fingerprint text-lg mb-1"></i><span id="badge-mob-punch" class="nav-badge-dot" style="display:none; top:-2px; right:-6px;"></span></div><span
             class="text-[9px] font-bold tracking-wider"
             data-i18n="mob-nav-gps"
             >Hadir</span

@@ -500,8 +500,9 @@ async function loadDashboardData() {
       calculateDashboardStats();
       renderBookingList();
       renderHistoryList();
-    }
-  } catch (err) {} finally {
+        updateStaffBadges();
+      }
+    } catch (err) {} finally {
     hideGlobalLoader();
   }
 }
@@ -1330,3 +1331,45 @@ document.addEventListener('visibilitychange', () => {
         if (typeof subscribeToPush === 'function') subscribeToPush();
     }
 });
+
+
+// UPDATE STAFF BADGES
+async function updateStaffBadges() {
+   if (typeof loggedInStaff === 'undefined' || !loggedInStaff) return;
+   
+   // Booking Badge
+   if (typeof staffData !== 'undefined' && staffData && staffData.bookings) {
+       let bookingCount = 0;
+       staffData.bookings.forEach(b => {
+           if (b.status === 'Pending Verification' || b.status === 'Belum') bookingCount++;
+       });
+       const badgeBooking = document.getElementById('badge-booking');
+       if (badgeBooking) {
+           if (bookingCount > 0) {
+               badgeBooking.innerText = bookingCount > 99 ? '99+' : bookingCount;
+               badgeBooking.style.display = 'block';
+           } else {
+               badgeBooking.style.display = 'none';
+           }
+       }
+   }
+   
+   // Profile Badge (Leaves)
+   try {
+       const res = await fetch(\\/staff/my-leaves\, { credentials: "include" });
+       if (res.ok) {
+           const data = await res.json();
+           let hasApproved = false;
+           if (data.leaves) {
+               data.leaves.forEach(l => {
+                   if (l.status === 'Approved') hasApproved = true;
+               });
+           }
+           const badgeProfile = document.getElementById('badge-profile');
+           if (badgeProfile) {
+               if (hasApproved) badgeProfile.style.display = 'block';
+               else badgeProfile.style.display = 'none';
+           }
+       }
+   } catch(e) {}
+}

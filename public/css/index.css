@@ -2046,3 +2046,36 @@ select.input-field {
     box-shadow: 0 0 0 9999px rgba(0,0,0,0.6) !important;
   }
 }
+
+/* BADGE STYLES */
+.nav-badge-container {
+  position: relative;
+  display: inline-block;
+}
+.nav-badge-number {
+  position: absolute;
+  top: -2px;
+  right: -8px;
+  background: #ff3b30;
+  color: white;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 10px;
+  border: 1.5px solid white;
+  z-index: 10;
+  min-width: 14px;
+  text-align: center;
+  line-height: 1;
+}
+.nav-badge-dot {
+  position: absolute;
+  top: 0px;
+  right: -2px;
+  background: #ff3b30;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid white;
+  z-index: 10;
+}
