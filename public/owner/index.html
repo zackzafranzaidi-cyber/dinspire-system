@@ -205,6 +205,57 @@
     </style>
       <link rel="manifest" href="/owner/manifest_owner.json?v=7">
     <meta name="theme-color" content="#ffffff">
+
+    <script>
+      var isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+      
+      var intro = document.getElementById("preloader");
+      if (isStandalone && intro) {
+         // Keep intro
+      } else {
+         if (intro) intro.style.display = "none";
+      }
+      document.addEventListener("DOMContentLoaded", function() {
+
+        if (!isStandalone) {
+          var themeMeta = document.querySelector("meta[name='theme-color']");
+          if (themeMeta) themeMeta.setAttribute("content", "#f3f4f6"); // Match top header
+          
+          var style = document.createElement("style");
+          style.innerHTML = `
+            @media (max-width: 767px) {
+              html, body {
+                overflow: auto !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                background-color: #030712 !important;
+                display: block !important;
+              }
+              .main-content-wrapper {
+                overflow: visible !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                padding-bottom: 85px !important;
+                display: block !important;
+              }
+              nav.md\\:hidden.fixed.bottom-0 {
+                position: fixed !important;
+                bottom: 0 !important;
+                height: 65px !important;
+                padding-bottom: 0 !important;
+                background-color: #030712 !important;
+                border-top: none !important;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.5) !important;
+              }
+              #login-overlay {
+                position: fixed !important;
+              }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+      });
+    </script>
 </head>
   <body class="flex h-screen overflow-hidden bg-[#f3f4f6]">
 
