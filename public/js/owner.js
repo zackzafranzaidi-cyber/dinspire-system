@@ -568,7 +568,26 @@ function hideGlobalLoader() {
   }
 }
 
+
 function switchTab(tabName, element = null) {
+    if (tabName === 'cms' && window.innerWidth < 768) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Paparan Desktop Sahaja',
+            text: 'Master Data (CMS) hanya boleh diakses melalui komputer atau mod desktop untuk pengalaman yang lebih baik.',
+            confirmButtonColor: '#4f46e5'
+        });
+        return;
+    }
+
+    if (tabName === 'ai' && window.innerWidth >= 768) {
+        toggleAIDrawer();
+        // Highlight AI button but don't hide current tab
+        document.getElementById("nav-ai").classList.toggle("text-white");
+        document.getElementById("nav-ai").classList.toggle("bg-white/10");
+        return;
+    }
+
   if (tabName === 'reviews' && masterData.reviews) {
       localStorage.setItem('din_seen_reviews_count', masterData.reviews.length); syncSeenBadge('reviews', masterData.reviews.length);
       const b = document.getElementById('badge-mob-reviews');

@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.2.0";
+      const CURRENT_APP_VERSION = "1.2.1";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -563,9 +563,7 @@
                  <i class="fas fa-language text-purple-500 w-5 text-center"></i> <span id="lang-indicator-mob">Bahasa (EN)</span>
                </button>
 
-                 <button onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); document.getElementById('mobile-header-menu').classList.add('hidden')" class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2 font-semibold transition">
-                   <i class="fas fa-database text-indigo-500 w-5 text-center"></i> <span data-i18n="mob-nav-cms">Master Data (CMS)</span>
-                 </button>
+                 
 
                <button onclick="logoutOwner()" class="text-left px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-2 font-semibold transition">
                  <i class="fas fa-sign-out-alt w-5 text-center"></i> Log Keluar
@@ -1610,7 +1608,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=37"></script>
+    <script src="../js/owner.js?v=38"></script>
     <script src="../js/admin.js?v=3"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
