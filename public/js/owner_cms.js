@@ -1,24 +1,8 @@
-const IS_LOCALHOST =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
-const API_BASE_URL = IS_LOCALHOST
-  ? "http://localhost:3000/api"
-  : "https://api.dinspirebarbershop.com/api";
+
 
 let appData = {};
 
-// [DIBAIKI] Fungsi keselamatan XSS
-function escapeHTML(str) {
-  if (!str) return "";
-  const charsToReplace = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "'": "&#39;",
-    '"': "&quot;",
-  };
-  return String(str).replace(/[&<>'"]/g, (tag) => charsToReplace[tag] || tag);
-}
+
 
 const SCHEMAS = {
   Haircuts: ["id", "name", "desc", "price"],
