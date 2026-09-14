@@ -34,15 +34,11 @@ const SCHEMAS = {
 
 let currentTab = "Haircuts";
 
-document.addEventListener("DOMContentLoaded", () => {
-  let isLogged = localStorage.getItem("din_admin_logged");
-  if (isLogged) {
-    document.getElementById("login-overlay").style.display = "none";
+
+function initAdminCMS() {
     loadAdminData();
-  } else {
-    hideGlobalLoader();
-  }
-});
+}
+
 
 async function loginAdmin(allowedRoles) {
   const username = document.getElementById("sys-username").value.trim();
@@ -92,17 +88,7 @@ async function loginAdmin(allowedRoles) {
   btn.innerText = "Log Masuk CMS";
 }
 
-function logoutAdmin() {
-  fetch(`${API_BASE_URL}/auth/logout-sys`, {
-    method: "POST",
-    credentials: "include",
-  })
-    .catch((e) => console.error(e))
-    .finally(() => {
-      localStorage.removeItem("din_admin_logged");
-      location.reload();
-    });
-}
+
 
 async function loadAdminData() {
   showGlobalLoader();
@@ -111,7 +97,7 @@ async function loadAdminData() {
       credentials: "include",
     });
     if (res.status === 401 || res.status === 403) {
-      logoutAdmin();
+      if(typeof logoutOwner === "function") logoutOwner();;
       return;
     }
 
@@ -134,58 +120,7 @@ async function loadAdminData() {
   }
 }
 
-let globalLoaderStartTime = Date.now();
 
-function showGlobalLoader() {
-  const preloader = document.getElementById('preloader');
-  if (preloader) {
-      globalLoaderStartTime = Date.now();
-      preloader.style.visibility = 'visible';
-      preloader.style.opacity = '1';
-  }
-}
-
-function hideGlobalLoader() {
-  const preloader = document.getElementById('preloader');
-  if (preloader) {
-      const elapsed = Date.now() - globalLoaderStartTime;
-      const remaining = Math.max(0, 1000 - elapsed);
-      setTimeout(() => {
-        preloader.style.opacity = '0';
-        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
-      }, remaining);
-  }
-}
-
-function switchTab(tabName, el) {
-  showGlobalLoader();
-
-  currentTab = tabName;
-  document
-    .querySelectorAll(".nav-item")
-    .forEach((nav) => nav.classList.remove("active"));
-  if (el) el.classList.add("active");
-
-  let titles = {
-    Haircuts: "Haircuts (Booking)",
-    Treatments: "Treatments (Booking)",
-    Branches: "Branches",
-    Staff: "Kesemua Staf & Pekerja",
-    OnCall: "On-Call Services",
-    WalkInServices: "Walk-In Haircuts",
-    WalkInTreatments: "Walk-In Treatments",
-    Products: "Products",
-    Posters: "Promotions (Posters)",
-    Settings: "System Settings & Fees",
-    ResetRequests: "Password Reset Requests",
-  };
-  document.getElementById("current-section-title").innerText =
-    "Manage " + (titles[tabName] || tabName);
-
-  renderTable(tabName); if (tabName !== "ResetRequests") {
-    setTimeout(hideGlobalLoader, 300);
-  }
-}
 
 function updateSetting(key, val) {
   if (!appData.Settings) appData.Settings = {};
@@ -590,7 +525,7 @@ async function saveAllData() {
         title: "Sesi Tamat",
         text: "Sistem akan log keluar secara automatik.",
       }).then(() => {
-        logoutAdmin();
+        if(typeof logoutOwner === "function") logoutOwner();;
       });
       return;
     }
