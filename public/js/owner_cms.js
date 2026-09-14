@@ -40,54 +40,6 @@ function initAdminCMS() {
 }
 
 
-async function loginAdmin(allowedRoles) {
-  const username = document.getElementById("sys-username").value.trim();
-  const password = document.getElementById("sys-password").value.trim();
-  const btn = document.querySelector(".login-box button");
-
-  if (!username || !password) {
-    Swal.fire({
-      icon: "warning",
-      title: "Perhatian",
-      text: "Sila isi nama pengguna dan kata laluan.",
-    });
-    return;
-  }
-  btn.innerText = "Mengesahkan...";
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/auth/system-login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ username, password, allowed_roles: allowedRoles }),
-    });
-    const data = await res.json();
-
-    if (data.status === "success") {
-      localStorage.setItem("din_admin_logged", "true");
-      document.getElementById("login-overlay").style.display = "none";
-      loadAdminData();
-      Swal.fire({
-        icon: "success",
-        title: "Berjaya!",
-        text: "Log masuk diluluskan.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } else {
-      Swal.fire({ icon: "error", title: "Akses Ditolak", text: data.message });
-    }
-  } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Ralat Sistem",
-      text: "Gagal menyambung ke pelayan.",
-    });
-  }
-  btn.innerText = "Log Masuk CMS";
-}
-
 
 
 async function loadAdminData() {
@@ -121,6 +73,48 @@ async function loadAdminData() {
 }
 
 
+
+function switchAdminTab(tabName, el) {
+  showGlobalLoader();
+
+  currentTab = tabName;
+  
+  // Update sidebar active states manually
+  document.querySelectorAll("[id^='nav-cms-']").forEach(nav => {
+      nav.classList.remove("text-white", "bg-white/10");
+      nav.classList.add("text-gray-400");
+  });
+  const activeNav = document.getElementById("nav-cms-" + tabName);
+  if (activeNav) {
+      activeNav.classList.remove("text-gray-400");
+      activeNav.classList.add("text-white", "bg-white/10");
+  }
+
+  // Also sync the select dropdown just in case
+  const dropdown = document.getElementById("cms-dropdown");
+  if(dropdown) dropdown.value = tabName;
+
+  let titles = {
+
+    Haircuts: "Haircuts (Booking)",
+    Treatments: "Treatments (Booking)",
+    Branches: "Branches",
+    Staff: "Kesemua Staf & Pekerja",
+    OnCall: "On-Call Services",
+    WalkInServices: "Walk-In Haircuts",
+    WalkInTreatments: "Walk-In Treatments",
+    Products: "Products",
+    Posters: "Promotions (Posters)",
+    Settings: "System Settings & Fees",
+    ResetRequests: "Password Reset Requests",
+  };
+  document.getElementById("current-section-title").innerText =
+    "Manage " + (titles[tabName] || tabName);
+
+  renderTable(tabName); if (tabName !== "ResetRequests") {
+    setTimeout(hideGlobalLoader, 300);
+  }
+}
 
 function updateSetting(key, val) {
   if (!appData.Settings) appData.Settings = {};

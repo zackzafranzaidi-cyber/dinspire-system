@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.2.2";
+      const CURRENT_APP_VERSION = "1.2.3";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -378,13 +378,23 @@
           ><i class="fas fa-file-archive w-5"></i>
           <span data-i18n="nav-reports">Laporan & Resit</span></a>
 
-          <a
-            href="#"
-            onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS();"
-            id="nav-cms"
-            class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"
-            ><i class="fas fa-database w-5"></i>
-            <span>Master Data (CMS)</span></a>
+
+          <!-- KATEGORI CMS -->
+          <div class="mt-4 mb-1 px-4 text-[10px] font-bold text-gray-500 tracking-wider uppercase">Pengurusan CMS</div>
+          
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('Haircuts');" id="nav-cms-Haircuts" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-cut w-5"></i> <span>Servis Gunting</span></a>
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('Treatments');" id="nav-cms-Treatments" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-spa w-5"></i> <span>Rawatan</span></a>
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('WalkInServices');" id="nav-cms-WalkInServices" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-walking w-5"></i> <span>Walk-In Gunting</span></a>
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('WalkInTreatments');" id="nav-cms-WalkInTreatments" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-magic w-5"></i> <span>Walk-In Rawatan</span></a>
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('OnCall');" id="nav-cms-OnCall" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-car w-5"></i> <span>On-Call Servis</span></a>
+
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('Products');" id="nav-cms-Products" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-box w-5"></i> <span>Produk E-Commerce</span></a>
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('Staff');" id="nav-cms-Staff" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-users-cog w-5"></i> <span>Staf & Pekerja</span></a>
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('Settings');" id="nav-cms-Settings" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-cog w-5"></i> <span>Tetapan Sistem</span></a>
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('Posters');" id="nav-cms-Posters" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-image w-5"></i> <span>Promosi (Poster)</span></a>
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('Branches');" id="nav-cms-Branches" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-store w-5"></i> <span>Cawangan</span></a>
+          <a href="#" onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); switchAdminTab('ResetRequests');" id="nav-cms-ResetRequests" class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"><i class="fas fa-key w-5"></i> <span>Reset Password</span></a>
+
 
         <a
           href="#"
@@ -1382,7 +1392,7 @@
               <h4 class="font-bold text-lg text-gray-800" id="current-section-title">Urus Data</h4>
               <div class="flex flex-wrap gap-2">
                  <!-- CMS Nav Buttons -->
-                 <select onchange="switchAdminTab(this.value)" class="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-semibold text-gray-700">
+                 <select id="cms-dropdown" onchange="switchAdminTab(this.value)" class="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-semibold text-gray-700 md:hidden">
                     <option value="Haircuts">Gunting (Booking)</option>
                     <option value="Treatments">Rawatan (Booking)</option>
                     <option value="WalkInServices">Walk-In Gunting</option>
@@ -1608,7 +1618,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=39"></script>
+    <script src="../js/owner.js?v=40"></script>
     <script src="../js/owner_cms.js?v=1"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
