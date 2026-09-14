@@ -34,10 +34,16 @@ const SCHEMAS = {
 
 let currentTab = "Haircuts";
 
-
-function initAdminCMS() {
+document.addEventListener("DOMContentLoaded", () => {
+  let isLogged = localStorage.getItem("din_admin_logged");
+  if (isLogged) {
+    document.getElementById("login-overlay").style.display = "none";
     loadAdminData();
-}
+  } else {
+    hideGlobalLoader();
+  }
+});
+
 
 
 
@@ -71,6 +77,7 @@ async function loadAdminData() {
     hideGlobalLoader();
   }
 }
+
 
 
 
