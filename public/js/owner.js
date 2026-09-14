@@ -676,20 +676,18 @@ function adjustAILayout() {
 window.addEventListener("resize", adjustAILayout);
 
 function toggleTxTab(type) {
-  document.getElementById("tx-servis-view").classList.add("hidden");
-  document.getElementById("tx-produk-view").classList.add("hidden");
-  document.getElementById("tx-" + type + "-view").classList.remove("hidden");
-  
-  if (type === 'servis') {
-     let totalSelesai = 0;
-     if (typeof masterData !== "undefined" && masterData.bookings) {
-         masterData.bookings.forEach(b => { if (b.Status === "Selesai") totalSelesai++; });
-     }
-     localStorage.setItem('din_seen_tx_servis_count', totalSelesai);
-     updateOwnerBadges();
-     document.querySelectorAll('.servis-new-dot').forEach(el => el.style.display = 'none');
+    document.getElementById("tx-servis-view").classList.add("hidden");
+    document.getElementById("tx-produk-view").classList.add("hidden");
+    document.getElementById("tx-" + type + "-view").classList.remove("hidden");
+    
+    if (type === 'servis') {
+       let totalServis = (typeof masterData !== "undefined" && masterData.bookings) ? masterData.bookings.length : 0;
+       localStorage.setItem('din_seen_tx_servis_count', totalServis);
+       updateOwnerBadges();
+       document.querySelectorAll('.servis-new-dot').forEach(el => el.style.display = 'none');
+    }
   }
-}
+
 
 function togglePunchTab(type) {
   document.getElementById("punch-hadir-view").classList.add("hidden");
@@ -743,32 +741,16 @@ async function fetchOwnerDashboardData(silent = false) {
     const data = await res.json();
 
     if (data.status === "success") {
+            // [DIBAIKI] Caching Tempatan (Optimistic Load) untuk PWA
       localStorage.setItem("din_owner_dashboard", JSON.stringify(data)); // Simpan ke cache tempatan
       masterData = data.masterData;
       mapBarberBranch = data.mapBarberBranch || {};
       if (!masterData.orders) masterData.orders = [];
       if (!masterData.bookings) masterData.bookings = [];
-      if (!masterData.staffLeaves) masterData.staffLeaves = [];
       
-      let currentCounts = {
-          bookings: masterData.bookings.length,
-          orders: masterData.orders.length,
-          leaves: masterData.staffLeaves.length
-      };
+      // Fetch marketing data silently to populate badges
+      await fetchMarketingData(true);
       
-      if (lastNotificationCounts !== null) {
-          if (currentCounts.bookings > lastNotificationCounts.bookings) {
-              triggerNativeNotification("Transaksi Baharu", "Terdapat jualan/tempahan baharu telah direkodkan oleh staf.");
-          }
-          if (currentCounts.orders > lastNotificationCounts.orders) {
-              triggerNativeNotification("Pesanan Produk", "Terdapat pesanan E-Commerce baharu.");
-          }
-          if (currentCounts.leaves > lastNotificationCounts.leaves) {
-              triggerNativeNotification("Permohonan Cuti", "Staf telah memohon cuti baharu. Sila semak.");
-          }
-      }
-      lastNotificationCounts = currentCounts;
-
       processData();
       fetchSMSBalance();
     } else {
@@ -1420,35 +1402,32 @@ function renderTxProdukTable(completedOrders, pendingOrders = []) {
              </div>`;
     }
 
-    return `<tr class="border-b border-gray-100 block mb-4 bg-white rounded-xl shadow-sm hover:shadow transition border overflow-hidden p-3 relative cursor-pointer" onclick="toggleAccordion('prod-acc-${index}')">
-          <td class="block">
-            <div class="flex justify-between items-start w-full">
-              <div>
-                <span class="text-[10px] text-gray-500 font-bold tracking-wider">${tFormat}</span>
-                <div class="font-black text-gray-800 text-sm md:text-base mt-0.5 leading-tight">${escapeHTML(o.Name || o.nama_pembeli || "-")}</div>
-                <div class="text-[10px] text-gray-400 font-medium mt-1 uppercase tracking-wider">${escapeHTML(o.Delivery || o.kaedah_penghantaran || "-")}</div>
-              </div>
-              <div class="text-right flex flex-col items-end">
-                <span class="font-black text-blue-600 text-sm md:text-base">+RM ${parseFloat(o._calculatedTotal || o.Total_Sales || o.Total || 0).toFixed(2)}</span>
-                <span class="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase ${badgeColor}">${stat}</span>
+    return `<tr class="block w-full !bg-white border border-gray-100 rounded-lg mb-1.5 shadow-sm hover:shadow-md transition">
+          <td class="block w-full p-0">
+            <div class="px-3 py-1.5 cursor-pointer" onclick="document.getElementById('det-p-${index}').classList.toggle('hidden')">
+              <div class="flex justify-between items-start w-full">
+                <div>
+                  <span class="text-[9px] text-gray-400 mb-0.5 leading-none tracking-wide">${tFormat}</span>
+                  <div class="text-[12px] text-gray-800 uppercase font-bold leading-none">${escapeHTML(o.Name || o.nama_pembeli || "-")}</div>
+                  <div class="text-[10px] text-gray-400 mt-1 leading-none truncate uppercase">${escapeHTML(o.Delivery || o.kaedah_penghantaran || "-")}</div>
+                </div>
+                <div class="text-right flex flex-col justify-center">
+                  <div class="text-[12px] font-semibold text-blue-600 tracking-wide leading-none">+RM ${parseFloat(o._calculatedTotal || o.Total_Sales || o.Total || 0).toFixed(2)}</div>
+                  <div class="mt-1"><span class="px-2 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase ${badgeColor}">${stat}</span></div>
+                </div>
               </div>
             </div>
             
-            <div id="prod-acc-${index}" class="hidden mt-3 pt-3 border-t border-gray-100 w-full text-left">
-              <div class="grid grid-cols-2 gap-y-2 text-xs">
-                <div class="text-gray-500 font-semibold tracking-wider text-[10px] uppercase">No Telefon:</div>
-                <div class="text-gray-800 font-medium break-words">${escapeHTML(o.Phone || o.no_telefon || "-")}</div>
-                <div class="text-gray-500 font-semibold tracking-wider text-[10px] uppercase">Alamat:</div>
-                <div class="text-gray-800 font-medium break-words">${escapeHTML(o.Address || o.alamat_penghantaran || "-")}</div>
-                <div class="text-gray-500 font-semibold tracking-wider text-[10px] uppercase">No. Tracking:</div>
-                <div class="text-gray-800 font-medium break-words">${escapeHTML(o.Tracking || o.tracking_no || "-")}</div>
-                <div class="text-gray-500 font-semibold tracking-wider text-[10px] uppercase">Item:</div>
-                <div class="text-gray-800 font-medium"><ul class="list-disc pl-3 text-[11px] leading-relaxed text-gray-600">${pNames.map((n) => `<li>${escapeHTML(n)}</li>`).join("")}</ul></div>
+            <div id="det-p-${index}" class="hidden bg-gray-50 px-3 py-2 text-xs text-gray-700 border-t border-gray-100 rounded-b-lg w-full text-left">
+              <div class="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
+                <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">No Telefon</span><span class="font-bold text-gray-900 break-words">${escapeHTML(o.Phone || o.no_telefon || "-")}</span></div>
+                <div><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">No. Tracking</span><span class="font-bold text-gray-900 break-words">${escapeHTML(o.Tracking || o.tracking_no || "-")}</span></div>
+                <div class="col-span-2"><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">Alamat</span><span class="font-bold text-gray-900 break-words">${escapeHTML(o.Address || o.alamat_penghantaran || "-")}</span></div>
+                <div class="col-span-2"><span class="text-gray-400 block text-[9px] uppercase tracking-wider mb-0.5">Item</span><div class="font-medium"><ul class="list-disc pl-3 text-[11px] leading-relaxed text-gray-900">${pNames.map((n) => `<li>${escapeHTML(n)}</li>`).join("")}</ul></div></div>
               </div>
               ${btn}
               ${actionArea}
             </div>
-            <div class="w-full text-center mt-2 text-gray-300 text-[10px]"><i class="fas fa-chevron-down"></i></div>
           </td>
         </tr>`;
   };
@@ -2568,8 +2547,8 @@ function toggleRevTab(tab) {
 
 let marketingCustomers = [];
 
-async function fetchMarketingData() {
-  showGlobalLoader();
+async function fetchMarketingData(silent = false) {
+  if (!silent) showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/owner/marketing-customers`, {
       method: "GET",
@@ -2584,7 +2563,7 @@ async function fetchMarketingData() {
     console.error(err);
     document.getElementById("table-marketing").innerHTML = `<div class="text-center p-4 text-red-500">Gagal memuat turun data pelanggan.</div>`;
   } finally {
-    hideGlobalLoader();
+    if (!silent) hideGlobalLoader();
   }
 }
 
@@ -3382,3 +3361,14 @@ function updateOwnerBadges() {
     updateBadgeDot("badge-mob-punch", countKecemasan > 0);
 }
 
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data && event.data.type === 'NEW_NOTIFICATION') {
+       // Silently fetch data to update badges when a push notification is received
+       if (typeof fetchOwnerDashboardData === "function") {
+           fetchOwnerDashboardData(true);
+       }
+    }
+  });
+}
