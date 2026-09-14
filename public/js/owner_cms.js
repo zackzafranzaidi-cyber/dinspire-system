@@ -199,10 +199,7 @@ function renderTable(tabName) {
     return;
   }
 
-  if (tabName === "Products") {
-    renderProducts(appData[tabName] || [], container);
-    return;
-  }
+  
 
   let dataArr = appData[tabName] || [];
   let cols = SCHEMAS[tabName];
@@ -219,7 +216,7 @@ function renderTable(tabName) {
     if (c === "id") {
       html += `<th style="display:none;">${c}</th>`;
     } else {
-      html += `<th class="px-6 py-4">${c}</th>`;
+      html += `<th class="px-6 py-4">${c === 'imageUrl' ? 'GAMBAR' : c}</th>`;
     }
   });
   html += `<th class="px-6 py-4 text-center" style="width: 80px;">TINDAKAN</th></tr></thead><tbody class="divide-y divide-gray-100">`;
@@ -233,7 +230,7 @@ function renderTable(tabName) {
         html += `<td style="display:none;"><input type="hidden" value="${escapeHTML(row[c] || "")}"></td>`;
       } else if (c === "imageUrl") {
         let currentImg = row[c] || "https://via.placeholder.com/60?text=IMG";
-        html += `<td class="px-6 py-3"><div class="flex items-center gap-4"><img src="${currentImg}" class="w-12 h-12 object-cover rounded-xl border border-gray-200 shadow-sm"><input type="file" accept="image/*" onchange="handleAdminImageUpload(this, '${tabName}', ${index}, '${c}')" class="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all cursor-pointer w-48"></div></td>`;
+        html += `<td class="px-6 py-3"><div class="flex items-center gap-4"><img src="${currentImg}" class="w-16 h-16 object-cover rounded-xl border border-gray-200 shadow-sm"><input type="file" accept="image/*" onchange="handleAdminImageUpload(this, '${tabName}', ${index}, '${c}')" class="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all cursor-pointer w-48"></div></td>`;
       } else if (c === "jenis_staf" && tabName === "Staff") {
         let opts = ["In-Branch", "On-Call", "General"].map(j => `<option value="${j}" ${row[c] === j ? "selected" : ""}>${j}</option>`).join("");
         html += `<td class="px-6 py-3"><select onchange="updateData('${tabName}', ${index}, '${c}', this.value); setTimeout(()=>renderTable('${tabName}'), 100);" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-semibold text-gray-700 shadow-sm">${opts}</select></td>`;
@@ -310,20 +307,20 @@ function renderPosters(dataArr, container) {
   let html = `
     <div class="mb-4 bg-purple-50 border border-purple-100 rounded-2xl p-4 flex items-center gap-3">
       <i class="fas fa-image text-purple-500 text-lg"></i>
-      <p class="text-sm text-purple-800 m-0">Poster akan dipaparkan sebagai "carousel slider" pada halaman utama aplikasi pelanggan. Nisbah lebar yang dicadangkan adalah <strong>16:9</strong> (mendatar). Tekan "Simpan ke Cloud" selepas memuat naik imej.</p>
+      <p class="text-sm text-purple-800 m-0">Poster akan dipaparkan sebagai "carousel slider" pada halaman utama aplikasi pelanggan. Nisbah lebar yang dicadangkan adalah <strong>2:1</strong> (mendatar). Tekan "Simpan ke Cloud" selepas memuat naik imej.</p>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-2">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 max-w-5xl mx-auto gap-6 mt-2">
   `;
 
   dataArr.forEach((row, index) => {
     let currentImg = row.imageUrl || "https://via.placeholder.com/800x450?text=Upload+Poster";
     html += `
       <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-        <!-- Image Container (16:9 aspect ratio) -->
-        <div class="relative w-full aspect-video bg-gray-50 border-b border-gray-100 group-hover:border-purple-100 transition-colors">
+        <!-- Image Container (2:1 aspect ratio) -->
+        <div style="aspect-ratio: 2/1;" class="relative w-full bg-gray-50 border-b border-gray-100 group-hover:border-purple-100 transition-colors">
           <img src="${currentImg}" class="w-full h-full object-cover" alt="Poster">
           <label class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-300 backdrop-blur-[2px]">
-            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2 backdrop-blur-md">
+            <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-2 backdrop-blur-md">
               <i class="fas fa-camera text-xl"></i>
             </div>
             <span class="text-sm font-bold tracking-wide">Tukar Poster</span>
@@ -344,7 +341,7 @@ function renderPosters(dataArr, container) {
 
   // Add New Poster Card
   html += `
-      <div onclick="addRow('Posters')" class="bg-purple-50/30 rounded-3xl border-2 border-dashed border-purple-200 overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:bg-purple-50 hover:border-purple-400 transition-all duration-300 aspect-video group">
+      <div onclick="addRow('Posters')" style="aspect-ratio: 2/1;" class="bg-purple-50/30 rounded-3xl border-2 border-dashed border-purple-200 overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:bg-purple-50 hover:border-purple-400 transition-all duration-300 group">
         <div class="w-14 h-14 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 shadow-sm">
           <i class="fas fa-plus text-xl"></i>
         </div>
@@ -356,77 +353,6 @@ function renderPosters(dataArr, container) {
   container.innerHTML = html;
 }
 
-function renderProducts(dataArr, container) {
-  let html = `
-    <div class="mb-4 bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex items-center gap-3">
-      <i class="fas fa-info-circle text-indigo-500 text-lg"></i>
-      <p class="text-sm text-indigo-800 m-0">Ukuran imej disyorkan: <strong>500 x 500 px</strong> (nisbah 1:1). Tekan "Simpan ke Cloud" selepas memuat naik imej.</p>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-2">
-  `;
-
-  dataArr.forEach((row, index) => {
-    let currentImg = row.imageUrl || "https://via.placeholder.com/500x500?text=Upload+Produk";
-    html += `
-      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-        <!-- Image Container -->
-        <div class="relative w-full aspect-square bg-gray-50 border-b border-gray-100 group-hover:border-indigo-100 transition-colors">
-          <img src="${currentImg}" class="w-full h-full object-cover" alt="Produk">
-          <label class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-300 backdrop-blur-[2px]">
-            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2 backdrop-blur-md">
-              <i class="fas fa-camera text-xl"></i>
-            </div>
-            <span class="text-sm font-bold tracking-wide">Tukar Imej</span>
-            <input type="file" class="hidden" accept="image/*" onchange="handleAdminImageUpload(this, 'Products', ${index}, 'imageUrl')">
-          </label>
-        </div>
-        
-        <!-- Form Container -->
-        <div class="p-5 flex flex-col gap-4 flex-1">
-          <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Nama Produk</label>
-            <input type="text" value="${escapeHTML(row.name || "")}" onchange="updateData('Products', ${index}, 'name', this.value)" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-bold text-gray-800 shadow-sm placeholder-gray-400" placeholder="Cth: Pomade Asli">
-          </div>
-          
-          <div class="flex gap-3">
-            <div class="flex-1">
-              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Harga (RM)</label>
-              <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">RM</span>
-                <input type="number" value="${escapeHTML(row.price || "")}" onchange="updateData('Products', ${index}, 'price', this.value)" class="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-bold text-indigo-600 shadow-sm placeholder-gray-400" placeholder="0.00">
-              </div>
-            </div>
-            <div class="w-24">
-              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Stok</label>
-              <input type="number" value="${escapeHTML(row.stok || "")}" onchange="updateData('Products', ${index}, 'stok', this.value)" class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-bold text-gray-800 shadow-sm placeholder-gray-400 text-center" placeholder="0">
-            </div>
-          </div>
-        </div>
-        
-        <!-- Delete Button Container -->
-        <div class="px-5 pb-5 mt-auto">
-          <button onclick="deleteRow('Products', ${index})" class="w-full py-2.5 bg-white border-2 border-gray-100 text-gray-400 font-bold text-xs rounded-xl hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center justify-center gap-2">
-            <i class="fas fa-trash"></i> Padam Produk
-          </button>
-        </div>
-      </div>
-    `;
-  });
-
-  // Add New Product Card
-  html += `
-      <div onclick="addRow('Products')" class="bg-indigo-50/30 rounded-3xl border-2 border-dashed border-indigo-200 overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-400 transition-all duration-300 min-h-[350px] group">
-        <div class="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm">
-          <i class="fas fa-plus text-2xl"></i>
-        </div>
-        <h4 class="font-bold text-indigo-600 text-lg">Tambah Produk</h4>
-        <p class="text-xs text-indigo-400 mt-1">Klik di sini untuk daftar produk baru</p>
-      </div>
-    </div>
-  `;
-
-  container.innerHTML = html;
-}
 
 // [DIBAIKI] Fungsi Memampat Imej Diubah ke Sistem Promise yang Stabil
 function processImageCompression(file, maxWidth = 600) {
