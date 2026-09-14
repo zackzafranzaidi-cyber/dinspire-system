@@ -18,20 +18,13 @@ const SCHEMAS = {
 
 let currentTab = "Haircuts";
 
-document.addEventListener("DOMContentLoaded", () => {
-  let isLogged = localStorage.getItem("din_admin_logged");
-  if (isLogged) {
-    document.getElementById("login-overlay").style.display = "none";
-    loadAdminData();
-  } else {
-    hideGlobalLoader();
-  }
-});
 
-
-
-
-
+// Expose initAdminCMS globally
+window.initAdminCMS = function() {
+    if (Object.keys(appData).length === 0) {
+        loadAdminData();
+    }
+};
 async function loadAdminData() {
   showGlobalLoader();
   try {

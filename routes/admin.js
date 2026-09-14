@@ -199,9 +199,8 @@ router.get(
       cache.set("admin_data", result, 300); // Set cache selama 5 minit
       res.json(result);
     } catch (error) {
-      res
-        .status(500)
-        .json({ status: "error", message: "Gagal memuat turun data." });
+      console.error("[ADMIN DATA ERROR]", error);
+      res.status(500).json({ status: "error", message: "Gagal memuat turun data." });
     }
   },
 );
