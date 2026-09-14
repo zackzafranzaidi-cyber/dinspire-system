@@ -114,41 +114,85 @@ function renderTable(tabName) {
   }
 
   if (tabName === "Settings") {
-    let s = appData.Settings || {};
-    container.innerHTML = `
-      <div class="page-heading">
-        <h3>Tetapan Sistem & Caj</h3>
-        <p>Konfigurasi harga, komisen dan gaji. Tekan "Simpan ke Cloud" untuk menyimpan.</p>
-      </div>
-      <div class="settings-grid">
-        <div class="setting-card">
-          <label><i class="fas fa-truck" style="margin-right:6px; color:#2d6df6;"></i>Caj Penghantaran (Shipping Fee)</label>
-          <input type="number" value="${s.shipping_fee || 0}" onchange="updateSetting('shipping_fee', this.value)" placeholder="0" min="0" />
-          <p style="font-size:12px; color:#6b7280; margin-top:8px;">Dikenakan pada pembelian produk secara penghantaran (RM)</p>
+      let s = appData.Settings || {};
+      container.innerHTML = `
+        <div class="mb-6 bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center gap-3">
+          <i class="fas fa-cog text-blue-500 text-lg"></i>
+          <p class="text-sm text-blue-800 m-0">Konfigurasi nilai mata wang dan peratusan sistem. Tekan <strong>"Simpan ke Cloud"</strong> di bahagian atas setelah selesai.</p>
         </div>
-        <div class="setting-card">
-          <label><i class="fas fa-receipt" style="margin-right:6px; color:#2d6df6;"></i>Yuran Tempahan (Service Fee)</label>
-          <input type="number" value="${s.service_fee || 0}" onchange="updateSetting('service_fee', this.value)" placeholder="0" min="0" />
-          <p style="font-size:12px; color:#6b7280; margin-top:8px;">Yuran penyelenggaraan tempahan dalam talian (RM)</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Kad Caj Penghantaran -->
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                <i class="fas fa-truck text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wider">Caj Penghantaran</h4>
+                <p class="text-[11px] text-gray-400 font-medium">Beli produk melalui pos (RM)</p>
+              </div>
+            </div>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">RM</span>
+              <input type="number" value="${s.shipping_fee || 0}" onchange="updateSetting('shipping_fee', this.value)" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-lg font-bold text-gray-700 shadow-sm" placeholder="0.00" min="0">
+            </div>
+          </div>
+
+          <!-- Kad Yuran Tempahan -->
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                <i class="fas fa-receipt text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wider">Yuran Tempahan</h4>
+                <p class="text-[11px] text-gray-400 font-medium">Caj tempahan perkhidmatan dalam talian (RM)</p>
+              </div>
+            </div>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">RM</span>
+              <input type="number" value="${s.service_fee || 0}" onchange="updateSetting('service_fee', this.value)" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-lg font-bold text-gray-700 shadow-sm" placeholder="0.00" min="0">
+            </div>
+          </div>
+
+          <!-- Kad Komisen Staf -->
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                <i class="fas fa-percentage text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wider">Peratus Komisen</h4>
+                <p class="text-[11px] text-gray-400 font-medium">Berapa % jualan yang staf dapat (%)</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="number" value="${s.peratus_komisen || 50}" onchange="updateSetting('peratus_komisen', this.value)" class="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all text-lg font-bold text-gray-700 shadow-sm text-right" placeholder="50" min="0" max="100">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
+            </div>
+          </div>
+
+          <!-- Kad Gaji Asas -->
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                <i class="fas fa-money-bill-wave text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wider">Gaji Asas (Threshold)</h4>
+                <p class="text-[11px] text-gray-400 font-medium">Bonus komisen melebihi nilai ini (RM)</p>
+              </div>
+            </div>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">RM</span>
+              <input type="number" value="${s.gaji_asas || 1800}" onchange="updateSetting('gaji_asas', this.value)" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all text-lg font-bold text-gray-700 shadow-sm" placeholder="1800.00" min="0">
+            </div>
+          </div>
         </div>
-        <div class="setting-card">
-          <label><i class="fas fa-percentage" style="margin-right:6px; color:#f59e0b;"></i>Peratus Komisen Staf</label>
-          <input type="number" value="${s.peratus_komisen || 50}" onchange="updateSetting('peratus_komisen', this.value)" placeholder="50" min="0" max="100" />
-          <p style="font-size:12px; color:#6b7280; margin-top:8px;">Peratusan jualan yang dikira sebagai komisen staf (%)</p>
-        </div>
-        <div class="setting-card">
-          <label><i class="fas fa-money-bill-wave" style="margin-right:6px; color:#22c55e;"></i>Gaji Asas / Threshold Bonus</label>
-          <input type="number" value="${s.gaji_asas || 1800}" onchange="updateSetting('gaji_asas', this.value)" placeholder="1800" min="0" />
-          <p style="font-size:12px; color:#6b7280; margin-top:8px;">Bonus dikira apabila komisen melebihi nilai ini (RM)</p>
-        </div>
-      </div>
-      <div style="margin-top:20px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
-        <i class="fas fa-info-circle" style="color:#2d6df6; font-size:16px;"></i>
-        <p style="font-size:13px; color:#1e40af; margin:0;">Tekan butang <strong>"Simpan ke Cloud"</strong> di bahagian atas untuk menyimpan semua perubahan.</p>
-      </div>
-    `;
-    return;
-  }
+      `;
+      return;
+    }
 
   if (tabName === "Posters") {
     renderPosters(appData[tabName] || [], container);
@@ -163,120 +207,148 @@ function renderTable(tabName) {
   let dataArr = appData[tabName] || [];
   let cols = SCHEMAS[tabName];
 
-  let html = `<table class="data-table"><thead><tr>`;
+  let html = `<div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mt-4">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse whitespace-nowrap">
+        <thead>
+          <tr class="bg-gray-50 text-[11px] uppercase tracking-wider text-gray-500 font-bold border-b border-gray-200">
+`;
+  
   cols.forEach((c) => {
     if (tabName === "Branches" && (c === "lat" || c === "lng")) return;
     if (c === "id") {
-      html += `<th style="display:none;">${c.toUpperCase()}</th>`;
+      html += `<th style="display:none;">${c}</th>`;
     } else {
-      html += `<th>${c.toUpperCase()}</th>`;
+      html += `<th class="px-6 py-4">${c}</th>`;
     }
   });
-  html += `<th style="width: 60px;">TINDAKAN</th></tr></thead><tbody>`;
+  html += `<th class="px-6 py-4 text-center" style="width: 80px;">TINDAKAN</th></tr></thead><tbody class="divide-y divide-gray-100">`;
 
   dataArr.forEach((row, index) => {
-    html += `<tr>`;
+    html += `<tr class="hover:bg-indigo-50/40 transition-colors">`;
     cols.forEach((c) => {
       if (tabName === "Branches" && (c === "lat" || c === "lng")) return;
       
       if (c === "id") {
         html += `<td style="display:none;"><input type="hidden" value="${escapeHTML(row[c] || "")}"></td>`;
       } else if (c === "imageUrl") {
-        let currentImg = row[c] || "https://via.placeholder.com/40?text=IMG";
-        html += `<td><div style="display:flex; align-items:center; gap:10px;"><img src="${currentImg}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid #ccc;"><input type="file" accept="image/*" onchange="handleAdminImageUpload(this, '${tabName}', ${index}, '${c}')" style="font-size: 11px; width: 160px;"></div></td>`;
+        let currentImg = row[c] || "https://via.placeholder.com/60?text=IMG";
+        html += `<td class="px-6 py-3"><div class="flex items-center gap-4"><img src="${currentImg}" class="w-12 h-12 object-cover rounded-xl border border-gray-200 shadow-sm"><input type="file" accept="image/*" onchange="handleAdminImageUpload(this, '${tabName}', ${index}, '${c}')" class="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all cursor-pointer w-48"></div></td>`;
       } else if (c === "jenis_staf" && tabName === "Staff") {
         let opts = ["In-Branch", "On-Call", "General"].map(j => `<option value="${j}" ${row[c] === j ? "selected" : ""}>${j}</option>`).join("");
-        html += `<td><select onchange="updateData('${tabName}', ${index}, '${c}', this.value); setTimeout(()=>renderTable('${tabName}'), 100);" style="padding:10px; border-radius:8px; border:1px solid #E5E5EA; width:100%; outline:none; font-weight:600; font-family:inherit; background:#F4F5F8;">${opts}</select></td>`;
+        html += `<td class="px-6 py-3"><select onchange="updateData('${tabName}', ${index}, '${c}', this.value); setTimeout(()=>renderTable('${tabName}'), 100);" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-semibold text-gray-700 shadow-sm">${opts}</select></td>`;
       } else if (c === "branch_id" && tabName === "Staff") {
         if (row.jenis_staf === "On-Call" || row.jenis_staf === "General") {
-           html += `<td><div style="color:#888; font-size:12px; font-style:italic;">Tidak Berkenaan</div></td>`;
+           html += `<td class="px-6 py-3"><span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">Tidak Berkenaan</span></td>`;
         } else {
            let opts = `<option value="" disabled selected>-- Pilih Cawangan --</option>`;
            (appData["Branches"] || []).forEach((b) => {
              let sel = row[c] === b.id ? "selected" : "";
              opts += `<option value="${b.id}" ${sel}>${escapeHTML(b.name)}</option>`;
            });
-           html += `<td><select onchange="updateData('${tabName}', ${index}, '${c}', this.value)" style="padding:10px; border-radius:8px; border:1px solid #E5E5EA; width:100%; outline:none; font-weight:600; font-family:inherit; background:#F4F5F8;">${opts}</select></td>`;
+           html += `<td class="px-6 py-3"><select onchange="updateData('${tabName}', ${index}, '${c}', this.value)" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-semibold text-gray-700 shadow-sm">${opts}</select></td>`;
         }
       } else if (c === "kemahiran" && tabName === "Staff") {
         if (row.jenis_staf === "General") {
-           html += `<td><div style="color:#888; font-size:12px; font-style:italic;">Tidak Berkenaan</div></td>`;
+           html += `<td class="px-6 py-3"><span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">Tidak Berkenaan</span></td>`;
         } else {
           let chkH = row.can_haircut !== false ? "checked" : "";
           let chkT = row.can_treatment !== false ? "checked" : "";
-          html += `<td>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text-main);">
-                <input type="checkbox" ${chkH} onchange="updateCapabilities(${index}, 'can_haircut', this.checked)" style="width:16px; height:16px; accent-color:var(--primary-blue);"> Guntingan
+          html += `<td class="px-6 py-3">
+            <div class="flex flex-col gap-2">
+              <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200">
+                <input type="checkbox" ${chkH} onchange="updateCapabilities(${index}, 'can_haircut', this.checked)" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                <span class="text-sm font-bold text-gray-700">Guntingan</span>
               </label>
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text-main);">
-                <input type="checkbox" ${chkT} onchange="updateCapabilities(${index}, 'can_treatment', this.checked)" style="width:16px; height:16px; accent-color:#FF9500;"> Rawatan
+              <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200">
+                <input type="checkbox" ${chkT} onchange="updateCapabilities(${index}, 'can_treatment', this.checked)" class="w-4 h-4 text-amber-500 rounded border-gray-300 focus:ring-amber-500">
+                <span class="text-sm font-bold text-gray-700">Rawatan</span>
               </label>
             </div>
           </td>`;
         }
       } else if (tabName === "Branches" && c === "location") {
-        html += `<td>
-          <div class="input-row" style="display:flex; gap:10px;">
-            <input type="text" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)" style="flex:1;">
-            <button class="action-btn" style="background:#4CAF50; color:white; min-width:40px; border-radius:8px;" onclick="openMapPicker(${index})" title="Tetapkan Lokasi GPS">
+        html += `<td class="px-6 py-3">
+          <div class="flex gap-2 min-w-[250px]">
+            <input type="text" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)" class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-semibold text-gray-700 shadow-sm placeholder-gray-400">
+            <button onclick="openMapPicker(${index})" class="p-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-colors shadow-sm flex items-center justify-center shrink-0" title="Tetapkan Lokasi GPS">
               <i class="fas fa-map-marker-alt"></i>
             </button>
           </div>
         </td>`;
-      } else if (c === "price") {
-        html += `<td>
-          <div class="input-row table-price-wrapper">
-            <span>RM</span>
-            <input type="number" step="0.01" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)" placeholder="0.00">
-          </div>
-        </td>`;
+      } else if (c === "desc") {
+        html += `<td class="px-6 py-3 w-1/3"><input type="text" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-semibold text-gray-700 shadow-sm placeholder-gray-400"></td>`;
       } else {
-        html += `<td><div class="input-row"><input type="text" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)"></div></td>`;
+        html += `<td class="px-6 py-3 min-w-[150px]"><input type="${c==='price'||c==='stok'?'number':'text'}" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-bold shadow-sm placeholder-gray-400 ${c==='price'?'text-indigo-600':'text-gray-700'}"></td>`;
       }
     });
-    html += `<td><button class="action-btn del" onclick="deleteRow('${tabName}', ${index})"><i class="fas fa-trash"></i></button></td></tr>`;
+
+    html += `<td class="px-6 py-3 text-center">
+      <button onclick="deleteRow('${tabName}', ${index})" class="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 rounded-xl transition-all shadow-sm mx-auto" title="Padam Rekod">
+        <i class="fas fa-trash text-sm"></i>
+      </button>
+    </td></tr>`;
   });
 
-  html += `</tbody></table>`;
-  html += `<div style="margin-top:20px;"><button class="action-btn add" onclick="addRow('${tabName}')"><i class="fas fa-plus" style="margin-right:8px;"></i> Tambah Rekod Baru</button></div>`;
+  html += `</tbody></table></div></div>`;
+  
+  html += `
+    <button onclick="addRow('${tabName}')" class="group flex items-center justify-center w-full py-5 mt-4 border-2 border-dashed border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-400 rounded-3xl text-indigo-600 font-bold transition-all cursor-pointer shadow-sm">
+      <div class="flex items-center gap-3 group-hover:scale-105 transition-transform">
+        <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-md">
+          <i class="fas fa-plus text-sm"></i>
+        </div>
+        Tambah Rekod Baru
+      </div>
+    </button>
+  `;
 
   container.innerHTML = html;
 }
 
 function renderPosters(dataArr, container) {
   let html = `
-    <div class="page-heading">
-      <h3>Promosi (Poster)</h3>
-      <p>Muat naik poster promosi. Ukuran yang disyorkan: <strong>800 x 450 px</strong> (nisbah 16:9). Tekan "Simpan ke Cloud" selepas selesai untuk kemaskini.</p>
+    <div class="mb-4 bg-purple-50 border border-purple-100 rounded-2xl p-4 flex items-center gap-3">
+      <i class="fas fa-image text-purple-500 text-lg"></i>
+      <p class="text-sm text-purple-800 m-0">Poster akan dipaparkan sebagai "carousel slider" pada halaman utama aplikasi pelanggan. Nisbah lebar yang dicadangkan adalah <strong>16:9</strong> (mendatar). Tekan "Simpan ke Cloud" selepas memuat naik imej.</p>
     </div>
-    <div class="posters-grid">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-2">
   `;
 
   dataArr.forEach((row, index) => {
-    let currentImg = row.imageUrl || "https://via.placeholder.com/800x450?text=Sila+Upload+Gambar";
+    let currentImg = row.imageUrl || "https://via.placeholder.com/800x450?text=Upload+Poster";
     html += `
-      <div class="poster-card">
-        <div class="poster-img-container">
-          <img src="${currentImg}" class="poster-img" alt="Poster Promosi">
-        </div>
-        <div class="poster-actions">
-          <label class="poster-upload-btn">
-            <i class="fas fa-camera"></i> Tukar Imej
-            <input type="file" class="poster-upload-input" accept="image/*" onchange="handleAdminImageUpload(this, 'Posters', ${index}, 'imageUrl')">
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+        <!-- Image Container (16:9 aspect ratio) -->
+        <div class="relative w-full aspect-video bg-gray-50 border-b border-gray-100 group-hover:border-purple-100 transition-colors">
+          <img src="${currentImg}" class="w-full h-full object-cover" alt="Poster">
+          <label class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-300 backdrop-blur-[2px]">
+            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2 backdrop-blur-md">
+              <i class="fas fa-camera text-xl"></i>
+            </div>
+            <span class="text-sm font-bold tracking-wide">Tukar Poster</span>
+            <input type="file" class="hidden" accept="image/*" onchange="handleAdminImageUpload(this, 'Posters', ${index}, 'imageUrl')">
           </label>
-          <button class="action-btn del" onclick="deleteRow('Posters', ${index})" style="min-width:32px; height:32px; padding:0; display:flex; justify-content:center; align-items:center;" title="Padam Poster">
-            <i class="fas fa-trash"></i>
+        </div>
+        
+        <!-- Delete Button Container -->
+        <div class="p-4 bg-white flex justify-between items-center">
+          <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Poster #${index + 1}</span>
+          <button onclick="deleteRow('Posters', ${index})" class="px-4 py-2 bg-white border-2 border-gray-100 text-gray-400 font-bold text-xs rounded-xl hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center gap-2">
+            <i class="fas fa-trash"></i> Padam
           </button>
         </div>
       </div>
     `;
   });
 
+  // Add New Poster Card
   html += `
-      <div class="poster-add-card" onclick="addRow('Posters')">
-        <i class="fas fa-plus-circle"></i>
-        <span>Tambah Poster Baru</span>
+      <div onclick="addRow('Posters')" class="bg-purple-50/30 rounded-3xl border-2 border-dashed border-purple-200 overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:bg-purple-50 hover:border-purple-400 transition-all duration-300 aspect-video group">
+        <div class="w-14 h-14 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 shadow-sm">
+          <i class="fas fa-plus text-xl"></i>
+        </div>
+        <h4 class="font-bold text-purple-600 text-base">Tambah Poster</h4>
       </div>
     </div>
   `;
@@ -286,58 +358,69 @@ function renderPosters(dataArr, container) {
 
 function renderProducts(dataArr, container) {
   let html = `
-    <div class="page-heading">
-      <h3>Pengurusan Produk</h3>
-      <p>Muat naik produk E-Commerce. Ukuran imej disyorkan: <strong>500 x 500 px</strong> (nisbah 1:1). Tekan "Simpan ke Cloud" selepas selesai.</p>
+    <div class="mb-4 bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex items-center gap-3">
+      <i class="fas fa-info-circle text-indigo-500 text-lg"></i>
+      <p class="text-sm text-indigo-800 m-0">Ukuran imej disyorkan: <strong>500 x 500 px</strong> (nisbah 1:1). Tekan "Simpan ke Cloud" selepas memuat naik imej.</p>
     </div>
-    <div class="products-grid">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-2">
   `;
 
   dataArr.forEach((row, index) => {
     let currentImg = row.imageUrl || "https://via.placeholder.com/500x500?text=Upload+Produk";
     html += `
-      <div class="product-card">
-        <div class="product-img-container">
-          <img src="${currentImg}" class="product-img" alt="Produk">
-          <label class="product-upload-btn" title="Tukar Imej">
-            <i class="fas fa-camera"></i>
-            <input type="file" class="product-upload-input" accept="image/*" onchange="handleAdminImageUpload(this, 'Products', ${index}, 'imageUrl')">
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+        <!-- Image Container -->
+        <div class="relative w-full aspect-square bg-gray-50 border-b border-gray-100 group-hover:border-indigo-100 transition-colors">
+          <img src="${currentImg}" class="w-full h-full object-cover" alt="Produk">
+          <label class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-300 backdrop-blur-[2px]">
+            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2 backdrop-blur-md">
+              <i class="fas fa-camera text-xl"></i>
+            </div>
+            <span class="text-sm font-bold tracking-wide">Tukar Imej</span>
+            <input type="file" class="hidden" accept="image/*" onchange="handleAdminImageUpload(this, 'Products', ${index}, 'imageUrl')">
           </label>
         </div>
         
-        <div class="product-info-container">
-          <div class="product-input-group">
-            <label>Nama Produk</label>
-            <input type="text" value="${escapeHTML(row.name || "")}" onchange="updateData('Products', ${index}, 'name', this.value)" placeholder="Cth: Pomade Suavecito">
+        <!-- Form Container -->
+        <div class="p-5 flex flex-col gap-4 flex-1">
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Nama Produk</label>
+            <input type="text" value="${escapeHTML(row.name || "")}" onchange="updateData('Products', ${index}, 'name', this.value)" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-bold text-gray-800 shadow-sm placeholder-gray-400" placeholder="Cth: Pomade Asli">
           </div>
           
-          <div class="product-input-group">
-            <label>Harga (RM)</label>
-            <div class="product-price-input-wrapper">
-              <span>RM</span>
-              <input type="number" step="0.01" value="${escapeHTML(row.price || "")}" onchange="updateData('Products', ${index}, 'price', this.value)" placeholder="0.00">
+          <div class="flex gap-3">
+            <div class="flex-1">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Harga (RM)</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">RM</span>
+                <input type="number" value="${escapeHTML(row.price || "")}" onchange="updateData('Products', ${index}, 'price', this.value)" class="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-bold text-indigo-600 shadow-sm placeholder-gray-400" placeholder="0.00">
+              </div>
+            </div>
+            <div class="w-24">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Stok</label>
+              <input type="number" value="${escapeHTML(row.stok || "")}" onchange="updateData('Products', ${index}, 'stok', this.value)" class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-bold text-gray-800 shadow-sm placeholder-gray-400 text-center" placeholder="0">
             </div>
           </div>
-          
-          <div class="product-input-group">
-            <label>Stok Kuantiti</label>
-            <input type="number" min="0" value="${escapeHTML(row.stok ?? 0)}" onchange="updateData('Products', ${index}, 'stok', this.value)" placeholder="0">
-          </div>
         </div>
-
-        <div class="product-actions">
-          <button class="action-btn del" onclick="deleteRow('Products', ${index})" style="min-width:32px; height:32px; padding:0; display:flex; justify-content:center; align-items:center; background:#fee2e2; color:#ef4444;" title="Padam Produk">
-            <i class="fas fa-trash"></i>
+        
+        <!-- Delete Button Container -->
+        <div class="px-5 pb-5 mt-auto">
+          <button onclick="deleteRow('Products', ${index})" class="w-full py-2.5 bg-white border-2 border-gray-100 text-gray-400 font-bold text-xs rounded-xl hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center justify-center gap-2">
+            <i class="fas fa-trash"></i> Padam Produk
           </button>
         </div>
       </div>
     `;
   });
 
+  // Add New Product Card
   html += `
-      <div class="product-add-card" onclick="addRow('Products')">
-        <i class="fas fa-plus-circle"></i>
-        <span>Tambah Produk Baru</span>
+      <div onclick="addRow('Products')" class="bg-indigo-50/30 rounded-3xl border-2 border-dashed border-indigo-200 overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-400 transition-all duration-300 min-h-[350px] group">
+        <div class="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm">
+          <i class="fas fa-plus text-2xl"></i>
+        </div>
+        <h4 class="font-bold text-indigo-600 text-lg">Tambah Produk</h4>
+        <p class="text-xs text-indigo-400 mt-1">Klik di sini untuk daftar produk baru</p>
       </div>
     </div>
   `;
