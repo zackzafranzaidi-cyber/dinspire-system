@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.2.0";
+      const CURRENT_APP_VERSION = "1.1.59";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -256,18 +256,7 @@
         }
       });
     </script>
-    <link rel="stylesheet" href="../css/admin.css?v=2">
-  
-    <!-- SweetAlert2 (Needed for CMS) -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- Leaflet for Maps (Needed for CMS Branches) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
-  </head>
+</head>
   <body class="flex h-screen overflow-hidden bg-[#f3f4f6]">
 
     <div id="toast" class="toast"></div>
@@ -376,16 +365,8 @@
           id="nav-reports"
           class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1 hidden md:flex"
           ><i class="fas fa-file-archive w-5"></i>
-          <span data-i18n="nav-reports">Laporan & Resit</span></a>
-
-          <a
-            href="#"
-            onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS();"
-            id="nav-cms"
-            class="sidebar-nav-item flex items-center gap-3 px-4 py-2 text-sm rounded-xl font-semibold transition-all text-gray-400 hover:text-white hover:bg-white/5 hover:translate-x-1"
-            ><i class="fas fa-database w-5"></i>
-            <span>Master Data (CMS)</span></a>
-
+          <span data-i18n="nav-reports">Laporan & Resit</span></a
+        >
         <a
           href="#"
           onclick="switchTab('ai')"
@@ -562,11 +543,6 @@
                <button onclick="toggleLanguage(); document.getElementById('mobile-header-menu').classList.add('hidden')" class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2 font-semibold transition">
                  <i class="fas fa-language text-purple-500 w-5 text-center"></i> <span id="lang-indicator-mob">Bahasa (EN)</span>
                </button>
-
-                 <button onclick="switchTab('cms'); if(typeof initAdminCMS === 'function') initAdminCMS(); document.getElementById('mobile-header-menu').classList.add('hidden')" class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2 font-semibold transition">
-                   <i class="fas fa-database text-indigo-500 w-5 text-center"></i> <span data-i18n="mob-nav-cms">Master Data (CMS)</span>
-                 </button>
-
                <button onclick="logoutOwner()" class="text-left px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-2 font-semibold transition">
                  <i class="fas fa-sign-out-alt w-5 text-center"></i> Log Keluar
                </button>
@@ -1376,41 +1352,7 @@
         </div>
       </div>
 
-      
-        <!-- TAB: PENGURUSAN DATA (CMS) -->
-        <div id="tab-cms" class="tab-content hidden w-full max-w-full">
-          <div class="card flex flex-col border border-gray-200 p-0 overflow-hidden w-full max-w-full mb-6">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center p-4 border-b border-gray-100 bg-gray-50 gap-4">
-              <h4 class="font-bold text-lg text-gray-800" id="current-section-title">Urus Data</h4>
-              <div class="flex flex-wrap gap-2">
-                 <!-- CMS Nav Buttons -->
-                 <select onchange="switchAdminTab(this.value)" class="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-semibold text-gray-700">
-                    <option value="Haircuts">Gunting (Booking)</option>
-                    <option value="Treatments">Rawatan (Booking)</option>
-                    <option value="WalkInServices">Walk-In Gunting</option>
-                    <option value="WalkInTreatments">Walk-In Rawatan</option>
-                    <option value="OnCall">On-Call Servis</option>
-                    <option value="Products">Produk E-Commerce</option>
-                    <option value="Posters">Promosi (Poster)</option>
-                    <option value="Branches">Cawangan</option>
-                    <option value="Staff">Staf & Pekerja</option>
-                    <option value="Settings">Tetapan Sistem & Yuran</option>
-                    <option value="ResetRequests">Reset Password</option>
-                 </select>
-                 <button class="bg-indigo-600 text-white font-bold text-xs px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow" id="main-save-btn" onclick="saveAllData()">
-                    <i class="fas fa-cloud-upload-alt mr-1"></i> Simpan
-                 </button>
-              </div>
-            </div>
-            <div class="overflow-auto table-container min-h-[60vh] flex flex-col bg-white">
-              <div id="dynamic-content" class="p-4 w-full h-full flex-1 admin-cms-wrapper">
-                 <p class="text-gray-500 text-center mt-10">Sila tunggu...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB: PENASIHAT AI (MOBILE CONTAINER) -->
+      <!-- TAB: PENASIHAT AI (MOBILE CONTAINER) -->
       <div
         id="tab-ai"
         class="tab-content hidden w-full max-w-full h-[85vh] pb-6"
@@ -1610,8 +1552,7 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="../js/owner.js?v=37"></script>
-    <script src="../js/admin.js?v=3"></script>
+    <script src="../js/owner.js?v=35"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>

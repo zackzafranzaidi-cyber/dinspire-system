@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>CMS - Dinspire</title>
+    <link rel="stylesheet" href="css/admin.css?v=32" />
+    <link rel="stylesheet" href="css/loader.css?v=3" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Leaflet for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1a1d23">
+  </head>
+  <body>
+    <!-- Area Loading -->
+    <style>
+      #preloader {
+        position: fixed !important;
+        top: 0; right: 0; bottom: 0; left: 0;
+        z-index: 100;
+      }
+      @media (min-width: 768px) {
+        #preloader {
+          left: 240px !important;
+          width: auto !important;
+        }
+      }
+    </style>
+    <div class="loading-wrapper" id="preloader" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.75); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; --loader-color: #2d6df6; --loader-color-shadow: rgba(45, 109, 246, 0.4); --loader-color-shadow-light: rgba(45, 109, 246, 0.1);">
+        <div class="clipper-container">
+            <svg class="perfect-clipper" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                <defs>
+                    <mask id="switch-mask-admin">
+                        <rect x="47" y="52" width="6" height="8" rx="2" fill="white" />
+                        <line x1="48" y1="54.5" x2="52" y2="54.5" stroke="black" stroke-width="1.2" />
+                        <line x1="48" y1="57.5" x2="52" y2="57.5" stroke="black" stroke-width="1.2" />
+                    </mask>
+                </defs>
+                <line x1="38" y1="22" x2="41" y2="24" class="hair hair-1" />
+                <line x1="60" y1="21" x2="58" y2="25" class="hair hair-2" />
+                <line x1="50" y1="20" x2="51" y2="23" class="hair hair-3" />
+                <g stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round">
+                    <path d="M 40,80 Q 40,50 46,35 L 54,35 Q 60,50 60,80 Q 50,86 40,80 Z" />
+                    <rect x="47" y="52" width="6" height="8" rx="2" fill="currentColor" mask="url(#switch-mask-admin)" stroke="none" />
+                    <path d="M 47,84 Q 47,91 50,91 Q 53,91 53,84" />
+                    <rect x="46" y="28" width="8" height="7" fill="currentColor" stroke="none" />
+                    <path d="M 32,28 L 68,28 L 68,25 Q 68,22 55,22 L 45,22 Q 32,22 32,25 Z" />
+                    <line x1="33" y1="21.5" x2="67" y2="21.5" stroke-width="1.5" stroke-dasharray="1.5, 1.5" />
+                </g>
+                <rect x="36" y="18.5" width="28" height="3" rx="1.5" fill="currentColor" class="vibrating-blade" />
+            </svg>
+        </div>
+        <div class="loading-text">TRIMMING</div>
+    </div>
+
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+      <div class="login-box">
+        <h2>Akses Pentadbir</h2>
+        <p>Sila masukkan butiran untuk mengurus data sistem</p>
+        <input type="text" id="sys-username" placeholder="Nama Pengguna (Username)" />
+        <input type="password" id="sys-password" placeholder="Kata Laluan" />
+        <button onclick="loginAdmin(['admin', 'owner'])">Log Masuk CMS</button>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="header-icon"><i class="fas fa-cut"></i></div>
+        CMS Panel
+      </div>
+      <div class="nav-list">
+
+        <div class="nav-label">Services & Products</div>
+        <div class="nav-item active" onclick="switchTab('Haircuts', this)">
+          <i class="fas fa-cut"></i> Haircuts (Booking)
+        </div>
+        <div class="nav-item" onclick="switchTab('Treatments', this)">
+          <i class="fas fa-spa"></i> Treatments (Booking)
+        </div>
+        <div class="nav-item" onclick="switchTab('WalkInServices', this)">
+          <i class="fas fa-walking"></i> Walk-In Haircuts
+        </div>
+        <div class="nav-item" onclick="switchTab('WalkInTreatments', this)">
+          <i class="fas fa-leaf"></i> Walk-In Treatments
+        </div>
+        <div class="nav-item" onclick="switchTab('OnCall', this)">
+          <i class="fas fa-mobile-alt"></i> On-Call Services
+        </div>
+        <div class="nav-item" onclick="switchTab('Products', this)">
+          <i class="fas fa-box"></i> Products
+        </div>
+        <div class="nav-item" onclick="switchTab('Posters', this)">
+          <i class="fas fa-image"></i> Promotions (Posters)
+        </div>
+
+        <div class="nav-divider"></div>
+        <div class="nav-label">Management</div>
+        <div class="nav-item" onclick="switchTab('Branches', this)">
+          <i class="fas fa-store"></i> Branches
+        </div>
+        <div class="nav-item" onclick="switchTab('Staff', this)">
+          <i class="fas fa-users-cog"></i> Staf & Pekerja
+        </div>
+
+        <div class="nav-divider"></div>
+        <div class="nav-label">System</div>
+        <div class="nav-item" onclick="switchTab('Settings', this)">
+          <i class="fas fa-cog"></i> System Settings & Fees
+        </div>
+        <div class="nav-item" onclick="switchTab('ResetRequests', this)">
+          <i class="fas fa-key"></i> Password Reset Requests
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="topbar">
+        <h2 id="current-section-title">Manage Haircuts</h2>
+        <div class="topbar-right">
+          <button class="save-btn" id="main-save-btn" onclick="saveAllData()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            Simpan ke Cloud
+          </button>
+        </div>
+      </div>
+      <div class="content-area" id="dynamic-content">
+        <div style="text-align: center; margin-top: 60px; color: #aaa;">
+          <i class="fas fa-spinner fa-spin" style="font-size:28px; margin-bottom:12px; display:block;"></i>
+          Memuat turun data...
+        </div>
+      </div>
+    </div>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/admin.js?v=7"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js?v=3");
+        });
+      }
+    </script>
+  </body>
+</html>
+
