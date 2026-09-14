@@ -718,4 +718,34 @@ router.get("/historical-data", authenticate, requireRole(["owner"]), async (req,
   }
 });
 
+
+router.get("/seen-badges", authenticate, requireRole(["owner"]), async (req, res) => {
+    try {
+        const { data } = await supabase.from("settings").select("setting_key, setting_value").like("setting_key", "seen_%_owner");
+        let badges = {};
+        if (data) {
+            data.forEach(s => {
+                badges[s.setting_key.replace("_owner", "")] = parseInt(s.setting_value) || 0;
+            });
+        }
+        res.json({ status: "success", badges });
+    } catch(err) {
+        res.json({ status: "error", badges: {} });
+    }
+});
+
+router.post("/update-seen-badge", authenticate, requireRole(["owner"]), async (req, res) => {
+    try {
+        const { type, count } = req.body;
+        await supabase.from("settings").upsert({
+            setting_key: `seen_${type}_owner`,
+            setting_value: String(count),
+            description: "Owner badge seen count"
+        });
+        res.json({ status: "success" });
+    } catch(err) {
+        res.json({ status: "error" });
+    }
+});
+
 module.exports = router;

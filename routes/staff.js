@@ -785,5 +785,28 @@ router.delete("/leaves/:id", authenticate, requireRole(["staff"]), async (req, r
   }
 });
 
+
+router.get("/my-seen-badge", authenticate, requireRole(["staff", "owner"]), async (req, res) => {
+    try {
+        const { data } = await supabase.from("settings").select("setting_value").eq("setting_key", `seen_leaves_${req.user.id}`).maybeSingle();
+        res.json({ status: "success", count: data ? parseInt(data.setting_value) : 0 });
+    } catch(err) {
+        res.json({ status: "error", count: 0 });
+    }
+});
+
+router.post("/update-seen-badge", authenticate, requireRole(["staff", "owner"]), async (req, res) => {
+    try {
+        await supabase.from("settings").upsert({
+            setting_key: `seen_leaves_${req.user.id}`,
+            setting_value: String(req.body.count),
+            description: "Staff badge seen count"
+        });
+        res.json({ status: "success" });
+    } catch(err) {
+        res.json({ status: "error" });
+    }
+});
+
 module.exports = router;
 

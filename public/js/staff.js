@@ -365,7 +365,13 @@ function switchView(id) {
   
   if (id === 'profile') {
       if (typeof loggedInStaff !== 'undefined' && loggedInStaff) {
-          localStorage.setItem('din_seen_leaves_count_' + loggedInStaff.id, window.totalLeavesProcessed || 0);
+          let count = window.totalLeavesProcessed || 0;
+          fetch(API_BASE_URL + '/staff/update-seen-badge', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ count: count }),
+              credentials: 'include'
+          }).catch(e => console.error(e));
       }
       const badgeProfile = document.getElementById('badge-profile');
       if (badgeProfile) badgeProfile.style.display = 'none';
@@ -1362,11 +1368,18 @@ async function updateStaffBadges() {
          }
      }
      
+     
      // Profile Badge (Leaves)
      try {
-         const res = await fetch(API_BASE_URL + '/staff/my-leaves', { credentials: "include" });
-         if (res.ok) {
-             const data = await res.json();
+         const [resLeaves, resBadge] = await Promise.all([
+             fetch(API_BASE_URL + '/staff/my-leaves', { credentials: "include" }),
+             fetch(API_BASE_URL + '/staff/my-seen-badge', { credentials: "include" })
+         ]);
+         
+         if (resLeaves.ok && resBadge.ok) {
+             const data = await resLeaves.json();
+             const badgeData = await resBadge.json();
+             
              let countLeaves = 0;
              if (data.leaves) {
                  data.leaves.forEach(l => {
@@ -1375,7 +1388,7 @@ async function updateStaffBadges() {
              }
              window.totalLeavesProcessed = countLeaves;
              
-             let seenLeaves = parseInt(localStorage.getItem('din_seen_leaves_count_' + loggedInStaff.id)) || 0;
+             let seenLeaves = badgeData.count || 0;
              const badgeProfile = document.getElementById('badge-profile');
              if (badgeProfile) {
                  if (countLeaves > seenLeaves) badgeProfile.style.display = 'block';

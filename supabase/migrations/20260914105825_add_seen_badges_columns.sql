@@ -1,0 +1,5 @@
+ALTER TABLE public.staff ADD COLUMN IF NOT EXISTS seen_leaves_count INT DEFAULT 0;
+ALTER TABLE public.owners ADD COLUMN IF NOT EXISTS seen_tx_servis INT DEFAULT 0;
+ALTER TABLE public.owners ADD COLUMN IF NOT EXISTS seen_tx_produk INT DEFAULT 0;
+ALTER TABLE public.owners ADD COLUMN IF NOT EXISTS seen_reviews INT DEFAULT 0;
+ALTER TABLE public.owners ADD COLUMN IF NOT EXISTS seen_wa INT DEFAULT 0;

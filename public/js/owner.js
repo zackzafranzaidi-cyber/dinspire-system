@@ -570,7 +570,7 @@ function hideGlobalLoader() {
 
 function switchTab(tabName, element = null) {
   if (tabName === 'reviews' && masterData.reviews) {
-      localStorage.setItem('din_seen_reviews_count', masterData.reviews.length);
+      localStorage.setItem('din_seen_reviews_count', masterData.reviews.length); syncSeenBadge('reviews', masterData.reviews.length);
       const b = document.getElementById('badge-mob-reviews');
       if (b) b.style.display = 'none';
   }
@@ -682,7 +682,7 @@ function toggleTxTab(type) {
     
     if (type === 'servis') {
        let totalServis = (typeof masterData !== "undefined" && masterData.bookings) ? masterData.bookings.length : 0;
-       localStorage.setItem('din_seen_tx_servis_count', totalServis);
+       localStorage.setItem('din_seen_tx_servis_count', totalServis); syncSeenBadge('tx_servis', totalServis);
        updateOwnerBadges();
        document.querySelectorAll('.servis-new-dot').forEach(el => el.style.display = 'none');
     }
@@ -725,12 +725,29 @@ async function fetchOwnerDashboardData(silent = false) {
       } catch (e) {}
   }
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/owner/dashboard`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
+    try {
+    const [res, badgeRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/owner/dashboard`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      }),
+      fetch(`${API_BASE_URL}/owner/seen-badges`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      }).catch(e => null)
+    ]);
+    
+    if (badgeRes && badgeRes.ok) {
+       const badgeData = await badgeRes.json();
+       if (badgeData && badgeData.status === 'success' && badgeData.badges) {
+          if (badgeData.badges.tx_servis !== undefined) localStorage.setItem('din_seen_tx_servis_count', badgeData.badges.tx_servis);
+          if (badgeData.badges.tx_produk !== undefined) localStorage.setItem('din_seen_tx_produk_count', badgeData.badges.tx_produk);
+          if (badgeData.badges.reviews !== undefined) localStorage.setItem('din_seen_reviews_count', badgeData.badges.reviews);
+          if (badgeData.badges.wa !== undefined) localStorage.setItem('din_seen_wa_count', badgeData.badges.wa);
+       }
+    }
 
     if (res.status === 401 || res.status === 403) {
       alert("Sesi anda telah tamat. Sila log masuk semula.");
@@ -2531,14 +2548,14 @@ function toggleRevTab(tab) {
   if (tab === "reviews") {
     document.getElementById("rev-list-view").classList.remove("hidden");
     if (typeof masterData !== "undefined" && masterData.reviews) {
-        localStorage.setItem('din_seen_reviews_count', masterData.reviews.length);
+        localStorage.setItem('din_seen_reviews_count', masterData.reviews.length); syncSeenBadge('reviews', masterData.reviews.length);
     }
     updateOwnerBadges();
     document.querySelectorAll('.review-new-dot').forEach(el => el.style.display = 'none');
   } else if (tab === "marketing") {
     document.getElementById("rev-marketing-view").classList.remove("hidden");
     if (typeof marketingCustomers !== "undefined" && marketingCustomers) {
-        localStorage.setItem('din_seen_wa_count', marketingCustomers.length);
+        localStorage.setItem('din_seen_wa_count', marketingCustomers.length); syncSeenBadge('wa', marketingCustomers.length);
     }
     updateOwnerBadges();
     fetchMarketingData();
@@ -3290,6 +3307,16 @@ async function subscribeToPush() {
 
 
 // UPDATE OWNER BADGES
+
+function syncSeenBadge(type, count) {
+    fetch(API_BASE_URL + '/owner/update-seen-badge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, count }),
+        credentials: 'include'
+    }).catch(e => console.error(e));
+}
+
 function updateOwnerBadges() {
     if (typeof masterData === "undefined" || !masterData) return;
     
