@@ -3372,11 +3372,15 @@ function updateOwnerBadges() {
     window.waClicked = waClickedRaw ? JSON.parse(waClickedRaw) : [];
     
     let totalWa = 0;
-    if (typeof marketingCustomers !== "undefined" && marketingCustomers) {
-        totalWa = marketingCustomers.length;
-    }
-    let seenWa = parseInt(localStorage.getItem('din_seen_wa_count')) || 0;
-    let newWaCount = Math.max(0, totalWa - seenWa);
+      let unclickedWa = 0;
+      if (typeof marketingCustomers !== "undefined" && marketingCustomers) {
+          totalWa = marketingCustomers.length;
+          marketingCustomers.forEach(c => {
+             if (!window.waClicked.includes(c.phone)) unclickedWa++;
+          });
+      }
+      // Provide unclicked count as the badge number so it persists until clicked
+      let newWaCount = unclickedWa;
 
     const updateBadgeNumber = (id, count) => {
        const el = document.getElementById(id);
