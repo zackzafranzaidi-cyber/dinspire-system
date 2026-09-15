@@ -1002,7 +1002,7 @@ function processData() {
   }
 
   animateNumber("val-products-rm", productRev, "RM ", "", 2);
-  animateNumber("val-orders-count", productOrderCount, "", "", 0);
+  animateNumber("val-orders-count", productOrderCount, "", " Orders", 0);
   
   // Calculate total product stock
   let totalStock = 0;
@@ -1016,8 +1016,7 @@ function processData() {
   }
   
   animateNumber("val-services-count", filteredBookings.length, "", "", 0);
-  document.getElementById("val-walkin-booking").innerText =
-    `${countHcWalkin} / ${countHcBooking}`;
+  document.getElementById("val-walkin-booking").innerText = `${countHcWalkin} Walk-in / ${countHcBooking} Booking`;
 
   let tStars = 0;
   filteredReviews.forEach(
