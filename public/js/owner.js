@@ -991,7 +991,83 @@ function processData() {
     }
   });
 
-  animateNumber("val-revenue", serviceRev + productRev, "RM ", "", 0);
+  
+    // Calculate previous period data for percentage comparison
+    let previousRefDate = new Date(now);
+    let periodName = "period";
+    if (filterType === 'daily') { previousRefDate.setDate(now.getDate() - 1); periodName = "day"; }
+    else if (filterType === 'weekly') { previousRefDate.setDate(now.getDate() - 7); periodName = "week"; }
+    else if (filterType === 'monthly') { previousRefDate.setMonth(now.getMonth() - 1); periodName = "month"; }
+    else if (filterType === 'yearly') { previousRefDate.setFullYear(now.getFullYear() - 1); periodName = "year"; }
+
+    let prevRevenue = 0; let prevOrders = 0; let prevProfit = 0;
+    if (filterType !== 'all') {
+      let prevBookings = masterData.bookings.filter(b => b.Status === "Selesai" && isWithinFilter(b.Date || b.Timestamp || b.created_at, filterType, previousRefDate));
+      let prevTableOrders = masterData.orders.filter((o) => isWithinFilter(o.tarikh || o.Timestamp || o.created_at, filterType, previousRefDate)).filter(o => o.status !== "Pending Verification" && o.status !== "Preparing");
+      let prevFilteredOrders = prevTableOrders.filter((o) => {
+        if (o.status === "Batal" || o.status === "Pending Verification") return false;
+        let r = o.resit || o.ReceiptLink || "";
+        if (typeof r === "string" && (r.includes("FPX_PENDING") || r.includes("FPX_FAILED"))) return false;
+        return true;
+      });
+      
+      let p_sRev = 0, p_sFee = 0;
+      prevBookings.forEach(b => { p_sRev += parseFloat(b.Price) || 0; p_sFee += parseFloat(b.Fee) || 0; });
+      let p_pRev = 0, p_pShip = 0;
+      prevFilteredOrders.forEach(o => {
+        let items = typeof o.senarai_produk === "string" ? JSON.parse(o.senarai_produk) : o.senarai_produk;
+        if (!items && o.Items) items = typeof o.Items === "string" ? JSON.parse(o.Items) : o.Items;
+        let cost = 0;
+        for (let k in items) cost += (items[k].qty || 0) * (items[k].price || 0);
+        p_pRev += cost;
+        p_pShip += parseFloat(o.shipping_fee) || 0;
+      });
+      
+      let p_totalComm = p_sRev * (masterData.commissionPercent / 100);
+      prevRevenue = p_sRev + p_sFee + p_pRev + p_pShip;
+      prevOrders = prevBookings.length;
+      prevProfit = prevRevenue - p_totalComm;
+    }
+
+    const updatePct = (id, current, prev) => {
+      let elContainer = document.getElementById(id + "-container");
+      let el = document.getElementById(id);
+      if (!el || !elContainer) return;
+      
+      if (filterType === 'all' || prev === 0) {
+        elContainer.className = "text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 self-start mt-1";
+        if (id === 'val-revenue-pct') elContainer.className = "text-xs font-bold px-2 py-1 rounded-md mb-1 bg-gray-100 text-gray-500";
+        el.innerText = filterType === 'all' ? "-" : (current > 0 ? "+100%" : "0%");
+        return;
+      }
+      
+      let pct = ((current - prev) / prev) * 100;
+      let isUp = pct >= 0;
+      let formattedPct = (isUp ? "↑ " : "↓ ") + Math.abs(pct).toFixed(1) + "%";
+      
+      el.innerText = formattedPct;
+      let baseClass = id === 'val-revenue-pct' ? "text-xs font-bold px-2 py-1 rounded-md mb-1 " : "text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 ";
+      if (id !== 'val-revenue-pct') baseClass += " self-start "; // for flex alignment
+      
+      if (isUp) {
+        elContainer.className = baseClass + "bg-emerald-50 text-emerald-600";
+      } else {
+        elContainer.className = baseClass + "bg-red-50 text-red-600";
+      }
+    };
+
+    const currentRevenue = serviceRev + productRev + totalServiceFees + totalShippingFees;
+    const currentOrders = filteredBookings.length;
+    const currentProfit = currentRevenue - totalComm;
+
+    updatePct('val-revenue-pct', currentRevenue, prevRevenue);
+    updatePct('val-orders-pct', currentOrders, prevOrders);
+    updatePct('val-profit-pct', currentProfit, prevProfit);
+
+    let periodEl = document.getElementById('val-revenue-period');
+    if (periodEl) periodEl.innerText = periodName;
+
+    animateNumber("val-revenue", serviceRev + productRev, "RM ", "", 0);
   if (document.getElementById("val-service-fee")) animateNumber("val-service-fee", totalServiceFees, "RM ", "", 2);
   if (document.getElementById("val-shipping-fee")) animateNumber("val-shipping-fee", totalShippingFees, "RM ", "", 2);
   animateNumber("val-commission", totalComm, "RM ", "", 2);
@@ -1871,186 +1947,182 @@ function initChart() {
 }
 
 function updateBarChart(bookings, orders, filterType) {
-  let labels = [];
-  let dataPoints = [];
-  let bgColors = [];
-  const now = currentReferenceDate;
+    let labels = [];
+    let dataPoints = [];
+    let bgColors = [];
+    const now = currentReferenceDate;
+  
+    window._branchData = { revenue: {}, expense: {}, profit: {} };
+    let allPossibleBranches = new Set(Object.values(mapBarberBranch));
+    
+    bookings.forEach((b) => {
+        let txDate = b.Date || (b.Timestamp ? String(b.Timestamp).split("T")[0] : "");
+        let br = getTransactionBranch(b.Barber, txDate, b.Time);
+        if (br) allPossibleBranches.add(br);
+    });
+  
+    allPossibleBranches.forEach(br => {
+      window._branchData.revenue[br] = [];
+      window._branchData.expense[br] = [];
+      window._branchData.profit[br] = [];
+    });
+  
+    if (filterType === "daily") {
+      for (let i = 0; i < 24; i++) {
+        labels.push(i.toString().padStart(2, "0") + ":00");
+        dataPoints.push(0);
+        bgColors.push(i === now.getHours() ? "#111827" : "#d1d5db");
+      }
+    } else if (filterType === "weekly") {
+      labels = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
+      dataPoints = [0, 0, 0, 0, 0, 0, 0];
+      for (let i = 0; i < 7; i++) {
+        bgColors.push(i === now.getDay() ? "#111827" : "#d1d5db");
+      }
+    } else if (filterType === "monthly") {
+      let daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      for (let i = 1; i <= daysInMonth; i++) {
+        labels.push(i.toString());
+        dataPoints.push(0);
+        bgColors.push(i === now.getDate() ? "#111827" : "#d1d5db");
+      }
+    } else if (filterType === "yearly") {
+      labels = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
+      dataPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      for (let i = 0; i < 12; i++) {
+        bgColors.push(i === now.getMonth() ? "#111827" : "#d1d5db");
+      }
+    } else {
+      labels = ["Semua Data"];
+      dataPoints = [0];
+      bgColors = ["#111827"];
+    }
+  
+    Object.keys(window._branchData.revenue).forEach(br => {
+      window._branchData.revenue[br] = new Array(labels.length).fill(0);
+      window._branchData.expense[br] = new Array(labels.length).fill(0);
+      window._branchData.profit[br] = new Array(labels.length).fill(0);
+    });
+  
+    function getIndex(dateStr, timeStr) {
+      let d;
+      if (dateStr && timeStr && typeof dateStr === "string" && dateStr.includes("-") && timeStr.includes(":")) {
+        d = new Date(`${dateStr}T${timeStr.length === 5 ? timeStr + ":00" : timeStr}`);
+      } else {
+        d = parseGSDate(dateStr);
+      }
+      if (!d || isNaN(d.getTime())) return -1;
+  
+      let idx = -1;
+      if (filterType === "daily") {
+        let hour = d.getHours();
+        if (hour >= 0 && hour < 24) idx = hour;
+      } else if (filterType === "weekly") {
+        let day = d.getDay();
+        idx = day;
+      } else if (filterType === "monthly") {
+        let dateNum = d.getDate();
+        if (dateNum >= 1 && dateNum <= labels.length) idx = dateNum - 1;
+      } else if (filterType === "yearly") {
+        let month = d.getMonth();
+        if (month >= 0 && month < 12) idx = month;
+      } else {
+        idx = 0;
+      }
+      return idx;
+    }
 
-  // Sediakan penjejak data cawangan
-  let branchDataPoints = {};
-  let allPossibleBranches = new Set(Object.values(mapBarberBranch));
-  
-  
-  
-  
-  bookings.forEach((b) => {
+    bookings.forEach((b) => {
       let txDate = b.Date || (b.Timestamp ? String(b.Timestamp).split("T")[0] : "");
       let br = getTransactionBranch(b.Barber, txDate, b.Time);
-      if (br) allPossibleBranches.add(br);
-  });
-
-  allPossibleBranches.forEach(br => {
-    branchDataPoints[br] = [];
-  });
-
-  if (filterType === "daily") {
-    for (let i = 0; i < 24; i++) {
-      labels.push(i.toString().padStart(2, "0") + ":00");
-      dataPoints.push(0);
-      bgColors.push(i === now.getHours() ? "#111827" : "#d1d5db");
-    }
-  } else if (filterType === "weekly") {
-    labels = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
-    dataPoints = [0, 0, 0, 0, 0, 0, 0];
-    for (let i = 0; i < 7; i++) {
-      bgColors.push(i === now.getDay() ? "#111827" : "#d1d5db");
-    }
-  } else if (filterType === "monthly") {
-    let daysInMonth = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-    ).getDate();
-    for (let i = 1; i <= daysInMonth; i++) {
-      labels.push(i.toString());
-      dataPoints.push(0);
-      bgColors.push(i === now.getDate() ? "#111827" : "#d1d5db");
-    }
-  } else if (filterType === "yearly") {
-    labels = [
-      "Jan",
-      "Feb",
-      "Mac",
-      "Apr",
-      "Mei",
-      "Jun",
-      "Jul",
-      "Ogo",
-      "Sep",
-      "Okt",
-      "Nov",
-      "Dis",
-    ];
-    dataPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    for (let i = 0; i < 12; i++) {
-      bgColors.push(i === now.getMonth() ? "#111827" : "#d1d5db");
-    }
-  } else {
-    labels = ["Semua Data"];
-    dataPoints = [0];
-    bgColors = ["#111827"];
-  }
-
-  // Isi data kosong untuk setiap cawangan mengikut panjang paksi X
-  Object.keys(branchDataPoints).forEach(br => {
-    branchDataPoints[br] = new Array(labels.length).fill(0);
-  });
-
-  function addAmount(dateStr, timeStr, amount, brName) {
-    let d;
-    if (
-      dateStr &&
-      timeStr &&
-      typeof dateStr === "string" &&
-      dateStr.includes("-") &&
-      timeStr.includes(":")
-    ) {
-      d = new Date(
-        `${dateStr}T${timeStr.length === 5 ? timeStr + ":00" : timeStr}`,
-      );
-    } else {
-      d = parseGSDate(dateStr);
-    }
-    if (!d || isNaN(d.getTime())) return;
-
-    let idx = -1;
-    if (filterType === "daily") {
-      let hour = d.getHours();
-      if (hour >= 0 && hour < 24) idx = hour;
-    } else if (filterType === "weekly") {
-      let day = d.getDay();
-      idx = day;
-    } else if (filterType === "monthly") {
-      let dateNum = d.getDate();
-      if (dateNum >= 1 && dateNum <= dataPoints.length) idx = dateNum - 1;
-    } else if (filterType === "yearly") {
-      let month = d.getMonth();
-      if (month >= 0 && month < 12) idx = month;
-    } else {
-      idx = 0;
-    }
-
-    if (idx !== -1) {
-      dataPoints[idx] += amount;
-      if (branchDataPoints[brName]) {
-        branchDataPoints[brName][idx] += amount;
+      if (br === "Tidak Ditetapkan") br = "In-Branch";
+      
+      let idx = getIndex(txDate, b.Time);
+      if (idx !== -1) {
+          let price = parseFloat(b.Price) || 0;
+          let fee = parseFloat(b.Fee) || 0;
+          let rev = price + fee;
+          let exp = price * (masterData.commissionPercent / 100);
+          let prof = rev - exp;
+          
+          dataPoints[idx] += rev;
+          if (window._branchData.revenue[br]) {
+             window._branchData.revenue[br][idx] += rev;
+             window._branchData.expense[br][idx] += exp;
+             window._branchData.profit[br][idx] += prof;
+          }
       }
-    }
-  }
-
-  bookings.forEach((b) => {
-    let txDate = b.Date || (b.Timestamp ? String(b.Timestamp).split("T")[0] : "");
-    let br = getTransactionBranch(b.Barber, txDate, b.Time);
-    if (br === "Tidak Ditetapkan") br = "In-Branch";
-    addAmount(txDate, b.Time, parseFloat(b.Price) || 0, br);
-  });
-  orders.forEach((o) => addAmount(o.Timestamp || o.tarikh, null, o._calculatedTotal || 0, "In-Branch"));
-
-  salesChartObj.data.labels = labels;
-  salesChartObj.data.datasets[0].data = dataPoints;
-  salesChartObj.data.datasets[0].backgroundColor = bgColors;
-  animateChartWhenVisible(salesChartObj, "salesChart");
-
-  if (branchLineChartObj) {
-    branchLineChartObj.data.labels = labels;
-    let datasets = [];
-    let colorIndex = 0;
-    
-    const ctxChart = document.getElementById("branchLineChart").getContext("2d");
-    
-    // Gradients for black (active) and gray (inactive)
-    let activeGradient = ctxChart.createLinearGradient(0, 0, 0, 300);
-    activeGradient.addColorStop(0, `rgba(17, 24, 39, 0.5)`);
-    activeGradient.addColorStop(1, `rgba(17, 24, 39, 0.0)`);
-    
-    let inactiveGradient = ctxChart.createLinearGradient(0, 0, 0, 300);
-    inactiveGradient.addColorStop(0, `rgba(209, 213, 219, 0.5)`);
-    inactiveGradient.addColorStop(1, `rgba(209, 213, 219, 0.0)`);
-
-    Object.keys(branchDataPoints).forEach(br => {
-      // Abaikan cawangan On-Call, In-Branch, dan Tidak Ditetapkan
-      let lowerBr = br.toLowerCase();
-      if (lowerBr.includes("on-call") || lowerBr.includes("oncall") || lowerBr === "in-branch" || lowerBr === "tidak ditetapkan") return;
-
-      let isFirst = (colorIndex === 0);
-      let baseColor = isFirst ? "#111827" : "#d1d5db";
-      let gradient = isFirst ? activeGradient : inactiveGradient;
-
-      datasets.push({
-        label: br,
-        data: branchDataPoints[br],
-        borderColor: baseColor,
-        backgroundColor: gradient,
-        fill: true,
-        tension: 0.4,
-        borderWidth: isFirst ? 3 : 2,
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        order: isFirst ? 0 : 1,
-        customActiveColor: "#111827",
-        customInactiveColor: "#d1d5db",
-        customActiveGradient: activeGradient,
-        customInactiveGradient: inactiveGradient
-      });
-      colorIndex++;
     });
 
-    branchLineChartObj.data.datasets = datasets;
-    animateChartWhenVisible(branchLineChartObj, "branchLineChart");
-  }
+    orders.forEach((o) => {
+      let idx = getIndex(o.Timestamp || o.tarikh, null);
+      if (idx !== -1) {
+          let cost = o._calculatedTotal || 0;
+          let ship = parseFloat(o.shipping_fee) || 0;
+          let rev = cost + ship;
+          dataPoints[idx] += rev;
+          if (window._branchData.revenue["In-Branch"]) {
+             window._branchData.revenue["In-Branch"][idx] += rev;
+             window._branchData.profit["In-Branch"][idx] += rev;
+          }
+      }
+    });
+  
+    salesChartObj.data.labels = labels;
+    salesChartObj.data.datasets[0].data = dataPoints;
+    salesChartObj.data.datasets[0].backgroundColor = bgColors;
+    animateChartWhenVisible(salesChartObj, "salesChart");
+  
+    if (branchLineChartObj) {
+      window._branchMetrics = { revenue: [], expense: [], profit: [] };
+      let colorIndex = 0;
+      const ctxChart = document.getElementById("branchLineChart").getContext("2d");
+      
+      let activeGradient = ctxChart.createLinearGradient(0, 0, 0, 300);
+      activeGradient.addColorStop(0, `rgba(17, 24, 39, 0.5)`);
+      activeGradient.addColorStop(1, `rgba(17, 24, 39, 0.0)`);
+      let inactiveGradient = ctxChart.createLinearGradient(0, 0, 0, 300);
+      inactiveGradient.addColorStop(0, `rgba(209, 213, 219, 0.5)`);
+      inactiveGradient.addColorStop(1, `rgba(209, 213, 219, 0.0)`);
+  
+      Object.keys(window._branchData.revenue).forEach(br => {
+        let lowerBr = br.toLowerCase();
+        if (lowerBr.includes("on-call") || lowerBr.includes("oncall") || lowerBr === "in-branch" || lowerBr === "tidak ditetapkan") return;
+  
+        let isFirst = (colorIndex === 0);
+        let baseColor = isFirst ? "#111827" : "#d1d5db";
+        let gradient = isFirst ? activeGradient : inactiveGradient;
+  
+        const baseOpts = {
+          label: br,
+          borderColor: baseColor,
+          backgroundColor: gradient,
+          fill: true,
+          tension: 0.4,
+          borderWidth: isFirst ? 3 : 2,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          order: isFirst ? 0 : 1,
+          customActiveColor: "#111827",
+          customInactiveColor: "#d1d5db",
+          customActiveGradient: activeGradient,
+          customInactiveGradient: inactiveGradient
+        };
+
+        window._branchMetrics.revenue.push({ ...baseOpts, data: window._branchData.revenue[br] });
+        window._branchMetrics.expense.push({ ...baseOpts, data: window._branchData.expense[br] });
+        window._branchMetrics.profit.push({ ...baseOpts, data: window._branchData.profit[br] });
+        colorIndex++;
+      });
+      
+      let curr = window.currentBranchMetric || 'revenue';
+      branchLineChartObj.data.labels = labels;
+      branchLineChartObj.data.datasets = window._branchMetrics[curr];
+      animateChartWhenVisible(branchLineChartObj, "branchLineChart");
+    }
 }
 
-function openReceiptModal(link) {
+  function openReceiptModal(link) {
   document.getElementById("receipt-image").src = link;
   document.getElementById("receipt-drive-link").href = link;
   document.getElementById("receipt-modal").classList.remove("hidden");
@@ -3422,3 +3494,25 @@ if ('serviceWorker' in navigator) {
     }
   });
 }
+
+window.setBranchMetric = function(metric) {
+    window.currentBranchMetric = metric;
+    
+    // Update button styles
+    const btns = ['revenue', 'expense', 'profit'];
+    btns.forEach(b => {
+        const el = document.getElementById('btn-branch-' + b);
+        if(el) {
+            if(b === metric) {
+                el.className = "px-3 py-1.5 rounded-md text-purple-700 bg-white shadow-sm border border-gray-200 transition";
+            } else {
+                el.className = "px-3 py-1.5 rounded-md text-gray-400 hover:text-gray-900 transition";
+            }
+        }
+    });
+
+    if (branchLineChartObj && window._branchMetrics) {
+        branchLineChartObj.data.datasets = window._branchMetrics[metric];
+        branchLineChartObj.update();
+    }
+};

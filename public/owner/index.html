@@ -677,7 +677,7 @@
                 <h2 class="text-[10px] md:text-xs font-bold text-gray-500 tracking-widest uppercase mb-1" data-i18n="card-quotation">Total Revenue</h2>
                 <div class="flex items-end gap-3">
                   <p class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight" id="val-revenue">RM 0</p>
-                  <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md mb-1"><i class="fas fa-arrow-up mr-1"></i>vs. last period</span>
+                  <span id="val-revenue-pct-container" class="text-xs font-bold px-2 py-1 rounded-md mb-1 bg-gray-100 text-gray-500"><span id="val-revenue-pct">-</span> vs. last <span id="val-revenue-period">month</span></span>
                 </div>
               </div>
               <div class="flex bg-gray-50 border border-gray-100 rounded-lg p-1 text-[10px] font-bold">
@@ -698,13 +698,13 @@
             <div class="card border border-gray-100 bg-white p-4 md:p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow rounded-2xl">
               <h3 class="text-[9px] md:text-[10px] text-gray-500 font-bold tracking-widest uppercase mb-3">Total Service</h3>
               <p class="text-xl md:text-2xl font-black text-gray-900 mb-1" id="val-services-count">0</p>
-              <p class="text-[10px] text-purple-600 font-bold" id="val-walkin-booking">0 Walk-in / 0 Booking</p>
+              <div class="flex items-center gap-2 mt-1"><span id="val-orders-pct-container" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500"><span id="val-orders-pct">-</span>>-</span><p class="text-[10px] text-purple-600 font-bold" id="val-walkin-booking">0 Walk-in / 0 Booking</p></div>
             </div>
 
             <div class="card border border-gray-100 bg-white p-4 md:p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow rounded-2xl">
               <h3 class="text-[9px] md:text-[10px] text-gray-500 font-bold tracking-widest uppercase mb-3" data-i18n="card-net-profit">Net Profit</h3>
               <p class="text-xl md:text-2xl font-black text-gray-900 mb-1" id="val-net-profit">RM 0</p>
-              <p class="text-[10px] text-emerald-600 font-bold"><i class="fas fa-arrow-up mr-1"></i>Healthy</p>
+              <span id="val-profit-pct-container" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 self-start"><span id="val-profit-pct">-</span></span>
             </div>
 
             <div class="card border border-gray-100 bg-white p-4 md:p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow rounded-2xl">
@@ -764,9 +764,9 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
               <h3 class="font-bold text-gray-900 text-[10px] md:text-xs uppercase tracking-widest" data-i18n="chart-branch-sales">Cash Flow & Branch Trend</h3>
               <div class="flex bg-gray-50 border border-gray-100 rounded-lg p-1 text-[10px] font-bold">
-                <button class="px-3 py-1.5 rounded-md text-purple-700 bg-white shadow-sm border border-gray-200 transition">Revenue</button>
-                <button class="px-3 py-1.5 rounded-md text-gray-400 hover:text-gray-900 transition">Expense</button>
-                <button class="px-3 py-1.5 rounded-md text-gray-400 hover:text-gray-900 transition">Profit</button>
+                <button id="btn-branch-revenue" onclick="setBranchMetric('revenue')" class="px-3 py-1.5 rounded-md text-purple-700 bg-white shadow-sm border border-gray-200 transition">Revenue</button>
+                <button id="btn-branch-expense" onclick="setBranchMetric('expense')" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-gray-900 transition">Expense</button>
+                <button id="btn-branch-profit" onclick="setBranchMetric('profit')" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-gray-900 transition">Profit</button>
               </div>
             </div>
             <div class="relative h-56 md:h-64 w-full">
