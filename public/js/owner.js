@@ -1223,6 +1223,19 @@ async function fetchDashboardInsights(
 ) {
   const container = document.getElementById("ai-quick-insights");
   if (!container) return;
+    const timeLabels = {
+      daily: "Hari Ini",
+      weekly: "Minggu Ini",
+      monthly: "Bulan Ini",
+      yearly: "Tahun Ini",
+      all: "Semua Masa",
+    };
+    const timeframe = timeLabels[filterType] || "Semua Masa";
+    const bgPrompt = `Sebagai penganalisis perniagaan Dinspire, berikan rumusan eksekutif yang sangat padat (maksimum 3 ayat pendek) berdasarkan data ${timeframe} ini: Jumlah Keseluruhan Jualan RM${totalSales}, Jumlah Pelanggan Servis ${totalServis} (Pecahan -> Walk-in: ${walkin}, Booking: ${booking}, Rawatan: ${rawatan}, OnCall: ${oncall}). Nyatakan sama ada prestasi baik/buruk secara ringkas, dan selitkan satu nasihat operasi ringkas. Terus kepada inti pati, jangan guna tajuk besar.`;
+
+    if (window.lastInsightPrompt === bgPrompt) return;
+    window.lastInsightPrompt = bgPrompt;
+
 
   document.getElementById("ai-insights-status").innerHTML =
     '<i class="fas fa-spinner fa-spin mr-1"></i> Menganalisis...';
@@ -1241,19 +1254,7 @@ async function fetchDashboardInsights(
 }
   currentInsightAbortController = new AbortController();
 
-  const timeLabels = {
-    daily: "Hari Ini",
-    weekly: "Minggu Ini",
-    monthly: "Bulan Ini",
-    yearly: "Tahun Ini",
-    all: "Semua Masa",
-  };
-  const timeframe = timeLabels[filterType] || "Semua Masa";
-
-  const bgPrompt = `Sebagai penganalisis perniagaan Dinspire, berikan rumusan eksekutif yang sangat padat (maksimum 3 ayat pendek) berdasarkan data ${timeframe} ini: Jumlah Keseluruhan Jualan RM${totalSales}, Jumlah Pelanggan Servis ${totalServis} (Pecahan -> Walk-in: ${walkin}, Booking: ${booking}, Rawatan: ${rawatan}, OnCall: ${oncall}). Nyatakan sama ada prestasi baik/buruk secara ringkas, dan selitkan satu nasihat operasi ringkas. Terus kepada inti pati, jangan guna tajuk besar.`;
-
-  if (window.lastInsightPrompt === bgPrompt) return;
-  window.lastInsightPrompt = bgPrompt;
+  
 
   if (insightDebounceTimer) clearTimeout(insightDebounceTimer);
   insightDebounceTimer = setTimeout(async () => {
