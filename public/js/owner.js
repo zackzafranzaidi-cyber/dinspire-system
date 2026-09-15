@@ -2625,7 +2625,7 @@ function renderMarketingTable() {
   }
   
   let html = `<table class="w-full text-sm text-left">
-    <thead class="text-xs text-gray-500 bg-gray-200 sticky top-0 shadow-sm uppercase tracking-wider">
+    <thead class="text-xs text-gray-500 bg-gray-200 sticky top-0 z-10 shadow-sm uppercase tracking-wider">
       <tr>
         <th class="py-3 px-4">Nama Pelanggan</th>
         <th class="py-3 px-4">No. Telefon</th>
@@ -2647,15 +2647,16 @@ Grup 2: ${linkGrup2}`);
     const waLink = `https://wa.me/${c.phone}?text=${waText}`;
 
     let showDot = !clicked.includes(c.phone);
-    let dotHtml = showDot ? `<div id="wa-dot-${c.phone}" class="w-2 h-2 rounded-full bg-red-500 animate-pulse inline-block ml-2 mb-0.5"></div>` : '';
+    let dotHtml = showDot ? `<div id="wa-dot-${c.phone}" class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-pulse border-2 border-white shadow-sm"></div>` : '';
 
     html += `<tr class="hover:bg-gray-50 transition border-b border-gray-100">
-      <td class="py-3 px-4 font-bold text-gray-800 text-xs sm:text-sm whitespace-normal">${escapeHTML(c.name)} ${dotHtml}<br/><span class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-normal">${c.source}</span></td>
+      <td class="py-3 px-4 font-bold text-gray-800 text-xs sm:text-sm whitespace-normal">${escapeHTML(c.name)}<br/><span class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-normal">${c.source}</span></td>
       <td class="py-3 px-4 font-semibold text-gray-600 text-xs sm:text-sm whitespace-nowrap">${c.phone}</td>
       <td class="py-3 px-4 text-center">
-        <a href="${waLink}" target="_blank" onclick="window.markWaClicked('${c.phone}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs shadow-sm font-bold transition inline-flex items-center justify-center">
-          <i class="fab fa-whatsapp text-sm mr-1"></i> Jemput
-        </a>
+        <a href="${waLink}" target="_blank" onclick="window.markWaClicked('${c.phone}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs shadow-sm font-bold transition inline-flex items-center justify-center relative">
+            <i class="fab fa-whatsapp text-sm mr-1"></i> Jemput
+            ${dotHtml}
+          </a>
       </td>
     </tr>`;
   });
@@ -2848,7 +2849,7 @@ async function renderReportsTab() {
       
       let tableHTML = `
         <table class="w-full text-sm text-left">
-          <thead class="text-xs text-gray-500 bg-gray-100 sticky top-0 shadow-sm uppercase tracking-wider">
+          <thead class="text-xs text-gray-500 bg-gray-100 sticky top-0 z-10 shadow-sm uppercase tracking-wider">
             <tr>
               <th class="py-3 px-4" data-i18n="th-category">${i18n[currentLang]["th-category"] || "Kategori"}</th>
               <th class="py-3 px-4" data-i18n="th-tx-id">${i18n[currentLang]["th-tx-id"] || "ID Transaksi / Pelanggan"}</th>
