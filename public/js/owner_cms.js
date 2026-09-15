@@ -317,8 +317,8 @@ function renderPosters(dataArr, container) {
     html += `
       <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
         <!-- Image Container (2:1 aspect ratio) -->
-        <div style="aspect-ratio: 2/1;" class="relative w-full bg-gray-50 border-b border-gray-100 group-hover:border-purple-100 transition-colors">
-          <img src="${currentImg}" class="w-full h-full object-cover" alt="Poster">
+        <div style="aspect-ratio: 2/1;" class="relative w-full bg-gray-50 border-b border-gray-100 group-hover:border-purple-100 transition-colors overflow-hidden">
+          <img src="${currentImg}" class="absolute inset-0 w-full h-full object-cover" alt="Poster">
           <label class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-300 backdrop-blur-[2px]">
             <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-2 backdrop-blur-md">
               <i class="fas fa-camera text-xl"></i>
