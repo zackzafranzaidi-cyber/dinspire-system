@@ -614,6 +614,16 @@ function switchTab(tabName, element = null) {
     activeTab.classList.add("block");
   }
 
+  // [DIBAIKI] Sembunyikan header utama (Prestasi Keseluruhan & Filter Masa) jika berada di tab CMS
+  const globalHeader = document.getElementById("global-top-header");
+  if (globalHeader) {
+      if (tabName === 'cms') {
+          globalHeader.style.display = 'none';
+      } else {
+          globalHeader.style.display = 'flex';
+      }
+  }
+
   document.querySelectorAll(".sidebar-nav-item, .nav-item").forEach((el) => {
     el.classList.remove(
       "bg-white",
@@ -1099,7 +1109,23 @@ function processData() {
     (r) => (tStars += parseInt(r.Stars || r.bintang) || 0),
   );
   const avgRating = filteredReviews.length ? (tStars / filteredReviews.length) : 0.0;
-  animateNumber("val-rating", avgRating, "", "", 1);
+    animateNumber("val-rating", avgRating, "", "", 1);
+
+    const starsContainer = document.getElementById("val-rating-stars");
+    if (starsContainer) {
+        let starsHtml = "";
+        let roundedRating = Math.round(avgRating * 2) / 2;
+        for (let i = 1; i <= 5; i++) {
+            if (roundedRating >= i) {
+                starsHtml += '<i class="fas fa-star drop-shadow-sm"></i>';
+            } else if (roundedRating >= i - 0.5) {
+                starsHtml += '<i class="fas fa-star-half-alt drop-shadow-sm"></i>';
+            } else {
+                starsHtml += '<i class="far fa-star text-gray-200"></i>';
+            }
+        }
+        starsContainer.innerHTML = starsHtml;
+    }
 
   let topBranch = "-";
   let highest = -1;
