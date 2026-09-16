@@ -51,6 +51,19 @@ body {
   }
 }
 @media (min-width: 768px) {
+    .product-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+      gap: 20px !important;
+    }
+    
+    .product-title {
+      font-size: 15px !important;
+    }
+    
+    .product-price {
+      font-size: 14px !important;
+    }
+
 
   /* Jadikan checkout-bar sebagai panel sisi kanan kekal di Desktop */
   .mobile-container.tab-products-active .checkout-bar {
