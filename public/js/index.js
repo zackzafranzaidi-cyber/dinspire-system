@@ -1009,7 +1009,7 @@ function renderScheduleTime() {
 
   let html = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="font-size:16px; font-weight:700; color:#111827;">Pilih Masa</h3>
+            <h3 style="font-size:16px; font-weight:700; color: var(--text-main);">Pilih Masa</h3>
             <button type="button" onclick="closeScheduleModal(); event.stopPropagation();" style="background:none; border:none; font-size:22px; color:#8E8E93; cursor:pointer;">&times;</button>
         </div>
         <div class="time-grid-light">
@@ -1026,7 +1026,7 @@ function renderScheduleTime() {
 
     if (isDisabled) {
         // [DIBAIKI] Tunjuk secara visual bahawa waktu sudah ditempah
-        html += `<button type="button" class="time-slot-light disabled" style="opacity: 0.5; background: #f3f4f6; color: #9ca3af; cursor: not-allowed; border-color: #e5e7eb; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;" onclick="event.stopPropagation();">${format12}</button>`;
+        html += `<button type="button" class="time-slot-light disabled" style="opacity: 0.5; background: #f3f4f6; color: var(--text-muted); cursor: not-allowed; border-color: #e5e7eb; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;" onclick="event.stopPropagation();">${format12}</button>`;
     } else {
         html += `<button type="button" class="time-slot-light ${isSel}" onclick="selectScheduleTime('${t}'); event.stopPropagation();">${format12}</button>`;
     }
@@ -1304,7 +1304,7 @@ function renderProducts(searchQuery = "") {
           const stockLeft = parseInt(p.stok) || 0;
           const isOutOfStock = stockLeft <= 0;
           const btnClass = isOutOfStock ? "text-white rounded-lg px-2 py-1.5 text-xs font-bold" : "bg-gray-600 text-white rounded-lg px-2 py-1.5 text-xs font-bold";
-          const btnStyle = isOutOfStock ? "background-color: #9ca3af; cursor: not-allowed; opacity: 0.7;" : "";
+          const btnStyle = isOutOfStock ? "background-color: var(--text-muted); cursor: not-allowed; opacity: 0.7;" : "";
           const btnText = i18n_index[currentLang]["products-btn-add"];
           
           let imgOverlay = "";
@@ -1328,9 +1328,9 @@ function renderProducts(searchQuery = "") {
                     <div class="product-price">RM ${parseFloat(p.price).toFixed(2)}</div>
                     <div class="card-actions mt-auto pt-2">
                         <div class="qty-control flex items-center justify-between bg-gray-100 rounded-lg p-1 flex-1">
-                            <button class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="changeTempQty('${p.id}', -1, ${stockLeft})">-</button>
+                            <button class="qty-btn w-6 h-6 rounded  font-bold" onclick="changeTempQty('${p.id}', -1, ${stockLeft})">-</button>
                             <span class="qty-num text-xs font-bold text-center w-5" id="temp-qty-${p.id}">1</span>
-                            <button class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="changeTempQty('${p.id}', 1, ${stockLeft})">+</button>
+                            <button class="qty-btn w-6 h-6 rounded  font-bold" onclick="changeTempQty('${p.id}', 1, ${stockLeft})">+</button>
                         </div>
                         <button class="add-btn ${btnClass}" style="${btnStyle}" ${isOutOfStock ? "disabled" : ""} onclick="addToCart('${p.id}', '${escapeHTML(p.name || "")}', ${parseFloat(p.price)}, '${p.imageUrl}', ${stockLeft})">${btnText}</button>
                     </div>
@@ -1425,23 +1425,23 @@ function openEditCartPopup() {
   for (let id in cartState) {
     let item = cartState[id];
     html += `
-        <div style="position: relative; border-bottom:1px solid #E5E5EA; overflow: hidden; min-height: 56px; margin: 0 -16px;">
+        <div style="position: relative; border-bottom: 1px solid var(--border-color); overflow: hidden; min-height: 56px; margin: 0 -16px;">
             <div style="position: absolute; right: 0; top: 0; height: 100%; width: 80px; background: #FF3B30; color: white; display: flex; justify-content: center; align-items: center; font-weight: normal; font-size: 13px; cursor: pointer;" onclick="deleteEditCartItem('${id}')">${i18n_index[currentLang]["cart-delete-btn"]}</div>
             <div id="swipe-content-${id}" 
                  ontouchstart="handleTouchStart(event, '${id}')" ontouchmove="handleTouchMove(event, '${id}')" ontouchend="handleTouchEnd(event, '${id}')"
                  onmousedown="handleTouchStart(event, '${id}')" onmousemove="handleTouchMove(event, '${id}')" onmouseup="handleTouchEnd(event, '${id}')" onmouseleave="handleTouchEnd(event, '${id}')"
-                 style="position: relative; background: #fff; z-index: 1; display:flex; justify-content:space-between; align-items:center; padding:8px 16px; width: 100%; box-sizing: border-box; transition: transform 0.3s ease; cursor: grab;">
+                 style="position: relative; background: var(--bg-surface); z-index: 1; display:flex; justify-content:space-between; align-items:center; padding:8px 16px; width: 100%; box-sizing: border-box; transition: transform 0.3s ease; cursor: grab;">
                 <div style="display:flex; gap:10px; align-items:center;">
                     <img src="${item.imgUrl || "https://via.placeholder.com/40"}" style="width:40px; height:40px; border-radius:8px; object-fit:cover; pointer-events: none;">
                     <div>
-                        <div style="font-weight:600; font-size:13px; color:#111827;">${escapeHTML(item.name)}</div>
+                        <div style="font-weight:600; font-size:13px; color: var(--text-main);">${escapeHTML(item.name)}</div>
                         <div style="color:#1877F2; font-size:11px; margin-top:2px;">RM ${parseFloat(item.price).toFixed(2)}</div>
                     </div>
                 </div>
                 <div class="qty-control flex items-center justify-between bg-gray-100 rounded-lg p-1" style="width:70px; flex:none;">
-                    <button type="button" class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="updateEditCartQty('${id}', -1)">-</button>
+                    <button type="button" class="qty-btn w-6 h-6 rounded  font-bold" onclick="updateEditCartQty('${id}', -1)">-</button>
                     <span class="qty-num text-xs font-bold text-center w-5">${item.qty}</span>
-                    <button type="button" class="qty-btn w-6 h-6 rounded bg-white font-bold" onclick="updateEditCartQty('${id}', 1)">+</button>
+                    <button type="button" class="qty-btn w-6 h-6 rounded  font-bold" onclick="updateEditCartQty('${id}', 1)">+</button>
                 </div>
             </div>
         </div>`;
@@ -1518,7 +1518,7 @@ function openCheckout(type) {
     for (let id in cartState) {
       let item = cartState[id];
       subtotal += item.price * item.qty;
-      itemsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><div><div style="font-weight:600; font-size:13px; color:#111827;">${escapeHTML(item.name)}</div><div style="font-size:11px; color:#6B7280; margin-top:2px;">Qty: ${item.qty}</div></div><div style="font-weight:600; font-size:13px; color:#111827;">RM ${(item.price * item.qty).toFixed(2)}</div></div>`;
+      itemsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><div><div style="font-weight:600; font-size:13px; color: var(--text-main);">${escapeHTML(item.name)}</div><div style="font-size:11px; color: var(--text-muted); margin-top:2px;">Qty: ${item.qty}</div></div><div style="font-weight:600; font-size:13px; color: var(--text-main);">RM ${(item.price * item.qty).toFixed(2)}</div></div>`;
     }
   } else {
     shippingCard.style.display = type === "oncall" ? "block" : "none";
@@ -1536,7 +1536,7 @@ function openCheckout(type) {
         ?.name ||
       shopData.OnCall?.find((o) => o.id == pendingBooking.service_id)?.name ||
       "Servis";
-    itemsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><div><div style="font-weight:600; font-size:13px; color:#111827;">${svcName}</div><div style="font-size:11px; color:#6B7280; margin-top:2px;">${svcDetail} (${pendingBooking.date})</div></div><div style="font-weight:600; font-size:13px; color:#111827;">RM ${subtotal.toFixed(2)}</div></div>`;
+    itemsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><div><div style="font-weight:600; font-size:13px; color: var(--text-main);">${svcName}</div><div style="font-size:11px; color: var(--text-muted); margin-top:2px;">${svcDetail} (${pendingBooking.date})</div></div><div style="font-weight:600; font-size:13px; color: var(--text-main);">RM ${subtotal.toFixed(2)}</div></div>`;
   }
 
   let total = subtotal + fee;
@@ -1662,7 +1662,7 @@ async function confirmUnifiedPayment() {
           if (window.innerWidth >= 1024) {
              const sheet = document.querySelector("#unified-checkout-modal .checkout-sheet");
              sheet.innerHTML = `
-               <div class="checkout-header" style="position: absolute; top: 0; left: 0; right: 0; z-index: 10; background: white; padding: 15px; text-align: center; border-bottom: 1px solid #ddd;">
+               <div class="checkout-header" style="position: absolute; top: 0; left: 0; right: 0; z-index: 10; background: var(--bg-surface); padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color);">
                  <button class="checkout-back-btn" onclick="window.location.reload()" style="position: absolute; left: 15px; top: 15px;"><i class="fas fa-arrow-left"></i></button>
                  <h2 style="margin: 0; font-size: 16px;">ToyyibPay FPX</h2>
                </div>
@@ -1792,11 +1792,11 @@ function renderNotifications() {
         if (o.type === "product") {
           let badgeStyle =
             o.status === "Pending Verification"
-              ? "background:#FFF3CD; color:#856404;"
+              ? "background: var(--bg-surface)3CD; color:#856404;"
               : o.status === "Rejected"
                 ? "background:#F8D7DA; color:#721C24;"
                 : o.status === "Preparing"
-                  ? "background:#FFF3E0; color:#E65100;"
+                  ? "background: var(--bg-surface)3E0; color:#E65100;"
                   : o.status === "Shipped"
                     ? "background:#E3F2FD; color:#1565C0;"
                     : "background:#E8F5E9; color:#2E7D32;";
@@ -1827,11 +1827,11 @@ function renderNotifications() {
         } else {
           let badgeStyle =
             o.status === "Pending Verification"
-              ? "background:#FFF3CD; color:#856404;"
+              ? "background: var(--bg-surface)3CD; color:#856404;"
               : o.status === "Rejected" || o.status === "Batal"
                 ? "background:#F8D7DA; color:#721C24;"
                 : o.status === "Belum"
-                  ? "background:#FFF3E0; color:#E65100;"
+                  ? "background: var(--bg-surface)3E0; color:#E65100;"
                   : "background:#E8F5E9; color:#2E7D32;";
           let displayStatus = o.status === "Belum" ? "AKTIF" : o.status.toUpperCase();
             
@@ -2484,7 +2484,7 @@ if ('serviceWorker' in navigator) {
       if (!listContainer) return;
       
       if (Object.keys(cartState).length === 0) {
-        listContainer.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#9CA3AF; text-align:center; padding:20px;">
+        listContainer.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color: var(--text-muted); text-align:center; padding:20px;">
           <i class="fas fa-shopping-basket" style="font-size:32px; margin-bottom:12px; color:#D1D5DB;"></i>
           <p style="font-size:14px; font-weight:500;">Troli anda kosong</p>
           <p style="font-size:12px; margin-top:4px;">Sila pilih produk di sebelah.</p>
@@ -2495,23 +2495,23 @@ if ('serviceWorker' in navigator) {
       let html = "";
       for (let id in cartState) {
         let item = cartState[id];
-        html += `<div style="position: relative; overflow: hidden; min-height: 75px; border-bottom:1px solid #E5E5EA;">
+        html += `<div style="position: relative; overflow: hidden; min-height: 75px; border-bottom: 1px solid var(--border-color);">
               <div style="position: absolute; right: 0; top: 0; height: 100%; width: 80px; background: #FF3B30; color: white; display: flex; justify-content: center; align-items: center; font-weight: normal; font-size: 13px; cursor: pointer;" onclick="deleteEditCartItem('${id}')">${i18n_index[currentLang]["cart-delete-btn"]}</div>
               <div id="swipe-content-desktop-${id}" 
                    ontouchstart="handleTouchStart(event, 'desktop-${id}')" ontouchmove="handleTouchMove(event, 'desktop-${id}')" ontouchend="handleTouchEnd(event, 'desktop-${id}')"
                    onmousedown="handleTouchStart(event, 'desktop-${id}')" onmousemove="handleTouchMove(event, 'desktop-${id}')" onmouseup="handleTouchEnd(event, 'desktop-${id}')" onmouseleave="handleTouchEnd(event, 'desktop-${id}')"
-                   style="position: relative; background: #f8fafc; z-index: 1; display:flex; justify-content:space-between; align-items:center; padding:15px 25px; width: 100%; box-sizing: border-box; transition: transform 0.3s ease; cursor: grab;">
+                   style="position: relative; background: var(--bg-main); z-index: 1; display:flex; justify-content:space-between; align-items:center; padding:15px 25px; width: 100%; box-sizing: border-box; transition: transform 0.3s ease; cursor: grab;">
                   <div style="display:flex; gap:12px; align-items:center;">
-                      <img src="${item.imgUrl || "https://via.placeholder.com/40"}" style="width:45px; height:45px; border-radius:8px; object-fit:cover; pointer-events: none; border:1px solid #E5E5EA;">
+                      <img src="${item.imgUrl || "https://via.placeholder.com/40"}" style="width:45px; height:45px; border-radius:8px; object-fit:cover; pointer-events: none; border: 1px solid var(--border-color);">
                       <div>
-                          <div style="font-weight:600; font-size:13px; color:#111827;">${escapeHTML(item.name)}</div>
+                          <div style="font-weight:600; font-size:13px; color: var(--text-main);">${escapeHTML(item.name)}</div>
                           <div style="color:var(--primary-blue); font-size:12px; font-weight:700; margin-top:2px;">RM ${parseFloat(item.price).toFixed(2)}</div>
                       </div>
                   </div>
-                  <div class="qty-control" style="width:75px; flex:none; display:flex; align-items:center; justify-content:space-between; background:white; border:1px solid #E5E5EA; border-radius:8px; padding:4px;">
-                      <button type="button" class="qty-btn" style="width:28px; height:28px; border-radius:4px; background:white; font-weight:bold; color:#374151; border:none;" onclick="updateEditCartQty('${id}', -1)">-</button>
+                  <div class="qty-control" style="width:75px; flex:none; display:flex; align-items:center; justify-content:space-between; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius:8px; padding:4px;">
+                      <button type="button" class="qty-btn" style="width:28px; height:28px; border-radius:4px; background: var(--bg-surface); font-weight:bold; color: var(--text-main); border:none;" onclick="updateEditCartQty('${id}', -1)">-</button>
                       <span class="qty-num" style="font-size:12px; font-weight:bold; text-align:center; width:20px;">${item.qty}</span>
-                      <button type="button" class="qty-btn" style="width:28px; height:28px; border-radius:4px; background:white; font-weight:bold; color:#374151; border:none;" onclick="updateEditCartQty('${id}', 1)">+</button>
+                      <button type="button" class="qty-btn" style="width:28px; height:28px; border-radius:4px; background: var(--bg-surface); font-weight:bold; color: var(--text-main); border:none;" onclick="updateEditCartQty('${id}', 1)">+</button>
                   </div>
               </div>
           </div>`;
