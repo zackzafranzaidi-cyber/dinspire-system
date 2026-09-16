@@ -64,8 +64,8 @@ body {
 
   /* Pengekalan content di tengah tanpa mengganggu layout dalam (400px asalnya) */
   .header {
-    padding-left: 40px !important;
-    padding-right: 40px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
   }
 
   .bottom-nav {
