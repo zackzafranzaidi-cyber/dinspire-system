@@ -9,7 +9,7 @@ if (
   setTimeout(() => {
     const prompt = document.getElementById("pwa-prompt");
     if (prompt) prompt.style.display = "block";
-  }, 4000);
+  }, 7000);
 
 let currentLang = localStorage.getItem("user_lang") || "en";
 
@@ -1164,7 +1164,7 @@ async function fetchShopData() {
               // Scroll to next slide
               viewport.scrollTo({ left: viewport.scrollLeft + slideWidth, behavior: 'smooth' });
             }
-          }, 4000);
+          }, 7000);
         }
     } else {
       posterTrack.innerHTML = `<div class="slide"><div class="poster-card"><div style="color:gray; font-size:12px; font-weight:bold;">Tiada Promosi Dijalankan</div></div></div>`;

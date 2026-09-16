@@ -398,7 +398,7 @@ body {
       #ffffff 75%,
       #ff2a2a 100%
     );
-  animation: spinBorder 3s linear infinite;
+  animation: spinBorder 6s linear infinite;
   z-index: 0;
 }
 .rgb-border-container.active::after {
@@ -2237,7 +2237,7 @@ select.input-field {
       #ffffff 75%,
       #ff2a2a 100%
     );
-    animation: spinBorder 3s linear infinite;
+    animation: spinBorder 6s linear infinite;
     z-index: 0;
   }
   
