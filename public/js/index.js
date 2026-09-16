@@ -2108,6 +2108,15 @@ function hideGlobalLoader() {
       .querySelectorAll(".view-section")
       .forEach((s) => s.classList.remove("active"));
     document.getElementById("view-" + id)?.classList.add("active");
+    const mobContainer = document.querySelector(".mobile-container");
+    if (mobContainer) {
+      if (id === "products") {
+        mobContainer.classList.add("tab-products-active");
+      } else {
+        mobContainer.classList.remove("tab-products-active");
+      }
+    }
+
     document
       .querySelectorAll(".nav-item, .sidebar-nav-item")
       .forEach((n) => n.classList.remove("active"));
