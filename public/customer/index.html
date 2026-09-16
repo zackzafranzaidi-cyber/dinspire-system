@@ -64,7 +64,7 @@
       href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/css/index.css?v=65" />
+    <link rel="stylesheet" href="/css/index.css?v=66" />
     <link rel="stylesheet" href="/css/loader.css?v=3" />
     <link rel="manifest" href="/manifest.json?v=6">
     <meta name="theme-color" content="#1a1a2e">
@@ -527,7 +527,41 @@
         </div>
       </div>
 
-      <div class="custom-modal-overlay" id="avatar-modal-overlay" style="z-index: 400 !important;">
+      <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="custom-modal-overlay">
+      <div class="custom-modal" style="max-width: 400px; padding: 20px;">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%">
+          <h2 style="font-size:18px; font-weight:bold;">Edit Profile</h2>
+          <button type="button" style="background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer;" onclick="closeModal('edit-profile-modal')">&times;</button>
+        </div>
+        <div class="modal-body" style="padding-top:10px;">
+          <form id="form-edit-profile">
+            <div style="text-align:center; margin-bottom:15px;">
+              <img id="edit-profile-avatar-preview" src="" style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid #E5E5EA; margin-bottom:10px;">
+              <br>
+              <button type="button" class="submit-btn" style="padding: 6px 12px; font-size:12px; border-radius:6px;" onclick="openAvatarModal()">Tukar Gambar</button>
+              <input type="hidden" id="edit-profile-avatar-val">
+            </div>
+            
+            <div class="form-group">
+              <label style="font-size:13px; font-weight:600; color:#374151; margin-bottom:4px; display:block;">Nama</label>
+              <input type="text" id="edit-profile-name" class="input-field" required>
+            </div>
+            <div class="form-group">
+              <label style="font-size:13px; font-weight:600; color:#374151; margin-bottom:4px; display:block;">No Telefon</label>
+              <input type="tel" id="edit-profile-phone" class="input-field" required>
+            </div>
+            <div class="form-group">
+              <label style="font-size:13px; font-weight:600; color:#374151; margin-bottom:4px; display:block;">Alamat Default</label>
+              <textarea id="edit-profile-address" class="input-field" rows="3" style="border-radius:12px; resize:none;"></textarea>
+            </div>
+            
+            <button type="submit" id="btn-edit-profile-submit" class="submit-btn" style="margin-top:15px;">Simpan Perubahan</button>
+          </form>
+        </div>
+      </div>
+    </div>
+<div class="custom-modal-overlay" id="avatar-modal-overlay" style="z-index: 400 !important;">
         <div class="custom-modal">
           <div
             class="modal-header"
@@ -1149,7 +1183,7 @@
     </div>
     </div>
 
-    <script src="/js/i18n-index.js?v=65"></script>
+    <script src="/js/i18n-index.js?v=66"></script>
     <script src="/js/index.js?v=36"></script>
       <script>
         if ("serviceWorker" in navigator) {
@@ -1160,42 +1194,6 @@
     </script>
 
 
-    <!-- Edit Profile Modal -->
-    <div id="edit-profile-modal" class="custom-modal-overlay">
-      <div class="custom-modal" style="max-width: 400px; padding: 20px;">
-        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%">
-          <h2 style="font-size:18px; font-weight:bold;">Edit Profile</h2>
-          <button type="button" style="background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer;" onclick="closeModal('edit-profile-modal')">&times;</button>
-        </div>
-        <div class="modal-body" style="padding-top:10px;">
-          <form id="form-edit-profile">
-            <div style="text-align:center; margin-bottom:15px;">
-              <img id="edit-profile-avatar-preview" src="" style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid #E5E5EA; margin-bottom:10px;">
-              <br>
-              <button type="button" class="submit-btn" style="padding: 6px 12px; font-size:12px; border-radius:6px;" onclick="openAvatarModal()">Tukar Gambar</button>
-              <input type="hidden" id="edit-profile-avatar-val">
-            </div>
-            
-            <div class="form-group">
-              <label style="font-size:13px; font-weight:600; color:#374151; margin-bottom:4px; display:block;">Nama</label>
-              <input type="text" id="edit-profile-name" class="input-field" required>
-            </div>
-            <div class="form-group">
-              <label style="font-size:13px; font-weight:600; color:#374151; margin-bottom:4px; display:block;">No Telefon</label>
-              <input type="tel" id="edit-profile-phone" class="input-field" required>
-            </div>
-            <div class="form-group">
-              <label style="font-size:13px; font-weight:600; color:#374151; margin-bottom:4px; display:block;">Alamat Default</label>
-              <textarea id="edit-profile-address" class="input-field" rows="3" style="border-radius:12px; resize:none;"></textarea>
-            </div>
-            
-            <button type="submit" id="btn-edit-profile-submit" class="submit-btn" style="margin-top:15px;">Simpan Perubahan</button>
-          </form>
-        </div>
-      </div>
-    </div>
-
+    
 </body>
 </html>
-
-
