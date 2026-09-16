@@ -74,7 +74,7 @@ body {
     justify-content: space-around !important;
   }
 
-  .view-section > :not(.header):not(.slider-viewport):not(.reviews-container):not(.category-section):not(.section-title):not(.section-header) {
+  .view-section > :not(.header):not(.slider-viewport):not(.reviews-container):not(.category-section):not(.section-title):not(.section-header):not(.search-container):not(.product-grid) {
     max-width: 400px;
     margin-left: auto !important;
     margin-right: auto !important;
@@ -693,7 +693,7 @@ select.input-field {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
   gap: 12px;
   padding: 0 20px 140px;
 }
@@ -2078,4 +2078,12 @@ select.input-field {
   border-radius: 50%;
   border: 1.5px solid white;
   z-index: 10;
+}
+
+.product-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
 }
