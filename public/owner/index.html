@@ -202,7 +202,22 @@
       .glass-btn-signin:active {
           transform: scale(0.97);
       }
-    </style>
+    
+      /* Skrol Navigasi Sidebar */
+      .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+      }
+</style>
       <link rel="manifest" href="/owner/manifest_owner.json?v=7">
     <meta name="theme-color" content="#ffffff">
 
@@ -337,7 +352,7 @@
         </h1>
       </div>
 
-      <nav class="flex flex-col w-full relative z-10 px-4 gap-1">
+      <nav class="flex flex-col w-full relative z-10 pl-4 pr-2 gap-1 flex-1 overflow-y-auto custom-scrollbar pb-4">
         <a
           href="#"
           onclick="switchTab('dashboard')"
@@ -433,7 +448,7 @@
         >
       </nav>
 
-      <div class="flex-1"></div>
+      
 
       <div
         class="mt-4 bg-gray-900/50 backdrop-blur-md p-4 mx-4 rounded-2xl flex items-center justify-between border border-gray-800 relative z-10"
