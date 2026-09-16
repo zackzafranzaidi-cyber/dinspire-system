@@ -1,0 +1,8 @@
+﻿const fs = require('fs');
+let html = fs.readFileSync('public/customer/index.html', 'utf8');
+
+html = html.replace(/index\.css\?v=\d+/, "index.css?v=63");
+html = html.replace(/index\.js\?v=\d+/, "index.js?v=63");
+
+fs.writeFileSync('public/customer/index.html', html);
+console.log("Bumped cache versions.");
