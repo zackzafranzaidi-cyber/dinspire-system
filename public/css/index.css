@@ -268,6 +268,11 @@ body {
 
 /* Mobile Review Card Scaling */
 @media (max-width: 767px) {
+    .rgb-border-container.active::before,
+    .rgb-border-container.active::after {
+      border-radius: 12px !important;
+    }
+
   .review-card {
     width: 210px !important;
     padding: 10px !important;
@@ -402,7 +407,7 @@ body {
   left: -1.5px;
   right: -1.5px;
   bottom: -1.5px;
-  border-radius: inherit;
+  border-radius: 16px;
   background: conic-gradient(
     from var(--border-angle, 0deg),
     #ff2a2a 0%,
@@ -416,8 +421,8 @@ body {
 }
 
 .rgb-border-container.active::after {
-  filter: blur(15px); /* This adds the glowing effect */
-  opacity: 0.7;
+  filter: blur(4px); /* Thin outer glow */
+  opacity: 0.85;
 }
 
 .rgb-border-inner {
@@ -2251,7 +2256,7 @@ select.input-field {
 
   
   .profile-avatar-wrapper::after {
-    filter: blur(8px);
+    filter: blur(4px);
     opacity: 0.8;
   }
   
