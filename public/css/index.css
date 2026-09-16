@@ -56,8 +56,8 @@ body {
   .mobile-container.tab-products-active .checkout-bar {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
+    justify-content: flex-start !important;
+      align-items: stretch !important;
     position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
@@ -77,29 +77,41 @@ body {
     display: none !important;
   }
   
-  .checkout-bar > div:first-child {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  
-  .checkout-label {
-    font-size: 13px !important;
-    text-align: center;
-  }
-  
-  .checkout-price {
-    font-size: 28px !important;
-    text-align: center;
-  }
-  
-  .checkout-bar > div:last-child {
-    flex-direction: row;
-    width: 100%;
-    gap: 10px !important;
-  }
+  .checkout-bar-header {
+      display: block !important;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 5px;
+    }
+    
+    .checkout-bar-items {
+      display: flex !important;
+      flex: 1;
+      overflow-y: auto;
+      width: 100%;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .checkout-bar-total {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
+      width: 100%;
+    }
+    
+    .checkout-bar-actions {
+      flex-direction: row;
+      width: 100%;
+      gap: 10px !important;
+    }
+    
+    .mobile-only-btn {
+      display: none !important;
+    }
   
   .buy-now-btn {
     width: 100% !important;
@@ -2162,4 +2174,7 @@ select.input-field {
 .product-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+}
+.checkout-bar-header, .checkout-bar-items {
+  display: none !important;
 }

@@ -1052,14 +1052,20 @@
       </div>
 
       <div class="checkout-bar" id="checkout-bar">
-        <div>
+        <div class="checkout-bar-header">
+          <h2 style="font-size: 18px; font-weight: 800; color: #111827;">Your Cart</h2>
+          <p style="font-size: 12px; color: #6b7280; margin-top: 2px;">Review your items</p>
+        </div>
+        <div class="checkout-bar-items custom-scrollbar" id="desktop-cart-items-container">
+        </div>
+        <div class="checkout-bar-total">
           <span class="checkout-label" data-i18n="bar-total">Jumlah Pembelian</span>
           <span id="checkout-total" class="checkout-price">RM 0.00</span>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center">
+        <div class="checkout-bar-actions" style="display: flex; gap: 8px; align-items: center; width: 100%;">
           <button
             type="button"
-            class="cart-edit-icon-btn"
+            class="cart-edit-icon-btn mobile-only-btn"
             onclick="openEditCartPopup()"
             title="Edit Barang Troli"
           >
@@ -1069,7 +1075,7 @@
             type="button"
             id="checkout-btn"
             class="buy-now-btn"
-            style="margin: 0"
+            style="margin: 0; flex: 1;"
             data-i18n="bar-checkout"
           >
             Checkout
