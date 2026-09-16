@@ -53,7 +53,7 @@ body {
 @media (min-width: 768px) {
 
   /* Jadikan checkout-bar sebagai panel sisi kanan kekal di Desktop */
-  .checkout-bar {
+  .mobile-container:has(#view-products.active) .checkout-bar {
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
@@ -71,6 +71,10 @@ body {
     box-shadow: -4px 0 25px rgba(0,0,0,0.03) !important;
     gap: 20px !important;
     padding: 40px !important;
+  }
+  
+  .mobile-container:not(:has(#view-products.active)) .checkout-bar {
+    display: none !important;
   }
   
   .checkout-bar > div:first-child {
@@ -114,7 +118,7 @@ body {
     color: var(--primary-blue) !important;
   }
   
-  .view-content {
+  .mobile-container:has(#view-products.active) .view-content {
     padding-right: 280px !important;
   }
   
@@ -141,8 +145,11 @@ body {
 
   .bottom-nav {
     padding-left: calc(max(0px, (100% - 400px) / 2)) !important;
-    padding-right: calc(max(0px, (100% - 400px) / 2) + 280px) !important;
+    padding-right: calc(max(0px, (100% - 400px) / 2)) !important;
     justify-content: space-around !important;
+  }
+  .mobile-container:has(#view-products.active) .bottom-nav {
+    padding-right: calc(max(0px, (100% - 400px) / 2) + 280px) !important;
   }
 
   .view-section > :not(.header):not(.slider-viewport):not(.reviews-container):not(.category-section):not(.section-title):not(.section-header):not(.search-container):not(.product-grid) {
