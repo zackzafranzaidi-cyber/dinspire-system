@@ -64,7 +64,7 @@ body {
       right: 0 !important;
       left: auto !important;
       width: 280px !important;
-      height: 100dvh !important;
+      
       border-top: none !important;
       border-left: 1px solid var(--border-color) !important;
       background-color: #f8fafc !important;
@@ -83,6 +83,7 @@ body {
       text-align: left;
       margin-bottom: 20px;
       padding: 0 25px !important;
+      flex-shrink: 0 !important;
     }
     
     .checkout-bar-items {
@@ -104,6 +105,7 @@ body {
       margin-bottom: 15px;
       width: 100%;
       padding: 0 25px !important;
+      flex-shrink: 0 !important;
     }
     
     .checkout-bar-actions {
@@ -111,6 +113,7 @@ body {
       width: 100%;
       gap: 10px !important;
       padding: 0 25px !important;
+      flex-shrink: 0 !important;
     }
     
     .mobile-only-btn {
@@ -163,10 +166,10 @@ body {
     justify-content: space-around !important;
   }
   .mobile-container.tab-products-active .bottom-nav {
-    padding-right: calc(max(0px, (100% - 400px) / 2) + 280px) !important;
-  }
-
-  .view-section > :not(.header):not(.slider-viewport):not(.reviews-container):not(.category-section):not(.section-title):not(.section-header):not(.search-container):not(.product-grid) {
+      padding-left: calc(max(0px, (100% - 680px) / 2)) !important;
+      padding-right: calc(max(0px, (100% - 680px) / 2) + 280px) !important;
+    }
+.view-section > :not(.header):not(.slider-viewport):not(.reviews-container):not(.category-section):not(.section-title):not(.section-header):not(.search-container):not(.product-grid) {
     max-width: 400px;
     margin-left: auto !important;
     margin-right: auto !important;
