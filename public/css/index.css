@@ -391,13 +391,13 @@ body {
   width: 200%;
   height: 200%;
   background: conic-gradient(
-    from 0deg,
-    #ff2a2a 0%,
-    #ffffff 25%,
-    #105de9 50%,
-    #ff2a2a 75%,
-    #ffffff 100%
-  );
+      from 0deg,
+      #ff2a2a 0%,
+      #ffffff 25%,
+      #105de9 50%,
+      #ffffff 75%,
+      #ff2a2a 100%
+    );
   animation: spinBorder 3s linear infinite;
   z-index: 0;
 }
@@ -2234,8 +2234,8 @@ select.input-field {
       #ff2a2a 0%,
       #ffffff 25%,
       #105de9 50%,
-      #ff2a2a 75%,
-      #ffffff 100%
+      #ffffff 75%,
+      #ff2a2a 100%
     );
     animation: spinBorder 3s linear infinite;
     z-index: 0;
