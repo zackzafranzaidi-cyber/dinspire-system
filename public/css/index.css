@@ -51,6 +51,12 @@ body {
   }
 }
 @media (min-width: 768px) {
+    #account-logged-out, #account-logged-in {
+      max-width: 550px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
     .product-grid {
       grid-template-columns: repeat(4, 1fr) !important;
       gap: 20px !important;
