@@ -74,7 +74,7 @@ body {
     justify-content: space-around !important;
   }
 
-  .view-section > :not(.header):not(.slider-viewport):not(.reviews-container):not(.category-section) {
+  .view-section > :not(.header):not(.slider-viewport):not(.reviews-container):not(.category-section):not(.section-title):not(.section-header) {
     max-width: 400px;
     margin-left: auto !important;
     margin-right: auto !important;
