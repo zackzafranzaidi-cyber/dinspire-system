@@ -798,13 +798,20 @@ function generateAvatarGrid() {
   document.getElementById("avatar-grid-container").innerHTML = html;
 }
 function selectAvatar(imgEl, path) {
-  document
-    .querySelectorAll(".avatar-grid img")
-    .forEach((el) => el.classList.remove("selected"));
-  imgEl.classList.add("selected");
-  document.getElementById("reg-avatar-val").value = path;
-  document.getElementById("reg-avatar-preview").src = path;
-}
+    document.querySelectorAll(".avatar-grid img").forEach((el) => el.classList.remove("selected"));
+    imgEl.classList.add("selected");
+    
+    // Check if Edit Profile modal is active
+    const editModal = document.getElementById("edit-profile-modal");
+    if (editModal && editModal.classList.contains("active")) {
+      document.getElementById("edit-profile-avatar-val").value = path;
+      document.getElementById("edit-profile-avatar-preview").src = path;
+      closeModal("avatar-modal-overlay");
+    } else {
+      document.getElementById("reg-avatar-val").value = path;
+      document.getElementById("reg-avatar-preview").src = path;
+    }
+  }
 function checkLoginBeforeBooking() {
   if (!currentUser) {
     alert("Sila Log Masuk sebelum meneruskan transaksi.");
@@ -2529,14 +2536,7 @@ function openEditProfileModal() {
   document.getElementById("edit-profile-modal").classList.add("active");
 }
 
-function handleEditProfileAvatar(input) {
-  if (input.files && input.files[0]) {
-    compressImage(input.files[0], (base64) => {
-      document.getElementById("edit-profile-avatar-preview").src = base64;
-      document.getElementById("edit-profile-avatar-val").value = base64;
-    });
-  }
-}
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const formEditProfile = document.getElementById("form-edit-profile");
