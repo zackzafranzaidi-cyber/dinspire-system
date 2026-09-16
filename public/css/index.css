@@ -1,3 +1,15 @@
+
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0turn;
+}
+@keyframes spin-gradient {
+  to {
+    --border-angle: 1turn;
+  }
+}
+
 :root {
   --bg-main: #f4f5f8;
   --bg-surface: #ffffff;
@@ -371,7 +383,6 @@ body {
   position: relative;
   border-radius: 16px;
   padding: 1.5px;
-  overflow: hidden;
   background-color: #e5e5ea;
   margin-bottom: 15px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
@@ -382,37 +393,33 @@ body {
 .rgb-border-container.active {
   background-color: transparent;
 }
+
 .rgb-border-container.active::before,
 .rgb-border-container.active::after {
   content: "";
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
+  top: -1.5px;
+  left: -1.5px;
+  right: -1.5px;
+  bottom: -1.5px;
+  border-radius: inherit;
   background: conic-gradient(
-      from 0deg,
-      #ff2a2a 0%,
-      #ffffff 25%,
-      #105de9 50%,
-      #ffffff 75%,
-      #ff2a2a 100%
-    );
-  animation: spinBorder 3s linear infinite;
+    from var(--border-angle, 0deg),
+    #ff2a2a 0%,
+    #ffffff 25%,
+    #105de9 50%,
+    #ffffff 75%,
+    #ff2a2a 100%
+  );
+  animation: spin-gradient 3s linear infinite;
   z-index: 0;
 }
+
 .rgb-border-container.active::after {
   filter: blur(15px); /* This adds the glowing effect */
   opacity: 0.7;
 }
-@keyframes spinBorder {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
+
 .rgb-border-inner {
   position: relative;
   background-color: var(--bg-surface);
@@ -2220,26 +2227,28 @@ select.input-field {
     /* No overflow: hidden so the glow can expand outwards */
   }
   
-  .profile-avatar-wrapper::before,
-  .profile-avatar-wrapper::after {
-    content: "";
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border-radius: 50%;
-    background: conic-gradient(
-      from 0deg,
-      #ff2a2a 0%,
-      #ffffff 25%,
-      #105de9 50%,
-      #ffffff 75%,
-      #ff2a2a 100%
-    );
-    animation: spinBorder 3s linear infinite;
-    z-index: 0;
-  }
+  
+.profile-avatar-wrapper::before,
+.profile-avatar-wrapper::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    #ff2a2a 0%,
+    #ffffff 25%,
+    #105de9 50%,
+    #ffffff 75%,
+    #ff2a2a 100%
+  );
+  animation: spin-gradient 3s linear infinite;
+  z-index: 0;
+}
+
   
   .profile-avatar-wrapper::after {
     filter: blur(8px);
