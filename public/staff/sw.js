@@ -2,9 +2,9 @@ const CACHE_NAME = 'dinspire-pwa-staff-v3';
 const urlsToCache = [
   './',
   './index.html',
-  '../css/staff.css',
-  '../css/loader.css',
-  '../js/staff.js'
+  './css/staff.css',
+  './css/loader.css',
+  './js/staff.js'
 ];
 
 self.addEventListener('install', event => {

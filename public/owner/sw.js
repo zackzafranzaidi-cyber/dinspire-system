@@ -2,9 +2,11 @@ const CACHE_NAME = 'dinspire-pwa-owner-v12';
 const urlsToCache = [
   './',
   './index.html',
-  '../css/owner.css',
-  '../css/loader.css',
-  '../js/owner.js'
+  './css/owner.css',
+  './css/owner_cms.css',
+  './css/loader.css',
+  './js/owner.js',
+  './js/owner_cms.js'
 ];
 
 self.addEventListener('install', event => {
