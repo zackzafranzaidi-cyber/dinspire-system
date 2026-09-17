@@ -1,5 +1,15 @@
-{
+﻿{
   "rewrites": [
+    {
+      "source": "/css/(.*)",
+      "has": [{ "type": "host", "value": "customer.dinspirebarbershop.com" }],
+      "destination": "/customer/css/$1"
+    },
+    {
+      "source": "/js/(.*)",
+      "has": [{ "type": "host", "value": "customer.dinspirebarbershop.com" }],
+      "destination": "/customer/js/$1"
+    },
     {
       "source": "/",
       "has": [{ "type": "host", "value": "customer.dinspirebarbershop.com" }],
@@ -16,6 +26,16 @@
       "destination": "/customer/sw.js"
     },
     {
+      "source": "/css/(.*)",
+      "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
+      "destination": "/staff/css/$1"
+    },
+    {
+      "source": "/js/(.*)",
+      "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
+      "destination": "/staff/js/$1"
+    },
+    {
       "source": "/",
       "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
       "destination": "/staff/"
@@ -29,6 +49,16 @@
       "source": "/sw.js",
       "has": [{ "type": "host", "value": "staff.dinspirebarbershop.com" }],
       "destination": "/staff/sw.js"
+    },
+    {
+      "source": "/css/(.*)",
+      "has": [{ "type": "host", "value": "owner.dinspirebarbershop.com" }],
+      "destination": "/owner/css/$1"
+    },
+    {
+      "source": "/js/(.*)",
+      "has": [{ "type": "host", "value": "owner.dinspirebarbershop.com" }],
+      "destination": "/owner/js/$1"
     },
     {
       "source": "/",
