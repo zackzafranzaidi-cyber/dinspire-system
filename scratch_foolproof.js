@@ -1,49 +1,34 @@
 ﻿const fs = require('fs');
+let js = fs.readFileSync('public/customer/js/customer.js', 'utf8');
 
-let html = fs.readFileSync('public/customer/index.html', 'utf8');
+// Safely handle undefined shopData in renderHomeReviews
+js = js.replace(
+    'function renderHomeReviews() {\n  let reviews = shopData.Reviews || [];',
+    'function renderHomeReviews() {\n  if (!shopData) return;\n  let reviews = shopData.Reviews || [];'
+);
 
-// Insert a foolproof fallback script at the bottom of the body
-const fallbackScript = `
-<script>
-  // FOOLPROOF FALLBACK: HIDE LOADER AFTER 6 SECONDS NO MATTER WHAT
-  setTimeout(() => {
-    const p = document.getElementById('preloader');
-    if (p && p.style.visibility !== 'hidden') {
-       console.warn("Fallback: Forcing loader to hide");
-       p.style.opacity = '0';
-       setTimeout(() => p.style.visibility = 'hidden', 500);
-    }
-  }, 6000);
-</script>
-</body>
-`;
+// Safely handle undefined shopData in fetchShopData try block just in case
+js = js.replace(
+    'try {\n    let bOpts =',
+    'try {\n    if (!shopData) return;\n    let bOpts ='
+);
 
-if (!html.includes('FOOLPROOF FALLBACK')) {
-    html = html.replace('</body>', fallbackScript);
-}
+// Put a giant try catch around the whole load listener logic
+const loadListenerStart = js.indexOf('window.addEventListener("load", async () => {');
+const loadListenerEndStr = '  hideGlobalLoader();\n});';
+const loadListenerEnd = js.indexOf(loadListenerEndStr, loadListenerStart) + loadListenerEndStr.length;
 
-// Bump version
-html = html.replace(/\?v=(\d+)/g, (match, p1) => {
-    return '?v=' + (parseInt(p1) + 1);
-});
-html = html.replace(/CURRENT_APP_VERSION = "(\d+\.\d+\.)(\d+)"/, (match, p1, p2) => {
-    return 'CURRENT_APP_VERSION = "' + p1 + (parseInt(p2) + 1) + '"';
-});
+let loadBlock = js.substring(loadListenerStart, loadListenerEnd);
+loadBlock = loadBlock.replace(
+    'window.addEventListener("load", async () => {',
+    'window.addEventListener("load", async () => {\n  try {'
+);
+loadBlock = loadBlock.replace(
+    '  hideGlobalLoader();\n});',
+    '  hideGlobalLoader();\n  } catch (globalErr) {\n    alert("Fatal Error: " + globalErr.message);\n    console.error(globalErr);\n    hideGlobalLoader();\n  }\n});'
+);
 
-fs.writeFileSync('public/customer/index.html', html);
-console.log("Added foolproof fallback to customer HTML");
+js = js.substring(0, loadListenerStart) + loadBlock + js.substring(loadListenerEnd);
 
-let htmlOwner = fs.readFileSync('public/owner/index.html', 'utf8');
-if (!htmlOwner.includes('FOOLPROOF FALLBACK')) {
-    htmlOwner = htmlOwner.replace('</body>', fallbackScript);
-    htmlOwner = htmlOwner.replace(/\?v=(\d+)/g, (match, p1) => '?v=' + (parseInt(p1) + 1));
-    fs.writeFileSync('public/owner/index.html', htmlOwner);
-}
-
-let htmlStaff = fs.readFileSync('public/staff/index.html', 'utf8');
-if (!htmlStaff.includes('FOOLPROOF FALLBACK')) {
-    htmlStaff = htmlStaff.replace('</body>', fallbackScript);
-    htmlStaff = htmlStaff.replace(/\?v=(\d+)/g, (match, p1) => '?v=' + (parseInt(p1) + 1));
-    fs.writeFileSync('public/staff/index.html', htmlStaff);
-}
-
+fs.writeFileSync('public/customer/js/customer.js', js);
+console.log("Made customer.js foolproof and added global error alert!");

@@ -1061,7 +1061,6 @@ async function fetchShopData() {
   }
   
   try {
-    if (!shopData) return;
     let bOpts =
       `<option value="" disabled selected>Pilih Cawangan</option>` +
       (shopData.Branches || [])
