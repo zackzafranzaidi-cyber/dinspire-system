@@ -1,14 +1,14 @@
 :root {
-  --bg-main: #f4f5f8;
-  --bg-surface: #ffffff;
-  --bg-input: #e4e4e6;
-  --text-main: #1c1c1e;
-  --text-muted: #8e8e93;
-  --primary-blue: #1877f2;
-  --border-color: #e5e5ea;
-  --star-color: #ffc107;
-  --btn-dark: #5a5a5e;
-  --text-price: #a0a0a5;
+  --bg-main: #000000;
+  --bg-surface: #1C1C1E;
+  --bg-input: #2C2C2E;
+  --text-main: #F3F4F6;
+  --text-muted: #9CA3AF;
+  --primary-blue: #0A84FF;
+  --border-color: #38383A;
+  --star-color: #FFD60A;
+  --btn-dark: #3A3A3C;
+  --text-price: #D1D5DB;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,22 +25,8 @@
     --text-price: #D1D5DB;
   }
   body {
-    background-color: #000000;
-  }
-}
-
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
-  -webkit-tap-highlight-color: transparent;
-}
-
-body {
   touch-action: manipulation;
-  background-color: #e2e8f0; /* Latar belakang untuk luar container */
+  background-color: #000000; /* Latar belakang untuk luar container */
   display: flex;
   justify-content: center;
   align-items: center;

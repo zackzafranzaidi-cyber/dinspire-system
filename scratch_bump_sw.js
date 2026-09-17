@@ -1,0 +1,7 @@
+﻿const fs = require('fs');
+
+let sw = fs.readFileSync('public/customer/sw.js', 'utf8');
+sw = sw.replace(/dinspire-pwa-v\d+/, 'dinspire-pwa-v12');
+fs.writeFileSync('public/customer/sw.js', sw);
+
+console.log("Bumped Service Worker cache version.");
