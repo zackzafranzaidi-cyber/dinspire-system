@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dinspire-pwa-owner-v17';
+const CACHE_NAME = 'dinspire-pwa-owner-v18';
 const urlsToCache = [
   './',
   './index.html',
