@@ -2313,3 +2313,216 @@ function updateCustomerBadges(orders) {
       .catch(err => console.error('Error updating badge:', err));
   }
 }
+
+
+// RESTORED MISSING FUNCTIONS
+function triggerResetBooking(orderNo, serviceName, staffId) {
+  document.getElementById("reset-booking-id").value = orderNo;
+  document.getElementById("reset-booking-service-name").innerText = serviceName;
+  
+  // Cari cawangan asal staf ini
+  let originalBranchId = null;
+  let allBarbersData = [];
+  if (shopData && shopData.Barbers) allBarbersData = allBarbersData.concat(shopData.Barbers);
+  if (shopData && shopData.OnCallBarbers) allBarbersData = allBarbersData.concat(shopData.OnCallBarbers);
+  
+  const origStaff = allBarbersData.find(b => b.id === staffId);
+  if (origStaff && origStaff.branch_id) {
+    originalBranchId = origStaff.branch_id;
+  }
+  
+  // Populate staff dropdown
+  const barberSelect = document.getElementById("barber-reset-booking");
+  let options = '<option value="" disabled selected>Sila Pilih Barber</option>';
+  
+  // Tapis staf di cawangan yang sama, atau jika On-Call, tunjuk semua
+  let filteredBarbers = allBarbersData.filter(b => {
+     if (originalBranchId) return b.branch_id === originalBranchId;
+     return true; 
+  });
+  
+  // Unikkan barber ID sekiranya duplikat
+  let uniqueBarbers = [];
+  let map = new Map();
+  for (let b of filteredBarbers) {
+      if(!map.has(b.id)){
+          map.set(b.id, true);
+          uniqueBarbers.push(b);
+      }
+  }
+
+  if (uniqueBarbers.length > 0) {
+    uniqueBarbers.forEach(s => {
+      options += `<option value="${s.id}">${escapeHTML(s.name)}</option>`;
+    });
+  }
+  barberSelect.innerHTML = options;
+  
+  document.getElementById("input-date-reset-booking").value = "";
+  document.getElementById("input-time-reset-booking").value = "";
+  document.getElementById("btn-jadual-reset-booking").innerText = "Pilih Jadual (Tarikh & Masa)";
+  document.getElementById("btn-jadual-reset-booking").classList.remove("has-value");
+  
+  document.getElementById("reset-booking-modal").classList.add("active");
+}
+
+function fetchBarberAvailabilityForReset() {
+  const barberId = document.getElementById("reset-booking-barber").value;
+  const dateStr = document.getElementById("reset-booking-date").value;
+  const timeSelect = document.getElementById("reset-booking-time");
+  
+  if (!barberId || !dateStr) {
+    timeSelect.innerHTML = '<option value="">Pilih Masa</option>';
+    return;
+  }
+  
+  const selectedDate = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  if (selectedDate <= today) {
+    timeSelect.innerHTML = '<option value="">Tarikh tidak sah</option>';
+    return;
+  }
+  
+  timeSelect.innerHTML = '<option value="">Memuat turun...</option>';
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/bookings/staff-availability?staff_id=${barberId}`);
+    const data = await res.json();
+    let currentBarberLeaves = data.leaves || [];
+    let currentBarberBookings = data.bookings || [];
+    
+    if (currentBarberLeaves.includes(dateStr)) {
+      timeSelect.innerHTML = '<option value="">Barber sedang bercuti</option>';
+      return;
+    }
+    
+    // Generate times
+    let bookedTimes = [];
+    currentBarberBookings.forEach(b => {
+      if (b.tarikh === dateStr) {
+        bookedTimes.push(b.masa.substring(0, 5));
+      }
+    });
+    
+    let allTimes = ["10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00"];
+    
+    let options = '<option value="" disabled selected>Pilih Masa</option>';
+    let availableCount = 0;
+    allTimes.forEach(t => {
+      if (bookedTimes.includes(t)) {
+        options += `<option value="${t}" disabled>${t} (Telah Ditempah)</option>`;
+      } else {
+        options += `<option value="${t}">${t}</option>`;
+        availableCount++;
+      }
+    });
+    
+    if (availableCount === 0) {
+      timeSelect.innerHTML = '<option value="">Semua masa penuh</option>';
+    } else {
+      timeSelect.innerHTML = options;
+    }
+  } catch (err) {
+    timeSelect.innerHTML = '<option value="">Ralat sistem</option>';
+  }
+}
+
+function submitResetBooking() {
+  const orderNo = document.getElementById("reset-booking-id").value;
+  const staffId = document.getElementById("barber-reset-booking").value;
+  const dateStr = document.getElementById("input-date-reset-booking").value;
+  const timeStr = document.getElementById("input-time-reset-booking").value;
+  
+  if (!staffId || !dateStr || !timeStr) {
+    if (typeof Swal !== "undefined") Swal.fire('Perhatian', 'Sila pilih Barber, Tarikh dan Masa.', 'warning');
+    else alert('Sila pilih Barber, Tarikh dan Masa.');
+    return;
+  }
+  
+  if (!confirm("Adakah anda pasti untuk reset tempahan ini dengan masa yang baharu?")) return;
+  
+  try {
+    const res = await fetchWithAuth(`${API_BASE_URL}/bookings/order/${orderNo}/reset`, {
+      method: 'PUT',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        new_date: dateStr,
+        new_time: timeStr,
+        new_staff_id: staffId
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      if (typeof Swal !== "undefined") Swal.fire('Berjaya!', data.message, 'success');
+      else alert(data.message);
+      
+      closeModal('reset-booking-modal');
+      renderNotifications();
+    } else {
+      if (typeof Swal !== "undefined") Swal.fire('Gagal!', data.message, 'error');
+      else alert(data.message);
+    }
+  } catch (err) {
+    if (typeof Swal !== "undefined") Swal.fire('Gagal', 'Sistem tidak dapat berhubung', 'error');
+    else alert('Sistem tidak dapat berhubung');
+  }
+}
+
+function renderDesktopCartItems() {
+      const listContainer = document.getElementById("desktop-cart-items-container");
+      if (!listContainer) return;
+      
+      if (Object.keys(cartState).length === 0) {
+        listContainer.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color: var(--text-muted); text-align:center; padding:20px;">
+          <i class="fas fa-shopping-basket" style="font-size:32px; margin-bottom:12px; color:#D1D5DB;"></i>
+          <p style="font-size:14px; font-weight:500;">Troli anda kosong</p>
+          <p style="font-size:12px; margin-top:4px;">Sila pilih produk di sebelah.</p>
+        </div>`;
+        return;
+      }
+    
+      let html = "";
+      for (let id in cartState) {
+        let item = cartState[id];
+        html += `<div style="position: relative; overflow: hidden; min-height: 75px; border-bottom: 1px solid var(--border-color);">
+              <div style="position: absolute; right: 0; top: 0; height: 100%; width: 80px; background: #FF3B30; color: white; display: flex; justify-content: center; align-items: center; font-weight: normal; font-size: 13px; cursor: pointer;" onclick="deleteEditCartItem('${id}')">${i18n_index[currentLang]["cart-delete-btn"]}</div>
+              <div id="swipe-content-desktop-${id}" 
+                   ontouchstart="handleTouchStart(event, 'desktop-${id}')" ontouchmove="handleTouchMove(event, 'desktop-${id}')" ontouchend="handleTouchEnd(event, 'desktop-${id}')"
+                   onmousedown="handleTouchStart(event, 'desktop-${id}')" onmousemove="handleTouchMove(event, 'desktop-${id}')" onmouseup="handleTouchEnd(event, 'desktop-${id}')" onmouseleave="handleTouchEnd(event, 'desktop-${id}')"
+                   style="position: relative; background: var(--bg-main); z-index: 1; display:flex; justify-content:space-between; align-items:center; padding:15px 25px; width: 100%; box-sizing: border-box; transition: transform 0.3s ease; cursor: grab;">
+                  <div style="display:flex; gap:12px; align-items:center;">
+                      <img src="${item.imgUrl || "https://via.placeholder.com/40"}" style="width:45px; height:45px; border-radius:8px; object-fit:cover; pointer-events: none; border: 1px solid var(--border-color);">
+                      <div>
+                          <div style="font-weight:600; font-size:13px; color: var(--text-main);">${escapeHTML(item.name)}</div>
+                          <div style="color:var(--primary-blue); font-size:12px; font-weight:700; margin-top:2px;">RM ${parseFloat(item.price).toFixed(2)}</div>
+                      </div>
+                  </div>
+                  <div class="qty-control" style="width:75px; flex:none; display:flex; align-items:center; justify-content:space-between; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius:8px; padding:4px;">
+                      <button type="button" class="qty-btn" style="width:28px; height:28px; border-radius:4px; background: var(--bg-surface); font-weight:bold; color: var(--text-main); border:none;" onclick="updateEditCartQty('${id}', -1)">-</button>
+                      <span class="qty-num" style="font-size:12px; font-weight:bold; text-align:center; width:20px;">${item.qty}</span>
+                      <button type="button" class="qty-btn" style="width:28px; height:28px; border-radius:4px; background: var(--bg-surface); font-weight:bold; color: var(--text-main); border:none;" onclick="updateEditCartQty('${id}', 1)">+</button>
+                  </div>
+              </div>
+          </div>`;
+      }
+      listContainer.innerHTML = html;
+    }
+
+function openEditProfileModal() {
+  if (!currentUser) return;
+  document.getElementById("edit-profile-name").value = currentUser.name || currentUser.username || "";
+  document.getElementById("edit-profile-phone").value = currentUser.phone || "";
+  document.getElementById("edit-profile-address").value = currentUser.address || "";
+  
+  let avatarUrl = currentUser.avatar_url || "https://via.placeholder.com/150";
+  if (avatarUrl.startsWith("./Profile/")) {
+    avatarUrl = avatarUrl.substring(1);
+  }
+  
+  document.getElementById("edit-profile-avatar-preview").src = avatarUrl;
+  document.getElementById("edit-profile-avatar-val").value = currentUser.avatar_url || "";
+  
+  document.getElementById("edit-profile-modal").classList.add("active");
+}
+
