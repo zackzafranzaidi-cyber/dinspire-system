@@ -1336,10 +1336,10 @@ function renderProducts(searchQuery = "") {
                     <div class="product-title">${escapeHTML(p.name)}</div>
                     <div class="product-price">RM ${parseFloat(p.price).toFixed(2)}</div>
                     <div class="card-actions mt-auto pt-2">
-                        <div class="qty-control flex items-center justify-between bg-gray-100 rounded-lg p-1 flex-1">
-                            <button class="qty-btn w-6 h-6 rounded  font-bold" style="background: var(--bg-surface);" onclick="changeTempQty('${p.id}', -1, ${stockLeft})">-</button>
-                            <span class="qty-num text-xs font-bold text-center w-5" id="temp-qty-${p.id}">1</span>
-                            <button class="qty-btn w-6 h-6 rounded  font-bold" style="background: var(--bg-surface);" onclick="changeTempQty('${p.id}', 1, ${stockLeft})">+</button>
+                        <div class="qty-control flex items-center justify-between bg-gray-100 rounded-lg p-1 flex-1" style="background: var(--bg-main); border: 1px solid var(--border-color);">
+                            <button class="qty-btn w-6 h-6 rounded font-bold" style="background: var(--bg-surface); color: var(--text-main); border: none;" onclick="changeTempQty('${p.id}', -1, ${stockLeft})">-</button>
+                            <span class="qty-num text-xs font-bold text-center w-5" style="color: var(--text-main);" id="temp-qty-${p.id}">1</span>
+                            <button class="qty-btn w-6 h-6 rounded font-bold" style="background: var(--bg-surface); color: var(--text-main); border: none;" onclick="changeTempQty('${p.id}', 1, ${stockLeft})">+</button>
                         </div>
                         <button class="add-btn ${btnClass}" style="${btnStyle}" ${isOutOfStock ? "disabled" : ""} onclick="addToCart('${p.id}', '${escapeHTML(p.name || "")}', ${parseFloat(p.price)}, '${p.imageUrl}', ${stockLeft})">${btnText}</button>
                     </div>
