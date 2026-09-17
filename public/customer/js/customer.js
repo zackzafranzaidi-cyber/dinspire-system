@@ -2253,4 +2253,63 @@ fetch('/bank-info.json')
   })
   .catch(e => console.error('Error fetching bank info:', e));
 
+function updateCustomerBadges(orders) {
+  if (!currentUser) {
+    const badge = document.getElementById('badge-notifications');
+    if (badge) badge.style.display = 'none';
+    return;
+  }
+  
+  const processOrders = (ordersList) => {
+    let cachedStr = localStorage.getItem('din_order_states');
+    let windowStates = {};
+    ordersList.forEach(o => windowStates[o.id || o.no_booking] = o.status);
+    window.latestOrderStates = windowStates;
 
+    const badge = document.getElementById('badge-notifications');
+    if (!cachedStr) {
+        localStorage.setItem('din_order_states', JSON.stringify(windowStates));
+        if (badge) badge.style.display = 'none';
+        return;
+    }
+
+    let cachedStates = JSON.parse(cachedStr);
+    let newUpdatesCount = 0;
+    
+    ordersList.forEach(o => {
+       let id = o.id || o.no_booking;
+       if (cachedStates[id] !== o.status) {
+           newUpdatesCount++;
+       }
+    });
+
+    let pendingUnread = parseInt(localStorage.getItem('din_unread_badge') || '0');
+    if (newUpdatesCount > 0) {
+        pendingUnread += newUpdatesCount;
+        localStorage.setItem('din_unread_badge', pendingUnread);
+        localStorage.setItem('din_order_states', JSON.stringify(windowStates));
+    }
+
+    if (badge) {
+      if (pendingUnread > 0) {
+        badge.innerText = pendingUnread > 99 ? '99+' : pendingUnread;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  };
+
+  if (orders) {
+    processOrders(orders);
+  } else {
+    fetchWithAuth(API_BASE_URL + '/bookings/my-orders')
+      .then(res => res ? res.json() : null)
+      .then(data => {
+        if (data && data.status === 'success' && data.orders) {
+          processOrders(data.orders);
+        }
+      })
+      .catch(err => console.error('Error updating badge:', err));
+  }
+}
