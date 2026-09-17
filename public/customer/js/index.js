@@ -2594,7 +2594,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 function generateDynamicDuitNow(amount) {
   let baseStr = "00020201021126420014A000000615000101066033460210MD001712895204723053034585802MY5917DIEYN BARBERSHOP 6002MY62730325176576767190600620138800005201765767683838002566307161765767037979009";
-  baseStr = baseStr.replace("010211", "010212");
+  // baseStr = baseStr.replace("010211", "010212"); // Kekalkan Static
   let amountStr = amount.toFixed(2);
   let tag54 = "54" + amountStr.length.toString().padStart(2, '0') + amountStr;
   baseStr = baseStr.replace("5802MY", tag54 + "5802MY");
