@@ -11,20 +11,15 @@
   --text-price: #D1D5DB;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-main: #000000;
-    --bg-surface: #1C1C1E;
-    --bg-input: #2C2C2E;
-    --text-main: #F3F4F6;
-    --text-muted: #9CA3AF;
-    --primary-blue: #0A84FF;
-    --border-color: #38383A;
-    --star-color: #FFD60A;
-    --btn-dark: #3A3A3C;
-    --text-price: #D1D5DB;
-  }
-  body {
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
   touch-action: manipulation;
   background-color: #000000; /* Latar belakang untuk luar container */
   display: flex;
