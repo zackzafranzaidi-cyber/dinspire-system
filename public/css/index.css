@@ -377,7 +377,7 @@ body {
 .rgb-border-container {
   position: relative;
   border-radius: 16px;
-  padding: 1.5px;
+  padding: 1px;
   overflow: hidden;
   background-color: var(--border-color);
   margin-bottom: 15px;
@@ -1333,7 +1333,7 @@ select.input-field {
    GAYA APPLE PAYMENT SHEET FULL SCREEN
    ======================================================== */
 .checkout-sheet {
-  background: #f4f5f8;
+  background: var(--bg-main);
   width: 100%;
   height: 100%;
   position: absolute;
@@ -1375,7 +1375,7 @@ select.input-field {
 .checkout-header {
   text-align: center;
   padding: 25px 20px 10px;
-  background: #f4f5f8;
+  background: var(--bg-main);
 }
 .checkout-header h2 {
   font-size: 17px;
@@ -2184,7 +2184,7 @@ select.input-field {
   font-weight: 800;
   padding: 1px 4px;
   border-radius: 10px;
-  border: 1.5px solid white;
+  border: 1.5px solid var(--bg-surface);
   z-index: 10;
   min-width: 14px;
   text-align: center;
@@ -2198,7 +2198,7 @@ select.input-field {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  border: 1.5px solid white;
+  border: 1.5px solid var(--bg-surface);
   z-index: 10;
 }
 

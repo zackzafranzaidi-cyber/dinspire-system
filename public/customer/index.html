@@ -64,7 +64,7 @@
       href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/css/index.css?v=81" />
+    <link rel="stylesheet" href="/css/index.css?v=82" />
     <link rel="stylesheet" href="/css/loader.css?v=3" />
     <link rel="manifest" href="/manifest.json?v=6">
     <meta name="theme-color" content="#000000">
@@ -76,7 +76,7 @@
 
   <body>
     <!-- INTRO ANIMATION (ORIGINAL SWOOSH) -->
-    <div class="preloader" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #1877f2; justify-content: center; align-items: center; z-index: 999999;">
+    <div class="preloader" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; justify-content: center; align-items: center; z-index: 999999;">
         <div class="canvas">
             <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1030.32 964.36" width="150" height="150">
                 <path class="intro-swoosh swoosh-1" d="M 150,482 A 365,365 0 1,1 880,482" />
@@ -372,20 +372,20 @@
                   Sila imbas kod QR di bawah dan muat naik resit transaksi.
                 </div>
                 <!-- Bank Name & QR Image -->
-                <div id="bank-name-display" style="font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
+                <div id="bank-name-display" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
                   <!-- bank name dari JSON -->
                 </div>
                 <div style="margin: 0 auto 15px;">
                   <a href="/QR_download.PNG" download="QR_download.PNG">
                     <img src="/qr.png" style="width: 150px; height: 150px; object-fit: contain; border-radius: 10px; border: 2px dashed var(--border-color); padding: 5px; background: var(--bg-surface);" alt="QR Code" />
                   </a>
-                  <div style="font-size: 10px; color: #64748b; margin-top: 5px;">Klik QR untuk muat turun</div>
+                  <div style="font-size: 10px; color: var(--text-muted); margin-top: 5px;">Klik QR untuk muat turun</div>
                 </div>
-                <div id="bank-info-container" style="font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 15px;">
+                <div id="bank-info-container" style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 15px;">
                   <!-- bank info dari JSON -->
                 </div>
                 <div class="form-group" style="text-align: left; margin-bottom: 0;">
-                  <label style="font-size: 12px; font-weight: 600; color: #4b5563;">Muat Naik Resit (Wajib)</label>
+                  <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Muat Naik Resit (Wajib)</label>
                   <input type="file" id="checkout-receipt-upload" class="input-field" accept="image/*" style="padding: 8px; background: var(--bg-surface); border: 1px solid var(--border-color); font-size: 12px; margin-top: 5px;">
                 </div>
               </div>
@@ -464,7 +464,7 @@
               class="submit-btn"
               data-i18n="cart-edit-done"
               style="
-                background: #111827;
+                background: var(--primary-blue);
                 margin: 0;
                 border-radius: 21px;
                 height: 42px;
@@ -473,8 +473,7 @@
                 align-items: center;
                 justify-content: center;
                 padding: 0;
-              "
-              onclick="closeModal('edit-cart-modal')"
+              " onclick="closeModal('edit-cart-modal')"
             >
               Done Checking
             </button>
@@ -1183,7 +1182,7 @@
     </div>
     </div>
 
-    <script src="/js/i18n-index.js?v=81"></script>
+    <script src="/js/i18n-index.js?v=82"></script>
     <script src="/js/index.js?v=36"></script>
       <script>
         if ("serviceWorker" in navigator) {
