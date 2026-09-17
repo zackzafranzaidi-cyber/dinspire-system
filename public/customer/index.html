@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.83";
+      const CURRENT_APP_VERSION = "1.1.84";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -51,7 +51,7 @@
         
         const manifest = document.createElement('link');
         manifest.rel = 'manifest';
-        manifest.href = './manifest.json?v=15';
+        manifest.href = './manifest.json?v=16';
         document.head.appendChild(manifest);
       }
     </script>
@@ -64,9 +64,9 @@
       href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/customer/css/index.css?v=96" />
-    <link rel="stylesheet" href="/customer/css/loader.css?v=13" />
-    <link rel="manifest" href="/manifest.json?v=15">
+    <link rel="stylesheet" href="/customer/css/index.css?v=97" />
+    <link rel="stylesheet" href="/customer/css/loader.css?v=14" />
+    <link rel="manifest" href="/manifest.json?v=16">
     <meta name="theme-color" content="#000000">
     <style>
       .intro-swoosh { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 30; stroke-linecap: round; stroke-dasharray: 1200; stroke-dashoffset: 1200; }
@@ -1182,17 +1182,30 @@
     </div>
     </div>
 
-    <script src="/customer/js/i18n-index.js?v=96"></script>
-    <script src="/customer/js/customer.js?v=45"></script>
+    <script src="/customer/js/i18n-index.js?v=97"></script>
+    <script src="/customer/js/customer.js?v=46"></script>
       <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/sw.js?v=16");
+                navigator.serviceWorker.register("/sw.js?v=17");
             });
         }
     </script>
 
 
     
+
+<script>
+  // FOOLPROOF FALLBACK: HIDE LOADER AFTER 6 SECONDS NO MATTER WHAT
+  setTimeout(() => {
+    const p = document.getElementById('preloader');
+    if (p && p.style.visibility !== 'hidden') {
+       console.warn("Fallback: Forcing loader to hide");
+       p.style.opacity = '0';
+       setTimeout(() => p.style.visibility = 'hidden', 500);
+    }
+  }, 6000);
+</script>
 </body>
+
 </html>

@@ -47,9 +47,9 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/staff/css/staff.css?v=27" />
-    <link rel="stylesheet" href="/staff/css/loader.css?v=8" />
-      <link rel="manifest" href="/staff/manifest_staff.json?v=12">
+    <link rel="stylesheet" href="/staff/css/staff.css?v=28" />
+    <link rel="stylesheet" href="/staff/css/loader.css?v=9" />
+      <link rel="manifest" href="/staff/manifest_staff.json?v=13">
     <meta name="theme-color" content="#ffffff">
     <!-- Plugins -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -747,15 +747,28 @@
       </nav>
     </div>
 
-    <script src="/staff/js/staff.js?v=34"></script>
+    <script src="/staff/js/staff.js?v=35"></script>
       <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/sw.js?v=40");
+                navigator.serviceWorker.register("/sw.js?v=41");
             });
         }
     </script>
-    </body>
+    
+<script>
+  // FOOLPROOF FALLBACK: HIDE LOADER AFTER 6 SECONDS NO MATTER WHAT
+  setTimeout(() => {
+    const p = document.getElementById('preloader');
+    if (p && p.style.visibility !== 'hidden') {
+       console.warn("Fallback: Forcing loader to hide");
+       p.style.opacity = '0';
+       setTimeout(() => p.style.visibility = 'hidden', 500);
+    }
+  }, 6000);
+</script>
+</body>
+
 </html>
 
 
