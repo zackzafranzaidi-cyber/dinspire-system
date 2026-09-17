@@ -742,6 +742,7 @@ body {
 }
 .input-field:focus {
   background-color: #dcdce0;
+  color: #000000 !important;
 }
 select.input-field {
   appearance: none;
