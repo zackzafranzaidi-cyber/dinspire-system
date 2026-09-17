@@ -51,7 +51,7 @@
         
         const manifest = document.createElement('link');
         manifest.rel = 'manifest';
-        manifest.href = './manifest.json?v=26';
+        manifest.href = './manifest.json?v=27';
         document.head.appendChild(manifest);
       }
     </script>
@@ -64,9 +64,9 @@
       href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/customer/css/index.css?v=107" />
-    <link rel="stylesheet" href="/customer/css/loader.css?v=24" />
-    <link rel="manifest" href="/manifest.json?v=26">
+    <link rel="stylesheet" href="/customer/css/index.css?v=108" />
+    <link rel="stylesheet" href="/customer/css/loader.css?v=25" />
+    <link rel="manifest" href="/manifest.json?v=27">
     <meta name="theme-color" content="#000000">
     <style>
       .intro-swoosh { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 30; stroke-linecap: round; stroke-dasharray: 1200; stroke-dashoffset: 1200; }
@@ -216,6 +216,31 @@
 
     <div class="mobile-container">
       
+      <!-- DESKTOP TOP NAVBAR -->
+      <nav class="desktop-top-nav" style="display: none;">
+        <div class="desktop-nav-logo">
+          DINSPIRE
+        </div>
+        <div class="desktop-nav-links">
+          <div class="desktop-nav-item active" id="desktop-nav-home">
+            <i class="fas fa-home"></i> <span data-i18n="nav-home">Home</span>
+          </div>
+          <div class="desktop-nav-item" id="desktop-nav-services">
+            <i class="fas fa-cut"></i> <span data-i18n="nav-services">Services</span>
+          </div>
+          <div class="desktop-nav-item" id="desktop-nav-products">
+            <i class="fas fa-box"></i> <span data-i18n="nav-products">Products</span>
+          </div>
+          <div class="desktop-nav-item" id="desktop-nav-notif" style="position:relative;">
+            <i class="fas fa-bell"></i> <span data-i18n="nav-notif">Notifications</span>
+            <span class="badge" id="desktop-nav-badge" style="display:none; position:absolute; top:-8px; right:-25px;"></span>
+          </div>
+          <div class="desktop-nav-item" id="desktop-nav-account">
+            <i class="fas fa-user"></i> <span data-i18n="nav-account">Account</span>
+          </div>
+        </div>
+      </nav>
+
       <div id="toast" class="toast"></div>
 
       <div
@@ -1182,12 +1207,12 @@
     </div>
     </div>
 
-    <script src="/customer/js/i18n-index.js?v=107"></script>
-    <script src="/customer/js/customer.js?v=56"></script>
+    <script src="/customer/js/i18n-index.js?v=108"></script>
+    <script src="/customer/js/customer.js?v=57"></script>
       <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/sw.js?v=27");
+                navigator.serviceWorker.register("/sw.js?v=28");
             });
         }
     </script>

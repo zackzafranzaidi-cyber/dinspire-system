@@ -2256,7 +2256,9 @@ fetch('/bank-info.json')
 function updateCustomerBadges(orders) {
   if (!currentUser) {
     const badge = document.getElementById('badge-notifications');
+    const desktopBadge = document.getElementById('desktop-nav-badge');
     if (badge) badge.style.display = 'none';
+        if (desktopBadge) desktopBadge.style.display = 'none';
     return;
   }
   
@@ -2267,9 +2269,11 @@ function updateCustomerBadges(orders) {
     window.latestOrderStates = windowStates;
 
     const badge = document.getElementById('badge-notifications');
+    const desktopBadge = document.getElementById('desktop-nav-badge');
     if (!cachedStr) {
         localStorage.setItem('din_order_states', JSON.stringify(windowStates));
         if (badge) badge.style.display = 'none';
+        if (desktopBadge) desktopBadge.style.display = 'none';
         return;
     }
 
