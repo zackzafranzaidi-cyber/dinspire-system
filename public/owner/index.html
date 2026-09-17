@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "2.0.0";
+      const CURRENT_APP_VERSION = "2.0.1";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -61,8 +61,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-    <link rel="stylesheet" href="/owner/css/owner.css?v=35" />
-    <link rel="stylesheet" href="/owner/css/loader.css?v=7" />
+    <link rel="stylesheet" href="/owner/css/owner.css?v=36" />
+    <link rel="stylesheet" href="/owner/css/loader.css?v=8" />
     <style>
       /* PAKSA KETINGGIAN SLIM (Bypass CDN Cache) */
       .segmented-control {
@@ -218,7 +218,7 @@
           background: rgba(255, 255, 255, 0.2);
       }
 </style>
-      <link rel="manifest" href="/owner/manifest_owner.json?v=10">
+      <link rel="manifest" href="/owner/manifest_owner.json?v=11">
     <meta name="theme-color" content="#ffffff">
 
     <script>
@@ -271,7 +271,7 @@
         }
       });
     </script>
-    <link rel="stylesheet" href="/owner/css/owner_cms.css?v=6">
+    <link rel="stylesheet" href="/owner/css/owner_cms.css?v=7">
   
     <!-- SweetAlert2 (Needed for CMS) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1439,8 +1439,8 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="/owner/js/owner.js?v=54"></script>
-    <script src="/owner/js/owner_cms.js?v=6"></script>
+    <script src="/owner/js/owner.js?v=55"></script>
+    <script src="/owner/js/owner_cms.js?v=7"></script>
 
     <!-- Skrip Latar Belakang AI 3D Mesh -->
     <script>
@@ -1619,7 +1619,7 @@
         if ("serviceWorker" in navigator) {
           window.addEventListener("load", () => {
             navigator.serviceWorker
-              .register("/owner/sw.js?v=38");
+              .register("/owner/sw.js?v=39");
             });
         }
     </script>

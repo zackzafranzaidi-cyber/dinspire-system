@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.60";
+      const CURRENT_APP_VERSION = "1.1.61";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -47,9 +47,9 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/staff/css/staff.css?v=25" />
-    <link rel="stylesheet" href="/staff/css/loader.css?v=6" />
-      <link rel="manifest" href="/staff/manifest_staff.json?v=10">
+    <link rel="stylesheet" href="/staff/css/staff.css?v=26" />
+    <link rel="stylesheet" href="/staff/css/loader.css?v=7" />
+      <link rel="manifest" href="/staff/manifest_staff.json?v=11">
     <meta name="theme-color" content="#ffffff">
     <!-- Plugins -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -747,11 +747,11 @@
       </nav>
     </div>
 
-    <script src="/staff/js/staff.js?v=32"></script>
+    <script src="/staff/js/staff.js?v=33"></script>
       <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/sw.js?v=38");
+                navigator.serviceWorker.register("/sw.js?v=39");
             });
         }
     </script>
