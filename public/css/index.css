@@ -810,7 +810,7 @@ select.input-field {
   gap: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--btn-dark);
+  color: var(--text-main);
 }
 
 .product-grid {
