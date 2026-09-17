@@ -1039,8 +1039,28 @@ function renderScheduleTime() {
 async function fetchShopData() {
   showGlobalLoader();
   let success = false;
-  while (!success) {
+  let retries = 0;
+  while (!success && retries < 3) {
     try {
+      const timestamp = new Date().getTime();
+      const res = await fetch(`${API_BASE_URL}/shop-data?t=${timestamp}`);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      shopData = await res.json();
+      success = true;
+    } catch (err) {
+      retries++;
+      console.warn("Sedang memuatkan pangkalan data (Cold Start)... Percubaan " + retries, err.message);
+      if (retries < 3) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      } else {
+        alert("Gagal berhubung dengan pelayan (" + err.message + "). Sila pastikan line internet Tuan okay.");
+        hideGlobalLoader();
+        return;
+      }
+    }
+  }
+  
+  try {
       const timestamp = new Date().getTime();
       const res = await fetch(`${API_BASE_URL}/shop-data?t=${timestamp}`);
       if (!res.ok) throw new Error("HTTP " + res.status);
