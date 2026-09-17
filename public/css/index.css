@@ -1090,7 +1090,7 @@ select.input-field {
     brightness(101%) contrast(94%);
 }
 .nav-item:not(.active) .icon-outline {
-  filter: grayscale(100%) opacity(0.5);
+  filter: brightness(0) invert(0.6);
 }
 .nav-item span {
   font-size: 10px;
