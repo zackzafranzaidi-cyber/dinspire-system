@@ -1049,26 +1049,14 @@ async function fetchShopData() {
       success = true;
     } catch (err) {
       retries++;
-      console.warn("Sedang memuatkan pangkalan data (Cold Start)... Percubaan " + retries, err.message);
+      console.warn("Sedang memuatkan pangkalan data (Cold Start)...", err.message);
       if (retries < 3) {
         await new Promise(resolve => setTimeout(resolve, 3000));
       } else {
-        alert("Gagal berhubung dengan pelayan (" + err.message + "). Sila pastikan line internet Tuan okay.");
+        alert("Gagal berhubung dengan pelayan. Sila pastikan internet Tuan okay.");
         hideGlobalLoader();
-        return;
+        return; // Stop rendering
       }
-    }
-  }
-  
-  try {
-      const timestamp = new Date().getTime();
-      const res = await fetch(`${API_BASE_URL}/shop-data?t=${timestamp}`);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      shopData = await res.json();
-      success = true;
-    } catch (err) {
-      console.warn("Sedang memuatkan pangkalan data (Cold Start)...", err.message);
-      await new Promise(resolve => setTimeout(resolve, 3000));
     }
   }
   
