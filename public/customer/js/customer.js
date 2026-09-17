@@ -2366,7 +2366,7 @@ function triggerResetBooking(orderNo, serviceName, staffId) {
   document.getElementById("reset-booking-modal").classList.add("active");
 }
 
-function fetchBarberAvailabilityForReset() {
+async function fetchBarberAvailabilityForReset() {
   const barberId = document.getElementById("reset-booking-barber").value;
   const dateStr = document.getElementById("reset-booking-date").value;
   const timeSelect = document.getElementById("reset-booking-time");
@@ -2428,7 +2428,7 @@ function fetchBarberAvailabilityForReset() {
   }
 }
 
-function submitResetBooking() {
+async function submitResetBooking() {
   const orderNo = document.getElementById("reset-booking-id").value;
   const staffId = document.getElementById("barber-reset-booking").value;
   const dateStr = document.getElementById("input-date-reset-booking").value;
