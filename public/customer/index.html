@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.81";
+      const CURRENT_APP_VERSION = "1.1.82";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -51,7 +51,7 @@
         
         const manifest = document.createElement('link');
         manifest.rel = 'manifest';
-        manifest.href = './manifest.json?v=13';
+        manifest.href = './manifest.json?v=14';
         document.head.appendChild(manifest);
       }
     </script>
@@ -64,9 +64,9 @@
       href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/customer/css/index.css?v=94" />
-    <link rel="stylesheet" href="/customer/css/loader.css?v=11" />
-    <link rel="manifest" href="/manifest.json?v=13">
+    <link rel="stylesheet" href="/customer/css/index.css?v=95" />
+    <link rel="stylesheet" href="/customer/css/loader.css?v=12" />
+    <link rel="manifest" href="/manifest.json?v=14">
     <meta name="theme-color" content="#000000">
     <style>
       .intro-swoosh { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 30; stroke-linecap: round; stroke-dasharray: 1200; stroke-dashoffset: 1200; }
@@ -1182,12 +1182,12 @@
     </div>
     </div>
 
-    <script src="/customer/js/i18n-index.js?v=94"></script>
-    <script src="/customer/js/index.js?v=43"></script>
+    <script src="/customer/js/i18n-index.js?v=95"></script>
+    <script src="/customer/js/index.js?v=44"></script>
       <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/sw.js?v=14");
+                navigator.serviceWorker.register("/sw.js?v=15");
             });
         }
     </script>
