@@ -1,10 +1,10 @@
-const CACHE_NAME = 'dinspire-pwa-staff-v6';
+const CACHE_NAME = 'dinspire-pwa-staff-v7';
 const urlsToCache = [
   './',
   './index.html',
-  './css/staff.css',
-  './css/loader.css',
-  './js/staff.js'
+  '/staff/css/staff.css',
+  '/staff/css/loader.css',
+  '/staff/js/staff.js'
 ];
 
 self.addEventListener('install', event => {
