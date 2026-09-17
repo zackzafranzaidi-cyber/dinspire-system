@@ -229,6 +229,13 @@ function initEventListeners() {
         switchView(item.id.replace("nav-", "")),
       ),
     );
+  document
+    .querySelectorAll(".desktop-top-nav .desktop-nav-item")
+    .forEach((item) =>
+      item.addEventListener("click", () =>
+        switchView(item.id.replace("desktop-nav-", "")),
+      ),
+    );
   document.getElementById("checkout-btn")?.addEventListener("click", () => {
     if (checkLoginBeforeBooking()) openCheckout("product");
   });
@@ -2141,10 +2148,11 @@ function hideGlobalLoader() {
     }
 
     document
-      .querySelectorAll(".nav-item, .sidebar-nav-item")
+      .querySelectorAll(".nav-item, .sidebar-nav-item, .desktop-nav-item")
       .forEach((n) => n.classList.remove("active"));
     document.getElementById("nav-" + id)?.classList.add("active");
     document.getElementById("sidebar-nav-" + id)?.classList.add("active");
+    document.getElementById("desktop-nav-" + id)?.classList.add("active");
   window.scrollTo(0, 0);
   if (id === "notifications") {
     renderNotifications();
