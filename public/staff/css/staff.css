@@ -219,6 +219,7 @@ body {
   transition: 0.2s;
 }
 .input-field:focus {
+  color: #000000 !important;
   background-color: var(--bg-surface);
   border: 1px solid var(--primary);
   box-shadow: 0 0 0 4px var(--primary-light);

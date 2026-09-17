@@ -256,6 +256,7 @@ app.get("/api/owner/trigger-daily-cleanup", async (req, res) => {
 // SERVE STATIC FILES (Frontend)
 // ========================================================
 const path = require("path");
+app.use(express.static(path.join(__dirname, "public/customer")));
 app.use(express.static(path.join(__dirname, "public")));
 
 // ========================================================

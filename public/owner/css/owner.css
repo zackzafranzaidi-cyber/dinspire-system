@@ -402,3 +402,8 @@ body {
   border-radius: 9999px;
   border: 2px solid #030712;
 }
+
+/* Fix input text color on focus */
+.input-field:focus, input:focus, select:focus, textarea:focus {
+  color: #000000 !important;
+}
