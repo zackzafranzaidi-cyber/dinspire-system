@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
     const cachedData = cache.get("shop_data");
     if (cachedData) {
       console.log("[CACHE HIT] shop_data");
-      res.setHeader("Cache-Control", "public, max-age=300"); // [DIBAIKI] Browser Caching 5 Minit
+      res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300, stale-while-revalidate=86400");
       return res.json(cachedData);
     }
 
@@ -221,6 +221,7 @@ router.get("/", async (req, res) => {
     result.CustomerSatisfaction = customerSatisfaction;
 
     cache.set("shop_data", result, 300); // Set cache selama 5 minit
+    res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300, stale-while-revalidate=86400");
     res.json(result);
   } catch (error) {
     console.error("Ralat memuat turun shop-data:", error);
