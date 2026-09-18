@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { authenticate, requireRole } = require("../middleware/auth");
 const supabase = require("../config/db");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -561,10 +562,10 @@ router.delete("/profile", authenticate, requireRole(["customer"]), async (req, r
   }
 });
 
-module.exports = router;
 
 
-const { authenticate, requireRole } = require("../middleware/auth");
+
+
 
 router.put("/profile", authenticate, requireRole(["customer"]), async (req, res) => {
   try {
@@ -603,3 +604,6 @@ router.put("/profile", authenticate, requireRole(["customer"]), async (req, res)
     res.status(500).json({ status: "error", message: error.message });
   }
 });
+
+
+module.exports = router;
