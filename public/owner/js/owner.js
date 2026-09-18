@@ -896,6 +896,16 @@ function processData() {
       b.Status === "Selesai" &&
       isWithinFilter(b.Date || b.Timestamp || b.created_at, filterType, now),
   );
+  masterData.orders.forEach(o => {
+    try {
+      let rawItems = o.Items || o.senarai_produk;
+      let items = typeof rawItems === "string" ? JSON.parse(rawItems) : rawItems;
+      let cost = 0;
+      for (let k in items) cost += items[k].qty * items[k].price;
+      o._calculatedTotal = cost + (parseFloat(o.shipping_fee) || 0);
+    } catch(e) {}
+  });
+
   let allPendingOrders = masterData.orders.filter(o => o.status === "Pending Verification" || o.status === "Preparing");
     let tableOrders = masterData.orders.filter((o) => isWithinFilter(o.tarikh || o.Timestamp || o.created_at, filterType, now)).filter(o => o.status !== "Pending Verification" && o.status !== "Preparing");
   let filteredOrders = tableOrders.filter((o) => {

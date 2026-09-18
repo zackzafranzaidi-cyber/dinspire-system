@@ -144,7 +144,7 @@ router.get("/staff-availability", async (req, res) => {
     const [bReq, tReq, oReq] = await Promise.all([
       supabase.from("booking_records").select("tarikh, masa").eq("staff_id", staff_id).in("status", ["Belum", "Selesai", "Pending Verification"]),
       supabase.from("treatment_records").select("tarikh, masa").eq("staff_id", staff_id).in("status", ["Belum", "Selesai", "Pending Verification"]),
-      supabase.from("oncall_records").select("tarikh, masa").eq("barber", staff_id).in("status", ["Belum", "Selesai", "Pending Verification"])
+      supabase.from("oncall_records").select("tarikh, masa").eq("staff_id", staff_id).in("status", ["Belum", "Selesai", "Pending Verification"])
     ]);
 
     const activeBookings = [];
