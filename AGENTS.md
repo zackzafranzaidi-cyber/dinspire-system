@@ -1,5 +1,12 @@
 # Dokumentasi Seni Bina & Ejen AI Dinspire (Blueprint Kejuruteraan Terperinci)
 
+> **PERINGATAN PENTING KEPADA EJEN AI (PERSONA):**
+> Pengguna yang berinteraksi dengan anda sekarang adalah **Pembangun Sistem (Developer/System Engineer)** dan BUKAN pemilik bisnes kedai gunting rambut.
+> 
+> *   Anda mesti membezakan antara ciri yang dikhaskan untuk Pembangun (seperti akses raw data, manual backup DB, penggodaman) dan pengguna sebenar (Owner/Admin).
+> *   Jangan sesekali meletakkan butang atau fungsi berisiko tinggi (seperti muat turun JSON pangkalan data) secara terang-terangan di halaman *Owner Dashboard*, melainkan Pembangun memintanya. Alat-alat teknikal harus disembunyikan menggunakan laluan khusus (contohnya `/api/owner/manual-backup`) supaya hanya Pembangun yang tahu cara mengaksesnya, agar tidak mengelirukan Pemilik Bisnes.
+
+
 Dokumentasi ini adalah spesifikasi kejuruteraan sistem (*Engineering Blueprint*) berketepatan tinggi yang menerangkan reka bentuk keseluruhan (seni bina), pelaksanaan, aliran data, ciri-ciri keselamatan, sistem pengurusan kewangan, dan modul Ejen AI yang menjana sistem **Dinspire**.
 
 Ianya direka khusus supaya Jurutera Perisian atau Ejen AI dapat memahami setiap logik teras tanpa perlu menyelongkar beribu baris kod.
@@ -51,6 +58,16 @@ Bagi menjamin ketelusan komisen pekerja dan mengelakkan manipulasi harga oleh pe
 - **`shipping_fee` (Yuran Penghantaran):** Yuran tetap (`setting_value`) yang hanya dicampur ke atas pembelian barangan (E-Commerce) yang menggunakan kaedah *Delivery*.
 - **Pembentangan Analitik:** Pada *Owner Dashboard*, *Total Revenue* kini merangkumi kedua-dua harga perkhidmatan dan yuran tempahan disebabkan penggabungan di atas.
 
+
+
+## 2.1 Pematuhan Operasi & Sandaran Kritikal (Operational Resilience)
+
+Selain yuran, 5 kelemahan operasi utama telah ditutup untuk memisahkan peranan Pembangun (Developer) dan Pemilik (Owner):
+1. **Jejak Audit Penuh (Audit Trail):** Semua perubahan manipulasi harga, tetapan staf, dan pembatalan resit oleh Owner/Admin direkodkan dengan *timestamp* ke dalam jadual `settings` (terhad 500 log terakhir). Boleh diakses oleh pelayan.
+2. **Pematuhan PDPA (Akaun Dipadam):** Tindakan buang akaun (`DELETE /api/auth/profile`) tidak akan membuang pesanan pelanggan (mengelakkan rasuah data jualan), sebaliknya sistem melakukan proses *Anonymization* (Menukar nama kepada "Akaun Dipadam" dan mengosongkan kata laluan).
+3. **Pelan B Pembayaran (FPX Fallback):** Jika `toyyibpay` mengalami *Gateway Timeout* (502/500), pelayan Node.js tidak akan *crash*, sebaliknya ia memulangkan status `fallback_to_qr: true` untuk pelayar pelanggan segera membuka paparan Imbasan QR / Tunai.
+4. **Sandaran Data Pembangun (Developer Backup):** Pemilik bisnes tidak nampak butang backup JSON mentah di UI (bagi mengelakkan kekeliruan). Pembangun boleh melayari laluan khas `/api/owner/manual-backup` secara terus pada pelayar sambil *Log Masuk* sebagai Owner untuk mengekstrak keseluruhan struktur *database* dalam format `.json`.
+
 ---
 
 ## 3. Keselamatan Bertaraf 'Enterprise' (Security Measures)
@@ -93,6 +110,11 @@ Sistem Dinspire telah dilengkapi dengan pelbagai lapisan sekuriti pelayan:
 12. **Sistem Perangkap Ralat (Global Error Handling):** Setiap API dilengkapi *Error Handler* global. Kegagalan fungsi/ketiadaan sambungan tidak akan mematikan pelayan (*crash*), sebaliknya ditukar menjadi maklum balas JSON 500 yang selamat tanpa mendedahkan struktur logikal dalaman. Logger `Winston` merekod semua ralat dengan *stack trace*, IP, dan laluan.
 
 13. **Pengawal Kegagalan Maut (Fail-Fast):** Pelayan menghentikan dirinya sendiri (`process.exit(1)`) serta-merta jika `SUPABASE_URL`, `SUPABASE_KEY`, `JWT_SECRET_CLIENT`, atau `JWT_SECRET_SYS` tidak dijumpai semasa permulaan.
+
+14. **Penghadang Beban Bcrypt (DoS Protection):** Input kata laluan dipotong keras (Truncated) kepada maksimum 72 aksara sebelum melalui fungsi hasingan `bcrypt` bagi mengelakkan Thread Pool pelayan dibekukan oleh rentetan panjang (Event Loop Block).
+15. **Perlindungan Memori Array (Push Notifications):** Langganan notifikasi berulang disekat (Capped) kepada maksimum 10 peranti terakhir bagi setiap pengguna bagi mengelakkan letupan data JSON di dalam jadual (Array Bloat).
+16. **Pembersihan Sesi Hantu (Ghost Session DB Validation):** Token JWT yang masih sah tetap akan diuji secara *Real-Time* menggunakan `userSessionCache` (5 minit TTL) terhadap kewujudan profil di pangkalan data. Jika profil dipadam oleh Admin, sesi log masuk (Ghost Session) akan ditamatkan dalam masa 5 minit.
+17. **Sanitasi XSS Pangkalan Data (Cross-Site Scripting):** Input nama dan profil pelanggan dilucutkan (*stripped*) daripada tag HTML/JS (`<script>`) sebelum disimpan ke pangkalan data menggunakan pembersihan `xssRegex`.
 
 ---
 
