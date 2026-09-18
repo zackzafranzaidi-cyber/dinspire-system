@@ -2,6 +2,31 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
+
+// [TAMBAHAN] Fungsi Perekodan Jejak Audit
+async function logAudit(action_by, action_desc) {
+  try {
+    const timestamp = new Date().toISOString();
+    const newLog = { timestamp, user: action_by, action: action_desc };
+    
+    const { data } = await supabase.from("settings").select("setting_value").eq("setting_key", "audit_logs").maybeSingle();
+    let logs = [];
+    if (data && data.setting_value) {
+       try { logs = JSON.parse(data.setting_value); } catch(e) {}
+    }
+    logs.unshift(newLog); // Masukkan di hadapan
+    if (logs.length > 500) logs.pop(); // Hadkan kepada 500 log terakhir (elak bloat)
+    
+    await supabase.from("settings").upsert({
+       setting_key: "audit_logs",
+       setting_value: JSON.stringify(logs),
+       description: "Sistem Log Audit"
+    });
+  } catch(e) {
+    console.error("Gagal merekod audit", e.message);
+  }
+}
+
 const cache = require("../utils/cache");
 const bcrypt = require("bcryptjs");
 
@@ -244,7 +269,7 @@ router.post(
             const { error: delErr } = await supabase
               .from(table)
               .delete()
-              .not("id", "in", "(" + currentIds.join(",") + ")");
+              .not("id", "in", "(" + currentIds.map(id => `"${id}"`).join(",") + ")");
 
             if (delErr) throw delErr;
           } else {
@@ -345,14 +370,28 @@ router.post(
         diskripsi: i.desc || "-",
         harga: Math.max(0, parseFloat(i.price) || 0), // [DIBAIKI] Negative Pricing Fix
       }));
-      await syncData("branches", data.Branches, (i) => ({
-        id: i.id,
-        nama_cawangan: i.name,
-        lokasi: i.location,
-        lat: parseFloat(i.lat) || null,
-        lng: parseFloat(i.lng) || null,
-        gambar: i.imageUrl || null
-      }));
+      // [DIBAIKI] Semakan Imej Cawangan (Elak DB Bloat & Payload DoS)
+      if (data.Branches) {
+        let processedBranches = [];
+        const safeBranches = data.Branches.slice(0, 50);
+        for (let i = 0; i < safeBranches.length; i++) {
+          let b = safeBranches[i];
+          let url = b.imageUrl;
+          if (url && url.startsWith("data:image")) {
+            let uploaded = await uploadToStorage(url, "branches", `branch_${i}`);
+            if (uploaded) url = uploaded;
+          }
+          processedBranches.push({ ...b, imageUrl: url });
+        }
+        await syncData("branches", processedBranches, (i) => ({
+          id: i.id,
+          nama_cawangan: i.name,
+          lokasi: i.location,
+          lat: parseFloat(i.lat) || null,
+          lng: parseFloat(i.lng) || null,
+          gambar: i.imageUrl || null
+        }));
+      }
       await syncData(
         "staff",
         data.Staff || [],
@@ -545,6 +584,17 @@ const { getSMSBalance } = require('../utils/sms');
 router.get('/sms-balance', authenticate, requireRole(['owner', 'admin']), async (req, res) => {
   const balance = await getSMSBalance();
   res.json({ status: 'success', balance });
+});
+
+
+router.get("/audit-logs", authenticate, requireRole(["owner", "admin"]), async (req, res) => {
+  try {
+    const { data } = await supabase.from("settings").select("setting_value").eq("setting_key", "audit_logs").maybeSingle();
+    const logs = data && data.setting_value ? JSON.parse(data.setting_value) : [];
+    res.json({ status: "success", logs });
+  } catch(e) {
+    res.status(500).json({ status: "error" });
+  }
 });
 
 module.exports = router;

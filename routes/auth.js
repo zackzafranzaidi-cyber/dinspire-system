@@ -136,6 +136,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
           message: "Nombor telefon ini sudah didaftarkan.",
         });
 
+    if (String(password).length > 72) return res.status(400).json({ status: "error", message: "Kata laluan terlalu panjang (Maks 72 aksara)." });
     const password_hash = await bcrypt.hash(password, 10);
     const { error } = await supabase.from("customers").insert([
       {
@@ -280,6 +281,7 @@ router.post("/forgot-password/reset", verifyLimiter, async (req, res) => {
     return res.status(400).json({ status: "error", message: "Kata laluan mestilah sekurang-kurangnya 6 aksara." });
   }
 
+    if (String(new_password).length > 72) return res.status(400).json({ status: "error", message: "Kata laluan terlalu panjang (Maks 72 aksara)." });
   const password_hash = await bcrypt.hash(new_password, 10);
   await supabase.from("customers").update({ password_hash }).eq("phone", phone);
 
@@ -496,6 +498,7 @@ router.post("/staff/change-password", verifyLimiter, async (req, res) => {
     const { new_password } = req.body;
     if (!new_password || new_password.length < 6) return res.status(400).json({ status: "error", message: "Kata laluan terlalu pendek." });
 
+    if (String(new_password).length > 72) return res.status(400).json({ status: "error", message: "Kata laluan terlalu panjang (Maks 72 aksara)." });
     const password_hash = await bcrypt.hash(new_password, 10);
     const table = "staff";
     
@@ -522,6 +525,42 @@ router.post("/staff/request-reset", verifyLimiter, async (req, res) => {
   res.json({ status: "success", message: "Permohonan reset dihantar. Sila hubungi Admin untuk kelulusan." });
 });
 
+
+// ==========================================
+// [TAMBAHAN] Pemadaman Akaun (PDPA Compliance)
+// ==========================================
+router.delete("/profile", authenticate, requireRole(["customer"]), async (req, res) => {
+  try {
+    const customerId = req.user.id;
+    
+    // Jangan 'delete' row sebab ia akan hilangkan sejarah jualan, kita ANONYMIZE data
+    const anonPhone = "deleted_" + crypto.randomInt(100000, 999999) + "_" + Date.now();
+    
+    const { error } = await supabase
+      .from("customers")
+      .update({
+         name: "Akaun Dipadam",
+         phone: anonPhone,
+         address: "Data dihapuskan atas permintaan (PDPA)",
+         avatar_url: "",
+         password_hash: "DELETED"
+      })
+      .eq("id", customerId);
+      
+    if (error) throw error;
+
+    // Masukkan token ke blacklist untuk log keluar paksa
+    if (global.jwtBlacklist && req.cookies.din_token_client) {
+       global.jwtBlacklist.set(req.cookies.din_token_client, true);
+    }
+
+    res.clearCookie("din_token_client");
+    res.json({ status: "success", message: "Akaun anda telah berjaya dipadam secara kekal." });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "Gagal memadam akaun." });
+  }
+});
+
 module.exports = router;
 
 
@@ -531,10 +570,22 @@ router.put("/profile", authenticate, requireRole(["customer"]), async (req, res)
   try {
     const { name, phone, address, avatar_url } = req.body;
     const updates = {};
-    if (name) updates.name = name;
-    if (phone) updates.phone = phone;
-    if (address !== undefined) updates.address = address;
-    if (avatar_url !== undefined) updates.avatar_url = avatar_url;
+    const xssRegex = /<[^>]*>?/gm;
+    
+    if (name !== undefined) {
+        let n = String(name || "").replace(xssRegex, "").substring(0, 100);
+        if (n) updates.name = n;
+    }
+    if (phone !== undefined) {
+        let p = String(phone || "").replace(/\D/g, "").substring(0, 20);
+        if (p) updates.phone = p;
+    }
+    if (address !== undefined) {
+        updates.address = String(address || "").replace(xssRegex, "").substring(0, 255);
+    }
+    if (avatar_url !== undefined) {
+        updates.avatar_url = String(avatar_url || "").substring(0, 255);
+    }
 
     const { data, error } = await supabase
       .from("customers")

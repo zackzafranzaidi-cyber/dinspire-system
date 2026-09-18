@@ -310,9 +310,10 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
         callbackUrl
       );
     } catch (err) {
+      if (typeof lockKey !== 'undefined') bookingLocks.delete(lockKey);
       return res.status(502).json({
          status: "error",
-         message: err.message || "Gagal berhubung dengan gateway FPX"
+         message: err.message || "Gagal berhubung dengan gateway FPX", fallback_to_qr: true
       });
     }
     }
@@ -455,7 +456,7 @@ router.put(
       }
 
       completionLocks.delete(orderNo);
-      res.json({ status: "success", message: "Servis disahkan selesai" });
+      global.dashboardCache = null; res.json({ status: "success", message: "Servis disahkan selesai" });
     } catch (error) {
       if (typeof orderNo !== "undefined") completionLocks.delete(orderNo);
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
@@ -537,7 +538,7 @@ router.put(
 
       // Pastikan slot baru kosong
       const { data: existB } = await supabase.from("booking_records").select("no_booking").eq("staff_id", new_staff_id).eq("tarikh", new_date).eq("masa", new_time).in("status", ["Belum", "Selesai"]);
-      const { data: existT } = await supabase.from("treatment_records").select("no_booking").eq("no_booking").eq("staff_id", new_staff_id).eq("tarikh", new_date).eq("masa", new_time).in("status", ["Belum", "Selesai"]);
+      const { data: existT } = await supabase.from("treatment_records").select("no_booking").eq("staff_id", new_staff_id).eq("tarikh", new_date).eq("masa", new_time).in("status", ["Belum", "Selesai"]);
       const { data: existO } = await supabase.from("oncall_records").select("no_booking").eq("staff_id", new_staff_id).eq("tarikh", new_date).eq("masa", new_time).in("status", ["Belum", "Selesai"]);
 
       if ((existB && existB.length > 0) || (existT && existT.length > 0) || (existO && existO.length > 0)) {
@@ -599,7 +600,7 @@ router.post(
       }
 
       // [DIBAIKI] Server-Side Price Trust (dengan pengecualian Harga 0)
-      let hargaSebenar = parseFloat(price) || 0.0; 
+      let hargaSebenar = Math.max(0, parseFloat(price) || 0.0); 
       const { data: svcData } = await supabase.from("haircuts").select("harga").eq("id", service_id).maybeSingle();
       if (svcData) {
         let dbPrice = parseFloat(svcData.harga) || 0;
@@ -798,9 +799,10 @@ router.post(
           callbackUrl
         );
       } catch (err) {
+        if (typeof lockKey !== 'undefined') oncallLocks.delete(lockKey);
         return res.status(502).json({
            status: "error",
-           message: err.message || "Gagal berhubung dengan gateway FPX"
+           message: err.message || "Gagal berhubung dengan gateway FPX", fallback_to_qr: true
         });
       }
       }
@@ -977,7 +979,7 @@ router.post(
       } catch (err) {
         return res.status(502).json({
            status: "error",
-           message: err.message || "Gagal berhubung dengan gateway FPX"
+           message: err.message || "Gagal berhubung dengan gateway FPX", fallback_to_qr: true
         });
       }
       }
@@ -1316,6 +1318,33 @@ router.post("/webhook/fpx", async (req, res) => {
     }
 
     // 2. KEMASKINI DATABASE
+    // [DIBAIKI] Auto-Batal dan Pulangkan Slot/Stok Jika FPX Gagal (Cancel on Failure)
+    if (receiptValue.startsWith("FPX_FAILED")) {
+       if (tableName === "product_orders") {
+           const { data: ord } = await supabase.from("product_orders").select("senarai_produk").eq(idColumn, idValue).single();
+           if (ord && ord.senarai_produk) {
+               try {
+                  const items = typeof ord.senarai_produk === "string" ? JSON.parse(ord.senarai_produk) : ord.senarai_produk;
+                  for (let id in items) {
+                     let qty = parseInt(items[id].qty) || 0;
+                     if (qty > 0) {
+                        const { data: pData } = await supabase.from("products").select("stok").eq("id", id).maybeSingle();
+                        if (pData) {
+                            let currentStok = parseInt(pData.stok) || 0;
+                            await supabase.from("products").update({ stok: currentStok + qty }).eq("id", id);
+                        }
+                     }
+                  }
+               } catch (e) {}
+           }
+       }
+       await supabase.from(tableName).delete().eq(idColumn, idValue);
+       
+       if (tableName === "product_orders" || tableName === "oncall_records") {
+           return res.status(200).json({ status: "success", message: "FPX Failed processed" });
+       }
+    }
+
     const { error } = await supabase
       .from(tableName)
       .update({ resit: receiptValue })

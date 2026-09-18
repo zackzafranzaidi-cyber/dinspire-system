@@ -52,12 +52,12 @@ schedule.scheduleJob({ rule: "*/5 * * * *", tz: "Asia/Kuala_Lumpur" }, async () 
     const timeLimit = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     
     // Padam tempahan yang masih belum dibayar (FPX_PENDING) melebihi 15 minit
-    await supabase.from("booking_records").delete().eq("status", "Belum").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
-    await supabase.from("treatment_records").delete().eq("status", "Belum").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
-    await supabase.from("oncall_records").delete().eq("status", "Belum").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
+    await supabase.from("booking_records").delete().eq("status", "Belum").or("resit.like.FPX_PENDING:%,resit.like.FPX_FAILED:%").lt("created_at", timeLimit);
+    await supabase.from("treatment_records").delete().eq("status", "Belum").or("resit.like.FPX_PENDING:%,resit.like.FPX_FAILED:%").lt("created_at", timeLimit);
+    await supabase.from("oncall_records").delete().eq("status", "Belum").or("resit.like.FPX_PENDING:%,resit.like.FPX_FAILED:%").lt("created_at", timeLimit);
     // RESTORE STOK UNTUK PRODUK YANG TERBENGKALAI (FPX TIMEOUT)
     try {
-        const { data: abandonedOrders } = await supabase.from("product_orders").select("senarai_produk").eq("status", "Preparing").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
+        const { data: abandonedOrders } = await supabase.from("product_orders").select("senarai_produk").eq("status", "Preparing").or("resit.like.FPX_PENDING:%,resit.like.FPX_FAILED:%").lt("created_at", timeLimit);
         if (abandonedOrders && abandonedOrders.length > 0) {
            for (let order of abandonedOrders) {
               try {
@@ -80,7 +80,7 @@ schedule.scheduleJob({ rule: "*/5 * * * *", tz: "Asia/Kuala_Lumpur" }, async () 
     } catch (e) {
         console.error("Gagal mendapatkan pesanan produk terbengkalai:", e);
     }
-    await supabase.from("product_orders").delete().eq("status", "Preparing").like("resit", "FPX_PENDING:%").lt("created_at", timeLimit);
+    await supabase.from("product_orders").delete().eq("status", "Preparing").or("resit.like.FPX_PENDING:%,resit.like.FPX_FAILED:%").lt("created_at", timeLimit);
   } catch (err) {
     console.error("Gagal membersihkan slot terbengkalai:", err);
   }

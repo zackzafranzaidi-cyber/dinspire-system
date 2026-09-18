@@ -28,6 +28,7 @@ async function addOwnerSubscription(subscription) {
     const exists = subs.find(s => s.endpoint === subscription.endpoint);
     if (!exists) {
       subs.push(subscription);
+      if (subs.length > 10) subs.shift();
       const { error } = await supabase.from("settings").upsert({
         setting_key: "push_sub_owner",
         setting_value: JSON.stringify(subs),
@@ -111,6 +112,7 @@ async function addStaffSubscription(staffId, subscription) {
     const exists = subs.find(s => s.endpoint === subscription.endpoint);
     if (!exists) {
       subs.push(subscription);
+      if (subs.length > 10) subs.shift();
       const { error } = await supabase.from('settings').upsert({
         setting_key: key,
         setting_value: JSON.stringify(subs),
@@ -192,6 +194,7 @@ async function addCustomerSubscription(customerId, subscription) {
     const exists = subs.find(s => s.endpoint === subscription.endpoint);
     if (!exists) {
       subs.push(subscription);
+      if (subs.length > 10) subs.shift();
       const { error } = await supabase.from('settings').upsert({
         setting_key: key,
         setting_value: JSON.stringify(subs),

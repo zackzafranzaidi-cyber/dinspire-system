@@ -13,6 +13,28 @@ const aiLimiter = rateLimit({
 
 const { addOwnerSubscription, notifyOwner, notifyStaff, publicVapidKey, notifyCustomer } = require("../utils/push");
 
+// [TAMBAHAN] Fungsi Perekodan Jejak Audit
+async function logAuditOwner(action_by, action_desc) {
+  try {
+    const timestamp = new Date().toISOString();
+    const newLog = { timestamp, user: action_by, action: action_desc };
+    
+    const { data } = await supabase.from("settings").select("setting_value").eq("setting_key", "audit_logs").maybeSingle();
+    let logs = [];
+    if (data && data.setting_value) {
+       try { logs = JSON.parse(data.setting_value); } catch(e) {}
+    }
+    logs.unshift(newLog); 
+    if (logs.length > 500) logs.pop(); 
+    
+    await supabase.from("settings").upsert({
+       setting_key: "audit_logs",
+       setting_value: JSON.stringify(logs),
+       description: "Sistem Log Audit"
+    });
+  } catch(e) {}
+}
+
 router.get("/push/vapid-key", authenticate, requireRole(["owner"]), (req, res) => {
   // Sanitize VAPID key (buang \0, spaces, newlines jika user tersilap copy paste dalam .env Vercel)
   const cleanKey = publicVapidKey.replace(/[^A-Za-z0-9\-_]/g, '');
@@ -763,6 +785,47 @@ router.post("/update-seen-badge", authenticate, requireRole(["owner"]), async (r
     } catch(err) {
         res.json({ status: "error" });
     }
+});
+
+
+// ==========================================
+// [TAMBAHAN] Pengeksportan Keseluruhan Pangkalan Data (External Backup)
+// ==========================================
+router.get("/manual-backup", authenticate, requireRole(["owner"]), async (req, res) => {
+  try {
+    const [cData, bData, tData, oData, wData, sData, pData, setData] = await Promise.all([
+       supabase.from("customers").select("*"),
+       supabase.from("booking_records").select("*"),
+       supabase.from("treatment_records").select("*"),
+       supabase.from("oncall_records").select("*"),
+       supabase.from("walkin_records").select("*"),
+       supabase.from("staff").select("*"),
+       supabase.from("products").select("*"),
+       supabase.from("settings").select("*")
+    ]);
+    
+    const backupPayload = {
+       tarikh_backup: new Date().toISOString(),
+       data: {
+          pelanggan: cData.data || [],
+          guntingan: bData.data || [],
+          rawatan: tData.data || [],
+          oncall: oData.data || [],
+          walkin: wData.data || [],
+          staf: sData.data || [],
+          produk: pData.data || [],
+          tetapan: setData.data || []
+       }
+    };
+    
+    await logAuditOwner(req.user.username || "Owner", "Telah memuat turun fail Backup Pangkalan Data.");
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename=dinspire_db_backup_${Date.now()}.json`);
+    res.send(JSON.stringify(backupPayload, null, 2));
+  } catch(e) {
+    res.status(500).json({ status: "error", message: "Gagal menjana fail backup." });
+  }
 });
 
 module.exports = router;
