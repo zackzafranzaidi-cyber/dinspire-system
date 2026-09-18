@@ -97,8 +97,9 @@ schedule.scheduleJob({ rule: "0 0 1 * *", tz: "Asia/Kuala_Lumpur" }, async () =>
     // Dapatkan 1 haribulan untuk bulan semasa
     const firstDayThisMonth = new Date(myTime.getFullYear(), myTime.getMonth(), 1).toISOString().split('T')[0];
     
-    // Padam semua cuti yang berlalu (sebelum bulan semasa)
-    const { error } = await supabase.from("staff_leaves").delete().lt("tarikh", firstDayThisMonth);
+    // [DIBAIKI] Padam cuti yang berlalu melebihi 1 tahun (supaya Owner masih boleh lihat rekod tahunan)
+    const lastYear = new Date(myTime.getFullYear() - 1, myTime.getMonth(), 1).toISOString().split('T')[0];
+    const { error } = await supabase.from("staff_leaves").delete().lt("tarikh", lastYear);
     if (error) throw error;
     console.log("Notifikasi automatik penjadualan berjaya dipadam (Sebulan Berlalu).");
   } catch (err) {

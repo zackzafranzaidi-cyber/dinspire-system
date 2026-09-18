@@ -205,7 +205,10 @@ router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
         .select("harga")
         .eq("id", service_id)
         .maybeSingle();
-      if (!svc) return res.status(400).json({ status: "error", message: "Servis tidak dijumpai." });
+      if (!svc) {
+        if (typeof lockKey !== 'undefined') oncallLocks.delete(lockKey);
+        return res.status(400).json({ status: "error", message: "Servis tidak dijumpai." });
+      }
       harga_rm = parseFloat(svc.harga);
       order_no = "TR" + crypto.randomUUID().split("-")[0].toUpperCase();
     } else {

@@ -1,5 +1,4 @@
 ﻿const fs = require('fs');
 const js = fs.readFileSync('routes/bookings.js', 'utf8');
 const lines = js.split('\n');
-let idx = lines.findIndex(l => l.includes('"/products"'));
-console.log(lines.slice(idx + 50, idx + 100).join('\n'));
+console.log(lines.slice(25, 45).join('\n'));

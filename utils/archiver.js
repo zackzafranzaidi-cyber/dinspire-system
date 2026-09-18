@@ -32,6 +32,20 @@ async function generateArchiveDataByDateRange(startDate, endDate) {
         let staffName = r.staff?.username || r.staff_id || "-";
         let price = parseFloat(r.harga_rm || r.total_price || 0);
         let fee = parseFloat(r.service_fee || r.shipping_fee || 0);
+        
+        // [DIBAIKI] product_orders tidak mempunyai lajur total_price, perlu dikira secara dinamik
+        if (category === "Produk" && r.senarai_produk) {
+            try {
+                let parsedItems = typeof r.senarai_produk === "string" ? JSON.parse(r.senarai_produk) : r.senarai_produk;
+                let calcPrice = 0;
+                for (let id in parsedItems) {
+                   calcPrice += (parseFloat(parsedItems[id].price) || 0) * (parseInt(parsedItems[id].qty) || 0);
+                }
+                price = calcPrice;
+            } catch (e) {
+                console.error("Gagal mengira harga produk dalam arkib", e);
+            }
+        }
         let dateStr = new Date(r.created_at).toLocaleDateString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" });
 
         let receiptName = "Tiada Resit";
@@ -121,7 +135,7 @@ async function pruneYearlyData() {
           supabase.from("walkin_records").select("harga_rm, staff_id").gte("created_at", startDate).lt("created_at", endDate),
           supabase.from("oncall_records").select("harga_rm, staff_id").gte("created_at", startDate).lt("created_at", endDate).eq("status", "Selesai"),
           supabase.from("treatment_records").select("harga_rm, staff_id").gte("created_at", startDate).lt("created_at", endDate).eq("status", "Selesai"),
-          supabase.from("product_orders").select("total_price").gte("created_at", startDate).lt("created_at", endDate).eq("status", "Completed")
+          supabase.from("product_orders").select("senarai_produk, shipping_fee").gte("created_at", startDate).lt("created_at", endDate).eq("status", "Completed")
        ]);
        
        let total_servis = 0;
@@ -143,7 +157,18 @@ async function pruneYearlyData() {
        
        let total_produk = 0;
        if (p) {
-          p.forEach(r => total_produk += parseFloat(r.total_price || 0));
+          p.forEach(r => {
+             let prodPrice = 0;
+             if (r.senarai_produk) {
+                 try {
+                     let parsed = typeof r.senarai_produk === "string" ? JSON.parse(r.senarai_produk) : r.senarai_produk;
+                     for (let id in parsed) {
+                         prodPrice += (parseFloat(parsed[id].price) || 0) * (parseInt(parsed[id].qty) || 0);
+                     }
+                 } catch (e) {}
+             }
+             total_produk += prodPrice + parseFloat(r.shipping_fee || 0);
+          });
        }
        
        if (total_pelanggan > 0 || total_produk > 0) {
