@@ -94,9 +94,8 @@ router.post("/register", verifyLimiter, async (req, res) => {
     const safeAddress = safeAddressStr.replace(/<[^>]*>?/gm, "").substring(0, 255);
     
     // Sanitize phone number to standard format
-    let cleanPhone = safePhoneStr.replace(/\\D/g, "");
-    if (cleanPhone.startsWith("0")) cleanPhone = "6" + cleanPhone;
-    else if (!cleanPhone.startsWith("6")) cleanPhone = "60" + cleanPhone;
+        // [DIBAIKI] Guna nombor telefon secara terus seperti yang dimasukkan (cth: 01X)
+    let cleanPhone = safePhoneStr.replace(/\D/g, "");
     const safePhone = cleanPhone.substring(0, 20);
 
     if (!password || password.length < 6 || password.length > 72) {
@@ -143,7 +142,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
         name: safeUsername,
         phone: safePhone,
         address: safeAddress,
-        avatar_url,
+        avatar_url: String(avatar_url || "").substring(0, 255), // [DIBAIKI] Hadkan avatar_url
         password_hash,
       },
     ]);if (error) {
