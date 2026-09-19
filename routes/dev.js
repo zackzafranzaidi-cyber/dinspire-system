@@ -265,22 +265,32 @@ router.post("/flush-cache", authenticateDev, (req, res) => {
 });
 
 // QUOTA DASHBOARD (SMS, Supabase Ping)
+const { getSMSBalance } = require('../utils/sms');
+
 router.get("/health", authenticateDev, async (req, res) => {
   try {
-    // Ping Supabase
+    // Ping Supabase (settings table uses setting_key, not id)
     const start = Date.now();
-    const { error } = await supabase.from("settings").select("id").limit(1);
+    const { error } = await supabase.from("settings").select("setting_key").limit(1);
     const dbLatency = Date.now() - start;
     
-    // In real app, call eSMS API to check balance. For now, mock or fetch if config exists.
-    const smsUser = process.env.ESMS_USER ? "Terkonfigurasi" : "Tiada";
+    // Semak baki SMS sebenar
+    let smsStatus = "Tiada Konfigurasi";
+    if (process.env.ESMS_USER) {
+      try {
+        const bal = await getSMSBalance();
+        smsStatus = bal + " Kredit";
+      } catch (err) {
+        smsStatus = "Ralat Gateway";
+      }
+    }
     
     res.json({
       status: "success",
       metrics: {
         database_latency_ms: dbLatency,
         database_status: error ? "ERROR" : "ONLINE",
-        sms_gateway: smsUser,
+        sms_gateway: smsStatus,
         memory_usage_mb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
       }
     });
