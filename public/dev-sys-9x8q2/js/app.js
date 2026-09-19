@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = "/api/dev-sys-9x8q2";
+const API_BASE_URL = "/api/dev-sys-9x8q2";
 
 // --- UI / Navigation ---
 function switchTab(tabId) {
@@ -198,8 +198,12 @@ async function fetchHealth() {
     if(dataLogs.status === "success") {
       if(dataLogs.file) document.getElementById('logFileName').textContent = dataLogs.file;
       document.getElementById('terminal-logs').textContent = dataLogs.logs || "Tiada ralat.";
+    } else {
+      document.getElementById('terminal-logs').textContent = "Gagal memuatkan log: " + dataLogs.message;
     }
-  } catch(e) {}
+  } catch(e) {
+    document.getElementById('terminal-logs').textContent = "Ralat pelayan: " + e.message;
+  }
 }
 
 async function flushCache() {

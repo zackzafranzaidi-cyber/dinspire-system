@@ -1,8 +1,9 @@
-﻿const express = require("express");
+const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const rateLimit = require("express-rate-limit");
+const fs = require("fs");
 const { authenticateDev } = require("../middleware/devAuth");
 
 // Dev Rate Limiter: 3 attempts per hour, blocks completely if exceeded
