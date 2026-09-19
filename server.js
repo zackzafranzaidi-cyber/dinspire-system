@@ -259,35 +259,42 @@ app.get("/api/owner/trigger-daily-cleanup", async (req, res) => {
 // ========================================================
 
   // ========================================================
+  
+  // ========================================================
+  
+  // ========================================================
   // GOD MODE: SURGICAL SWITCHBOARD INTERCEPTOR
   // ========================================================
   app.use((req, res, next) => {
     // 1. Webhooks & Dev Portal dipintas (Bypass)
-    if (req.originalUrl.includes("/webhook/fpx") || req.originalUrl.includes("/dev-sys-9x8q2")) {
+    if (req.originalUrl.includes("/webhook/fpx") || req.originalUrl.includes("/dev-sys-9x8q2") || req.originalUrl.includes("/shop-data")) {
       return next();
     }
 
+    const referer = req.headers.referer || "";
+    const origin = req.headers.origin || "";
+    const isCustomerApp = referer.includes("customer.") || origin.includes("customer.") || referer.includes("/customer/") || req.originalUrl.startsWith("/customer/");
+    const isStaffApp = referer.includes("staff.") || origin.includes("staff.") || referer.includes("/staff/") || req.originalUrl.startsWith("/staff/");
+
     // 2. Kunci Keseluruhan Sistem (Global Maintenance)
     if (global.featureFlags && global.featureFlags.maintenance_mode === true) {
-      if (req.originalUrl.startsWith("/api/")) {
-        return res.status(503).json({ status: "error", message: "Sistem Sedang Diselenggara (Senggara Berpusat)." });
-      } else {
-        return res.status(503).send("<h1>Sistem Dinspire Sedang Diselenggara</h1><p>Sila kembali sebentar lagi.</p>");
-      }
+      return res.status(503).json({ status: "error", message: "Sistem Sedang Diselenggara (Senggara Berpusat)." });
     }
 
-    // 3. Suis Khusus Portal
+    // 3. Suis Khusus Portal (Menyekat API berdasarkan Sumber / Referer)
     if (global.featureFlags) {
-      if (global.featureFlags.customer_portal === false && (req.originalUrl.startsWith("/customer/") || req.originalUrl === "/" || req.originalUrl === "/index.html")) {
-        return res.status(403).send("<h1>Portal Pelanggan Ditutup Sementara</h1><p>Pembangun sedang menaiktaraf fungsi.</p>");
+      if (global.featureFlags.customer_portal === false && isCustomerApp) {
+        return res.status(403).json({ status: "error", message: "Portal Pelanggan Ditutup Sementara oleh Pembangun." });
       }
-      if (global.featureFlags.staff_portal === false && req.originalUrl.startsWith("/staff/")) {
-        return res.status(403).send("<h1>Portal Staf Ditutup Sementara</h1><p>Sila hubungi Admin.</p>");
+      if (global.featureFlags.staff_portal === false && isStaffApp) {
+        return res.status(403).json({ status: "error", message: "Portal Staf Ditutup Sementara." });
       }
     }
 
     next();
   });
+
+
 
   // SERVE STATIC FILES (Frontend)
 // ========================================================
