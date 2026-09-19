@@ -1045,11 +1045,14 @@ function renderScheduleTime() {
 
 async function fetchShopData() {
 
+    
     // Check Real-time Feature Flags (NO CACHE)
     try {
       const flagRes = await fetch(`${API_BASE_URL}/shop-data/flags`);
       const flagData = await flagRes.json();
       if (flagData.flags) {
+        window.dinspireFlags = flagData.flags; // Simpan untuk switchView
+        
         if (flagData.flags.maintenance_mode === true || flagData.flags.customer_portal === false) {
           document.body.innerHTML = `
             <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#111;color:#fff;text-align:center;padding:20px;font-family:sans-serif;">
@@ -1061,8 +1064,36 @@ async function fetchShopData() {
           if (typeof hideGlobalLoader === 'function') hideGlobalLoader();
           return;
         }
+
+        // Gray out Booking
+        if (flagData.flags.booking === false) {
+          ['nav-services', 'desktop-nav-services', 'sidebar-nav-services'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+               el.style.opacity = '0.3';
+               el.style.filter = 'grayscale(100%)';
+            }
+          });
+          document.querySelectorAll('.btn-home-book').forEach(el => {
+              el.style.opacity = '0.5';
+              el.style.pointerEvents = 'none';
+              el.innerHTML = '<i class="fa-solid fa-lock"></i> Diselenggara';
+          });
+        }
+
+        // Gray out E-commerce
+        if (flagData.flags.ecommerce === false) {
+          ['nav-products', 'desktop-nav-products', 'sidebar-nav-products'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+               el.style.opacity = '0.3';
+               el.style.filter = 'grayscale(100%)';
+            }
+          });
+        }
       }
     } catch(e) { console.error("Flag check failed", e); }
+
   
   showGlobalLoader();
   let success = false;
@@ -2162,7 +2193,17 @@ function hideGlobalLoader() {
   }
 }
 
+  
   function switchView(id) {
+    if (id === "services" && window.dinspireFlags && window.dinspireFlags.booking === false) {
+      if(typeof showToast === 'function') showToast("Fungsi Tempahan sedang diselenggara.");
+      return;
+    }
+    if (id === "products" && window.dinspireFlags && window.dinspireFlags.ecommerce === false) {
+      if(typeof showToast === 'function') showToast("E-Commerce sedang diselenggara.");
+      return;
+    }
+
     if (id === "notifications" && typeof currentUser !== 'undefined' && !currentUser) {
       showToast("Sila Log Masuk untuk melihat status pesanan.");
       id = "account";
