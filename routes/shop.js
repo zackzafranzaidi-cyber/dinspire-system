@@ -1,5 +1,14 @@
 const express = require("express");
 const router = express.Router();
+
+// PUBLIC FEATURE FLAGS (NO CACHE)
+router.get("/flags", (req, res) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.json({ status: "success", flags: global.featureFlags || {} });
+});
+
 const supabase = require("../config/db");
 const cache = require("../utils/cache");
 

@@ -1044,6 +1044,26 @@ function renderScheduleTime() {
 }
 
 async function fetchShopData() {
+
+    // Check Real-time Feature Flags (NO CACHE)
+    try {
+      const flagRes = await fetch(`${API_BASE_URL}/shop-data/flags`);
+      const flagData = await flagRes.json();
+      if (flagData.flags) {
+        if (flagData.flags.maintenance_mode === true || flagData.flags.customer_portal === false) {
+          document.body.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#111;color:#fff;text-align:center;padding:20px;font-family:sans-serif;">
+              <i class="fa-solid fa-triangle-exclamation" style="font-size:3rem;color:#facc15;margin-bottom:20px;"></i>
+              <h1 style="font-size:1.5rem;font-weight:bold;margin-bottom:10px;">Portal Ditutup Sementara</h1>
+              <p style="color:#aaa;line-height:1.5;">Pembangun sedang menyelenggara pangkalan data atau perisian sistem.<br>Sila kembali sebentar lagi.</p>
+            </div>
+          `;
+          if (typeof hideGlobalLoader === 'function') hideGlobalLoader();
+          return;
+        }
+      }
+    } catch(e) { console.error("Flag check failed", e); }
+  
   showGlobalLoader();
   let success = false;
   let retries = 0;
