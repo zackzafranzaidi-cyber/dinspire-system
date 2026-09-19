@@ -1,0 +1,320 @@
+﻿<!DOCTYPE html>
+<html lang="ms" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>God Mode | Dinspire</title>
+  <link rel="manifest" href="/dev-sys-9x8q2/manifest.json">
+  <meta name="theme-color" content="#09090b">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/fontawesome/css/all.min.css">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#09090b',
+            panel: '#18181b',
+            primary: '#3b82f6',
+            danger: '#ef4444'
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Custom CSS for Switches and Terminal -->
+  <link rel="stylesheet" href="/dev-sys-9x8q2/css/style.css">
+</head>
+<body class="bg-background text-gray-200 font-sans antialiased">
+
+  <!-- 1. LOGIN VIEW -->
+  <div id="loginView" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-panel border border-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
+      <i class="fa-solid fa-user-secret text-5xl text-primary mb-4"></i>
+      <h1 class="text-2xl font-bold text-white mb-2">Dinspire God Mode</h1>
+      <p class="text-gray-400 text-sm mb-6">Portal sulit Pembangun Sistem.</p>
+      
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <input type="password" id="devPassword" required
+            class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary text-center tracking-widest"
+            placeholder="[KOD RAHSIA]">
+        </div>
+        <button type="submit" 
+          class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors">
+          BERIKAN AKSES
+        </button>
+      </form>
+      <div id="loginError" class="text-danger text-sm mt-4 hidden"></div>
+    </div>
+  </div>
+
+  <!-- 2. DASHBOARD VIEW -->
+  <div id="dashboardView" class="hidden min-h-screen flex flex-col md:flex-row">
+    
+    <!-- Sidebar / Topbar -->
+    <nav class="bg-panel border-b md:border-b-0 md:border-r border-gray-800 w-full md:w-64 flex-shrink-0">
+      <div class="p-6 flex items-center justify-between md:block">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-terminal text-primary"></i> God Mode
+          </h2>
+          <p class="text-xs text-gray-500 mt-1 hidden md:block">Arkitek Perisian Sahaja</p>
+        </div>
+        <!-- Mobile Menu Toggle -->
+        <button id="mobileMenuBtn" class="md:hidden text-gray-400 hover:text-white text-2xl">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+
+      <div id="navLinks" class="hidden md:block flex-col px-4 pb-6 space-y-1">
+        <button onclick="switchTab('tab-switchboard')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors bg-gray-800 text-white" data-target="tab-switchboard">
+          <i class="fa-solid fa-toggle-on w-6"></i> Switchboard
+        </button>
+        <button onclick="switchTab('tab-data')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-400 hover:bg-gray-800 hover:text-white" data-target="tab-data">
+          <i class="fa-solid fa-database w-6"></i> Data & Backup
+        </button>
+        <button onclick="switchTab('tab-health')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-400 hover:bg-gray-800 hover:text-white" data-target="tab-health">
+          <i class="fa-solid fa-heart-pulse w-6"></i> Kesihatan Pelayan
+        </button>
+        <button onclick="switchTab('tab-tools')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-400 hover:bg-gray-800 hover:text-white" data-target="tab-tools">
+          <i class="fa-solid fa-toolbox w-6"></i> Simulasi & Alat
+        </button>
+        
+        <div class="pt-8">
+          <button id="logoutBtn" class="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-danger hover:bg-red-900/20 transition-colors">
+            <i class="fa-solid fa-power-off w-6"></i> Log Keluar
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-8 h-screen overflow-y-auto">
+      
+      <!-- TAB: SWITCHBOARD -->
+      <div id="tab-switchboard" class="tab-content block space-y-6">
+        <div>
+          <h3 class="text-2xl font-bold text-white mb-2">Papan Suis Pembedahan</h3>
+          <p class="text-gray-400 text-sm">Matikan portal atau fungsi tertentu secara *Real-Time* (Serta-merta) tanpa downtime.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Global Maintenance -->
+          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between col-span-1 lg:col-span-2">
+            <div>
+              <h4 class="text-red-400 font-bold flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation"></i> KUNCI KESELURUHAN SISTEM
+              </h4>
+              <p class="text-xs text-gray-500 mt-1">Mengaktifkan Mod Penyelenggaraan (HTTP 503) untuk SEMUA. Hanya Webhook dikecualikan.</p>
+            </div>
+            <label class="toggle-switch relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="flag-maintenance" class="sr-only peer" onchange="updateFlag('maintenance_mode', this.checked)">
+              <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-danger"></div>
+            </label>
+          </div>
+
+          <!-- Feature Flags -->
+          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between">
+            <div><h4 class="text-white font-medium">Portal Pelanggan</h4><p class="text-xs text-gray-500">Akses awam pelanggan.</p></div>
+            <label class="toggle-switch"><input type="checkbox" id="flag-customer" onchange="updateFlag('customer_portal', this.checked)"><div class="slider"></div></label>
+          </div>
+          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between">
+            <div><h4 class="text-white font-medium">Portal Staf</h4><p class="text-xs text-gray-500">Akses punch card pekerja.</p></div>
+            <label class="toggle-switch"><input type="checkbox" id="flag-staff" onchange="updateFlag('staff_portal', this.checked)"><div class="slider"></div></label>
+          </div>
+          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between">
+            <div><h4 class="text-white font-medium">Fungsi Tempahan</h4><p class="text-xs text-gray-500">Tutup butang Tempah Gunting/Rawatan.</p></div>
+            <label class="toggle-switch"><input type="checkbox" id="flag-booking" onchange="updateFlag('booking', this.checked)"><div class="slider"></div></label>
+          </div>
+          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between">
+            <div><h4 class="text-white font-medium">E-Commerce</h4><p class="text-xs text-gray-500">Tutup jualan produk.</p></div>
+            <label class="toggle-switch"><input type="checkbox" id="flag-ecommerce" onchange="updateFlag('ecommerce', this.checked)"><div class="slider"></div></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: DATA (Placeholder for next step) -->
+      <div id="tab-data" class="tab-content hidden space-y-6">
+        <div><h3 class="text-2xl font-bold text-white mb-2">Pengurusan Data</h3></div>
+        <div>
+          <h3 class="text-2xl font-bold text-white mb-2">Pengurusan Data</h3>
+          <p class="text-gray-400 text-sm">Muat turun, pemulihan (restore) pangkalan data, dan pemotongan arkib.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Backup -->
+          <div class="bg-panel border border-gray-800 rounded-xl p-6 text-center space-y-4">
+            <i class="fa-solid fa-cloud-arrow-down text-4xl text-primary"></i>
+            <h4 class="text-white font-bold">Strim Backup JSON</h4>
+            <p class="text-xs text-gray-400">Muat turun keseluruhan pangkalan data secara strim langsung (kalis Timeout 504).</p>
+            <button onclick="downloadBackup()" class="w-full bg-blue-600/20 text-primary border border-primary hover:bg-primary hover:text-white font-medium py-2 rounded-lg transition-colors">Muat Turun Backup</button>
+          </div>
+
+          <!-- Restore -->
+          <div class="bg-panel border border-gray-800 rounded-xl p-6 text-center space-y-4">
+            <i class="fa-solid fa-cloud-arrow-up text-4xl text-yellow-500"></i>
+            <h4 class="text-white font-bold">Pemulihan Data Pintar (Restore)</h4>
+            <p class="text-xs text-gray-400">Pilih fail JSON backup untuk dipulihkan ke dalam pelayan.</p>
+            <input type="file" id="restoreFile" class="hidden" accept=".json">
+            <button onclick="document.getElementById('restoreFile').click()" class="w-full bg-yellow-600/20 text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white font-medium py-2 rounded-lg transition-colors">Pilih Fail & Pulihkan</button>
+          </div>
+
+          <!-- Prune -->
+          <div class="bg-panel border border-gray-800 rounded-xl p-6 text-center space-y-4">
+            <i class="fa-solid fa-scissors text-4xl text-purple-500"></i>
+            <h4 class="text-white font-bold">Pemotongan Arkib (Prune)</h4>
+            <p class="text-xs text-gray-400">Gunting data jualan melebihi 2 tahun dan simpannya ke jadual sejarah.</p>
+            <button onclick="triggerPrune()" class="w-full bg-purple-600/20 text-purple-400 border border-purple-500 hover:bg-purple-600 hover:text-white font-medium py-2 rounded-lg transition-colors">Jalankan Pemotongan</button>
+          </div>
+
+          <!-- Factory Reset -->
+          <div class="bg-panel border border-red-900 rounded-xl p-6 text-center space-y-4">
+            <i class="fa-solid fa-skull-crossbones text-4xl text-danger"></i>
+            <h4 class="text-danger font-bold">RESET KILANG 3-LAPIS</h4>
+            <p class="text-xs text-gray-400">AMARAN: Akan menghapuskan kesemua rekod syarikat di dalam Supabase.</p>
+            <button onclick="openResetModal()" class="w-full bg-danger text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors">KOSONGKAN DATA</button>
+          </div>
+        </div>
+      </div>
+
+      </div>
+      
+      
+      <!-- TAB: HEALTH -->
+      <div id="tab-health" class="tab-content hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="text-2xl font-bold text-white mb-2">Kesihatan Pelayan</h3>
+            <p class="text-gray-400 text-sm">Pantau kelajuan pelayan, memori cache, dan ralat terkini.</p>
+          </div>
+          <button onclick="fetchHealth()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-rotate-right"></i></button>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-panel border border-gray-800 p-4 rounded-xl">
+            <p class="text-xs text-gray-500">Latensi Pangkalan Data</p>
+            <p class="text-xl font-bold text-white mt-1" id="metric-db">-- ms</p>
+          </div>
+          <div class="bg-panel border border-gray-800 p-4 rounded-xl">
+            <p class="text-xs text-gray-500">Status Memori RAM</p>
+            <p class="text-xl font-bold text-white mt-1" id="metric-ram">-- MB</p>
+          </div>
+          <div class="bg-panel border border-gray-800 p-4 rounded-xl">
+            <p class="text-xs text-gray-500">Status Supabase</p>
+            <p class="text-xl font-bold text-green-400 mt-1" id="metric-status">--</p>
+          </div>
+          <div class="bg-panel border border-gray-800 p-4 rounded-xl">
+            <p class="text-xs text-gray-500">eSMS Gateway</p>
+            <p class="text-xl font-bold text-white mt-1" id="metric-sms">--</p>
+          </div>
+        </div>
+
+        <div class="bg-panel border border-gray-800 rounded-xl p-4">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-white font-bold"><i class="fa-solid fa-terminal text-gray-500 mr-2"></i>Live Error Logs (Akhir 50 baris)</h4>
+            <span id="logFileName" class="text-xs text-gray-500">winston.log</span>
+          </div>
+          <div class="terminal-window" id="terminal-logs">Memuatkan log...</div>
+        </div>
+
+        <button onclick="flushCache()" class="w-full border border-gray-700 bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+          <i class="fa-solid fa-broom"></i> Bersihkan Soft-Cache RAM
+        </button>
+      </div>
+
+
+      
+      <!-- TAB: TOOLS -->
+      <div id="tab-tools" class="tab-content hidden space-y-6">
+        <div>
+          <h3 class="text-2xl font-bold text-white mb-2">Simulasi & Alat</h3>
+          <p class="text-gray-400 text-sm">Alat debugging untuk mempercepatkan penyelesaian pepijat pengguna.</p>
+        </div>
+
+        <!-- Impersonation -->
+        <div class="bg-panel border border-gray-800 rounded-xl p-6">
+          <h4 class="text-primary font-bold mb-4"><i class="fa-solid fa-masks-theater mr-2"></i>Mod Penyamaran (Login-As)</h4>
+          <p class="text-sm text-gray-400 mb-4">Log masuk ke sesi pelanggan atau staf tanpa mengetahui kata laluan mereka.</p>
+          <div class="flex flex-col md:flex-row gap-4">
+            <select id="impersonateRole" class="bg-black border border-gray-700 text-white rounded-lg px-4 py-2 focus:border-primary focus:outline-none">
+              <option value="customer">Pelanggan</option>
+              <option value="staff">Staf</option>
+              <option value="owner">Pemilik</option>
+            </select>
+            <input type="text" id="impersonateId" placeholder="ID Pengguna (UUID)" class="flex-1 bg-black border border-gray-700 text-white rounded-lg px-4 py-2 focus:border-primary focus:outline-none">
+            <button onclick="triggerImpersonation()" class="bg-primary hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">Jana Akses</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Sandbox Payment -->
+          <div class="bg-panel border border-gray-800 rounded-xl p-6">
+            <h4 class="text-white font-bold mb-2">Mod Sandbox Pembayaran</h4>
+            <p class="text-xs text-gray-500 mb-4">Alihkan trafik pembayaran dari Live ke dev.toyyibpay.com. Tiada wang sebenar dipotong.</p>
+            <label class="toggle-switch">
+              <input type="checkbox" id="flag-sandbox" onchange="updateFlag('sandbox_payment', this.checked)">
+              <div class="slider"></div>
+            </label>
+          </div>
+
+          <!-- OTP Bypass -->
+          <div class="bg-panel border border-gray-800 rounded-xl p-6">
+            <h4 class="text-white font-bold mb-2">Pintasan Kecemasan OTP</h4>
+            <p class="text-xs text-gray-500 mb-4">Berhenti menghantar SMS. Pendaftaran menggunakan OTP statik: 123456.</p>
+            <label class="toggle-switch">
+              <input type="checkbox" id="flag-otp" onchange="updateFlag('otp_bypass', this.checked)">
+              <div class="slider"></div>
+            </label>
+          </div>
+
+          <!-- Push Notifications -->
+          <div class="bg-panel border border-gray-800 rounded-xl p-6 col-span-1 md:col-span-2">
+            <h4 class="text-white font-bold mb-2">God Mode Push Notifications</h4>
+            <p class="text-xs text-gray-500 mb-4">Langgan pelayar peranti ini untuk menerima makluman kerosakan pelayan dan laporan ralat dari Node.js.</p>
+            <div class="flex gap-4">
+              <button onclick="subscribeDevPush()" class="flex-1 bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white py-2 rounded-lg text-sm">Aktifkan Langganan</button>
+              <button onclick="testDevPush()" class="flex-1 bg-green-900/40 border border-green-700 text-green-400 hover:bg-green-800 py-2 rounded-lg text-sm">Uji Notifikasi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </main>
+  </div>
+
+  
+  <!-- Factory Reset Modal -->
+  <div id="resetModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-panel border border-red-900 rounded-2xl w-full max-w-md p-6">
+      <h3 class="text-xl font-bold text-danger mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>AMARAN PEMADAMAN DATA</h3>
+      <p class="text-gray-300 text-sm mb-4">Tindakan ini akan memadam SELURUH pangkalan data Dinspire. Tindakan ini tidak boleh diundur (Irreversible).</p>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Sila taip: DELETE-ALL-DINSPIRE-DATA</label>
+          <input type="text" id="resetPhrase" class="w-full bg-black border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-danger outline-none" autocomplete="off">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Kod Laluan / OTP Pembangun</label>
+          <input type="password" id="resetOTP" class="w-full bg-black border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-danger outline-none">
+        </div>
+        
+        <div class="flex gap-4 mt-6">
+          <button onclick="closeResetModal()" class="flex-1 bg-gray-800 text-white py-2 rounded-lg">Batal</button>
+          <button onclick="executeFactoryReset()" class="flex-1 bg-danger hover:bg-red-700 text-white font-bold py-2 rounded-lg">KOSONGKAN SEKARANG</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/dev-sys-9x8q2/js/app.js"></script>
+</body>
+</html>
