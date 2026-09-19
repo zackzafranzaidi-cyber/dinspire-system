@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../config/db");
 const { authenticate, requireRole } = require("../middleware/auth");
+const { checkFlag } = require("../utils/featureFlags");
 const crypto = require("crypto");
 const cache = require("../utils/cache");
 const schedule = require("node-schedule");
@@ -165,7 +166,7 @@ router.get("/staff-availability", async (req, res) => {
 // ==========================================
 // 1. Pelanggan Buat Tempahan (Booking)
 // ==========================================
-router.post("/", authenticate, requireRole(["customer"]), async (req, res) => {
+router.post("/", checkFlag("booking"), authenticate, requireRole(["customer"]), async (req, res) => {
   const {
     booking_type,
     service_id,
