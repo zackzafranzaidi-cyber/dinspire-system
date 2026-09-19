@@ -48,11 +48,26 @@ class ToyyibPaySystem {
     }
 
     try {
+      
+      // [SANDBOX] Inject dev keys if Sandbox Mode is active
+      let targetSecret = this.secretKey;
+      let targetCategory = this.categoryCode;
+      let targetBase = this.baseUrl;
+      let isSandbox = false;
+
+      if (global.featureFlags && global.featureFlags.sandbox_payment) {
+         targetSecret = process.env.TOYYIBPAY_SECRET_TEST || targetSecret;
+         targetCategory = process.env.TOYYIBPAY_CATEGORY_TEST || targetCategory;
+         targetBase = "https://dev.toyyibpay.com";
+         isSandbox = true;
+      }
+      
       const amountCents = Math.round(amountRM * 100);
+      
 
       const payload = new URLSearchParams({
-        userSecretKey: this.secretKey,
-        categoryCode: this.categoryCode,
+        userSecretKey: targetSecret,
+        categoryCode: targetCategory,
         billName: "Dinspire Barbershop",
         billDescription: description.substring(0, 100),
         billPriceSetting: 1, // Fixed amount
@@ -72,14 +87,20 @@ class ToyyibPaySystem {
       // KESELAMATAN: Tiada log data sensitif seperti kad kredit dsb.
       console.log(`Menjana Pautan toyyibPay untuk ${reference} (RM${amountRM.toFixed(2)})`);
 
-      const response = await this.client.post("/index.php/api/createBill", payload.toString());
+      
+      let finalClient = this.client;
+      if (isSandbox) {
+         finalClient = axios.create({ baseURL: targetBase, timeout: this.timeout, headers: { "Content-Type": "application/x-www-form-urlencoded" } });
+      }
+      const response = await finalClient.post("/index.php/api/createBill", payload.toString());
+        
       
       const responseData = response.data;
       if (Array.isArray(responseData) && responseData[0] && responseData[0].BillCode) {
         const billCode = responseData[0].BillCode;
         return {
           transaction_id: billCode,
-          payment_url: `${this.baseUrl}/${billCode}`
+          payment_url: `${targetBase}/${billCode}`
         };
       } else {
         throw new Error(JSON.stringify(responseData));

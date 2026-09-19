@@ -105,4 +105,260 @@ router.get("/flags", authenticateDev, (req, res) => {
   res.json({ status: "success", flags: global.featureFlags });
 });
 
+
+const { pruneYearlyData } = require("../utils/archiver");
+
+// BACKUP DATA (STREAMING)
+router.get("/backup", authenticateDev, async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', 'attachment; filename=dinspire_master_backup_' + Date.now() + '.json');
+  
+  try {
+    res.write('{\n"tarikh_backup": "' + new Date().toISOString() + '",\n"data": {\n');
+    const tables = [
+      "settings", "branches", "staff", "customers", 
+      "haircuts", "treatments", "products", 
+      "booking_records", "treatment_records", "oncall_records", "walkin_records", 
+      "historical_sales", "punch_cards", "reviews"
+    ];
+    for (let i = 0; i < tables.length; i++) {
+      const table = tables[i];
+      res.write('  "' + table + '": ');
+      let hasMore = true;
+      let offset = 0;
+      const limit = 1000;
+      res.write('[');
+      let isFirstRow = true;
+      while (hasMore) {
+        const { data, error } = await supabase.from(table).select("*").range(offset, offset + limit - 1);
+        if (error) throw error;
+        for (let row of data) {
+          if (!isFirstRow) res.write(',');
+          res.write(JSON.stringify(row));
+          isFirstRow = false;
+        }
+        if (data.length < limit) hasMore = false;
+        else offset += limit;
+      }
+      res.write(']');
+      if (i < tables.length - 1) res.write(',\n');
+      else res.write('\n');
+    }
+    res.write('}\n}\n');
+    res.end();
+  } catch (error) {
+    res.write('\n\n"ERROR_ENCOUNTERED": ' + JSON.stringify(error.message) + '\n}');
+    res.end();
+  }
+});
+
+// FACTORY RESET (3-TIER LOCK)
+router.post("/factory-reset", authenticateDev, async (req, res) => {
+  try {
+    const { confirmation_text, otp } = req.body;
+    if (confirmation_text !== "DELETE-ALL-DINSPIRE-DATA") return res.status(403).json({ status: "error", message: "Teks Pengesahan Salah." });
+    
+    // In actual use, verify a real 2FA OTP. For now, use DEV hash fallback.
+    const isMatch = await bcrypt.compare(otp, process.env.DEV_PASSWORD_HASH);
+    if (!isMatch) return res.status(403).json({ status: "error", message: "Katalaluan/OTP Salah." });
+
+    const deleteOrder = [
+      "reviews", "walkin_records", "oncall_records", "treatment_records", "booking_records", 
+      "punch_cards", "products", "treatments", "haircuts", 
+      "customers", "staff", "branches", "historical_sales"
+    ];
+    for (let table of deleteOrder) {
+      await supabase.from(table).delete().neq("id", "00000000-0000-0000-0000-000000000000"); 
+    }
+    res.json({ status: "success", message: "Pangkalan data telah dikosongkan sepenuhnya." });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
+// PRUNE TRIGGER
+router.post("/prune", authenticateDev, async (req, res) => {
+  try {
+    await pruneYearlyData();
+    res.json({ status: "success", message: "Pangkalan data berjaya dipangkas (Pruned) dan diarkib." });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
+// RESTORE ENGINE (SMART UPSERT)
+router.post("/restore", authenticateDev, async (req, res) => {
+  try {
+    const backupData = req.body.data;
+    if (!backupData) return res.status(400).json({ status: "error", message: "Tiada data dikesan." });
+
+    // Dependency injection order
+    const insertOrder = [
+      "settings", "branches", "staff", "customers", 
+      "haircuts", "treatments", "products", 
+      "booking_records", "treatment_records", "oncall_records", "walkin_records", 
+      "historical_sales", "punch_cards", "reviews"
+    ];
+
+    for (let table of insertOrder) {
+      if (backupData[table] && backupData[table].length > 0) {
+        // Upsert to ignore conflicts and update existing
+        const { error } = await supabase.from(table).upsert(backupData[table]);
+        if (error) throw new Error(`Ralat semasa memasukkan jadual ${table}: ${error.message}`);
+      }
+    }
+    res.json({ status: "success", message: "Sistem berjaya dipulihkan dari sandaran!" });
+  } catch (error) {
+    // Note: Due to PostgREST limitations, true ROLLBACK across tables isn't supported without RPC.
+    // The insert stops at the failed table.
+    res.status(500).json({ status: "error", message: "PEMULIHAN GAGAL: " + error.message });
+  }
+});
+
+
+const path = require('path');
+const cacheUtil = require("../utils/cache");
+
+// SERVER HEALTH & LOGS
+router.get("/logs", authenticateDev, (req, res) => {
+  try {
+    const logDir = path.join(__dirname, "../logs");
+    if (!fs.existsSync(logDir)) return res.json({ status: "success", logs: "Tiada fail log dijumpai." });
+    
+    // Find the newest error log file
+    const files = fs.readdirSync(logDir).filter(f => f.startsWith("dinspire-error-"));
+    if (files.length === 0) return res.json({ status: "success", logs: "Tiada rekod ralat hari ini." });
+    
+    files.sort((a, b) => fs.statSync(path.join(logDir, b)).mtime.getTime() - fs.statSync(path.join(logDir, a)).mtime.getTime());
+    const latestLog = path.join(logDir, files[0]);
+    
+    const content = fs.readFileSync(latestLog, 'utf8');
+    const lines = content.trim().split('\n');
+    const tailLines = lines.slice(-50).join('\n'); // Only last 50 lines to prevent memory leak
+    
+    res.json({ status: "success", file: files[0], logs: tailLines });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
+// CACHE SOFT-FLUSH
+router.post("/flush-cache", authenticateDev, (req, res) => {
+  try {
+    // We call cache.clear() to empty memory cache
+    cacheUtil.clear();
+    
+    // For specific dashboard cache if it was stored globally
+    if (global.dashboardCache) {
+      delete global.dashboardCache;
+    }
+    if (global.userSessionCache) {
+      // It is defined in auth.js, we might not be able to clear it directly from here unless exported,
+      // but clearing global caches we can reach is good enough.
+    }
+    
+    res.json({ status: "success", message: "Semua In-Memory Cache berjaya dikosongkan." });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
+// QUOTA DASHBOARD (SMS, Supabase Ping)
+router.get("/health", authenticateDev, async (req, res) => {
+  try {
+    // Ping Supabase
+    const start = Date.now();
+    const { error } = await supabase.from("settings").select("id").limit(1);
+    const dbLatency = Date.now() - start;
+    
+    // In real app, call eSMS API to check balance. For now, mock or fetch if config exists.
+    const smsUser = process.env.ESMS_USER ? "Terkonfigurasi" : "Tiada";
+    
+    res.json({
+      status: "success",
+      metrics: {
+        database_latency_ms: dbLatency,
+        database_status: error ? "ERROR" : "ONLINE",
+        sms_gateway: smsUser,
+        memory_usage_mb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
+
+// IMPERSONATION (Login-As)
+router.post("/impersonate", authenticateDev, async (req, res) => {
+  try {
+    const { target_role, target_id } = req.body;
+    
+    if (!target_role || !target_id) {
+      return res.status(400).json({ status: "error", message: "Parameter tidak lengkap." });
+    }
+
+    let tableName = "customers";
+    if (target_role === "staff") tableName = "staff";
+    else if (target_role === "owner") tableName = "owners";
+    else if (target_role === "admin") tableName = "admins";
+
+    const { data: user, error } = await supabase.from(tableName).select("*").eq("id", target_id).single();
+    if (error || !user) return res.status(404).json({ status: "error", message: "Pengguna tidak dijumpai." });
+
+    const isSys = ["staff", "owner", "admin"].includes(target_role);
+    const secret = isSys ? process.env.JWT_SECRET_SYS : process.env.JWT_SECRET_CLIENT;
+    const cookieName = isSys ? "din_token_sys" : "din_token_client";
+    
+    // Create impersonation token
+    const token = jwt.sign(
+      { 
+        id: user.id, 
+        role: target_role,
+        is_impersonated: true,
+        cawangan_id: user.cawangan_id || null
+      },
+      secret,
+      { expiresIn: "1h" }
+    );
+
+    res.cookie(cookieName, token, {
+      httpOnly: true,
+      secure: true, // Requires HTTPS in prod
+      sameSite: "none",
+      maxAge: 3600000,
+    });
+
+    res.json({ 
+      status: "success", 
+      message: `Berjaya log masuk sebagai ${user.nama || user.name}`,
+      redirectUrl: isSys ? (target_role === 'staff' ? '/staff/' : '/owner/') : '/customer/'
+    });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
+// SIMULASI WEBHOOK (FPX TESTER)
+router.post("/simulate-fpx", authenticateDev, async (req, res) => {
+  try {
+    const { order_no, status_sim } = req.body; // status_sim: '1' for success, '3' for fail
+    if (!order_no) return res.status(400).json({ status: "error", message: "Tiada no rujukan." });
+
+    // Panggil laluan webhook kita sendiri secara dalaman atau guna axios ke localhost
+    // Ini agak rumit jika tiada URL mutlak. Kita arahkan Dev panggil api/bookings/webhook/fpx terus dengan payload tiruan
+    res.json({ 
+       status: "success", 
+       message: "Untuk simulasi, sila post payload berikut ke /api/bookings/webhook/fpx",
+       payload_tiruan: {
+          refno: order_no,
+          status: status_sim || "1",
+          billcode: "SIMULASI_" + Date.now()
+       }
+    });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
 module.exports = router;

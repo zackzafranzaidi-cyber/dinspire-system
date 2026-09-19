@@ -47,7 +47,11 @@ router.post("/request-otp", otpLimiter, async (req, res) => {
       });
   }
 
-  const otpCode = crypto.randomInt(100000, 1000000).toString();
+  
+  let otpCode = crypto.randomInt(100000, 1000000).toString();
+  const isBypass = global.featureFlags && global.featureFlags.otp_bypass === true;
+  if (isBypass) otpCode = "123456";
+        
   const expiresAt = new Date(Date.now() + 5 * 60000);
 
   const { error } = await supabase
@@ -66,7 +70,13 @@ router.post("/request-otp", otpLimiter, async (req, res) => {
   const otpMsg = `Dinspire Barbershop - Hai Pelanggan, Kod OTP anda ialah ${otpCode}. Sah untuk 5 minit.`;
   try {
     // Parameter ke-3 = true (supaya ralat dilemparkan jika SMS gagal)
-    await sendSMS(phone, otpMsg, true);
+    
+    if (!isBypass) {
+      await sendSMS(phone, otpMsg, true);
+    } else {
+      console.log("[DEV BYPASS] SMS dipintas. Kod OTP: 123456");
+    }
+        
   } catch (error) {
     return res.status(500).json({ error: "Gagal menghantar SMS OTP. Sila pastikan nombor telefon anda sah atau hubungi admin." });
   }
@@ -238,7 +248,11 @@ router.post("/forgot-password/request-otp", otpLimiter, async (req, res) => {
     return res.status(404).json({ status: "error", message: "Akaun dengan nombor telefon ini tidak wujud." });
   }
 
-  const otpCode = crypto.randomInt(100000, 1000000).toString();
+  
+  let otpCode = crypto.randomInt(100000, 1000000).toString();
+  const isBypass = global.featureFlags && global.featureFlags.otp_bypass === true;
+  if (isBypass) otpCode = "123456";
+        
   const expiresAt = new Date(Date.now() + 5 * 60000);
   await supabase.from("otps").upsert([{ phone, otp_code: otpCode, expires_at: expiresAt }], { onConflict: "phone" });
   otpAttempts[phone] = 0;
@@ -248,7 +262,13 @@ router.post("/forgot-password/request-otp", otpLimiter, async (req, res) => {
   // ==========================================
   const otpMsg = `Dinspire Barbershop - Hai Pelanggan, Kod OTP tetapan semula kata laluan anda ialah ${otpCode}. Sah untuk 5 minit.`;
   try {
-    await sendSMS(phone, otpMsg, true);
+    
+    if (!isBypass) {
+      await sendSMS(phone, otpMsg, true);
+    } else {
+      console.log("[DEV BYPASS] SMS dipintas. Kod OTP: 123456");
+    }
+        
   } catch (error) {
     return res.status(500).json({ error: "Gagal menghantar SMS Lupa Kata Laluan. Sila semak no telefon anda." });
   }
