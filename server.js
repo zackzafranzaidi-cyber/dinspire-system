@@ -7,7 +7,8 @@ const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const schedule = require("node-schedule");
 const supabase = require("./config/db");
-const logger = require("./utils/logger"); // Import Winston logger
+const logger = require("./utils/logger");
+const { initFeatureFlags } = require("./utils/featureFlags"); // Import Winston logger
 const { sendSMS } = require("./utils/sms");
 const { notifyCustomer } = require("./utils/push");
 const { pruneYearlyData, generateMonthlyArchiveData, generateArchiveDataByDateRange, runDailyCleanup } = require("./utils/archiver");
@@ -229,6 +230,7 @@ const staffRoutes = require("./routes/staff");
 const shopRoutes = require("./routes/shop");
 const ownerRoutes = require("./routes/owner");
 const adminRoutes = require("./routes/admin");
+const devRoutes = require("./routes/dev");
 
 // 4. Gunakan routes
 app.get("/api/ping", (req, res) => {
@@ -241,6 +243,7 @@ app.use("/api/staff", staffRoutes);
 app.use("/api/shop-data", shopRoutes);
 app.use("/api/owner", ownerRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/dev-sys-9x8q2", devRoutes);
 
 
 
@@ -340,6 +343,7 @@ async function processReminders() {
 // Mulakan Pelayan
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, async () => {
+  await initFeatureFlags();
   console.log(`Server Dinspire berjalan di port ${PORT}`);
   // Jalankan segera apabila pelayan mula (terjaga dari sleep)
   processReminders().catch(console.error);
