@@ -1046,9 +1046,10 @@ function renderScheduleTime() {
 async function fetchShopData() {
 
     
+    
     // Check Real-time Feature Flags (NO CACHE)
     try {
-      const flagRes = await fetch(`${API_BASE_URL}/shop-data/flags`);
+      const flagRes = await fetch(`${API_BASE_URL}/shop-data/flags?t=${new Date().getTime()}`, { cache: 'no-store' });
       const flagData = await flagRes.json();
       if (flagData.flags) {
         window.dinspireFlags = flagData.flags; // Simpan untuk switchView
@@ -1066,33 +1067,49 @@ async function fetchShopData() {
         }
 
         // Gray out Booking
-        if (flagData.flags.booking === false) {
-          ['nav-services', 'desktop-nav-services', 'sidebar-nav-services'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) {
+        ['nav-services', 'desktop-nav-services', 'sidebar-nav-services'].forEach(id => {
+          const el = document.getElementById(id);
+          if(el) {
+             if (flagData.flags.booking === false) {
                el.style.opacity = '0.3';
                el.style.filter = 'grayscale(100%)';
-            }
-          });
-          document.querySelectorAll('.btn-home-book').forEach(el => {
+             } else {
+               el.style.opacity = '1';
+               el.style.filter = 'none';
+             }
+          }
+        });
+        document.querySelectorAll('.btn-home-book').forEach(el => {
+            if (flagData.flags.booking === false) {
               el.style.opacity = '0.5';
               el.style.pointerEvents = 'none';
               el.innerHTML = '<i class="fa-solid fa-lock"></i> Diselenggara';
-          });
-        }
+            } else {
+              el.style.opacity = '1';
+              el.style.pointerEvents = 'auto';
+              // If it's true, we leave the HTML alone (or set it back, but it's hard to know the original text. Let's assume it was Tempah Servis)
+              if (el.innerHTML.includes('Diselenggara')) {
+                 el.innerHTML = 'Tempah Servis';
+              }
+            }
+        });
 
         // Gray out E-commerce
-        if (flagData.flags.ecommerce === false) {
-          ['nav-products', 'desktop-nav-products', 'sidebar-nav-products'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) {
+        ['nav-products', 'desktop-nav-products', 'sidebar-nav-products'].forEach(id => {
+          const el = document.getElementById(id);
+          if(el) {
+             if (flagData.flags.ecommerce === false) {
                el.style.opacity = '0.3';
                el.style.filter = 'grayscale(100%)';
-            }
-          });
-        }
+             } else {
+               el.style.opacity = '1';
+               el.style.filter = 'none';
+             }
+          }
+        });
       }
     } catch(e) { console.error("Flag check failed", e); }
+
 
   
   showGlobalLoader();
