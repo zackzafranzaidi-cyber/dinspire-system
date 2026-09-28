@@ -8,7 +8,7 @@ const SCHEMAS = {
   Haircuts: ["id", "name", "desc", "price"],
   Treatments: ["id", "name", "desc", "price"],
   Branches: ["id", "name", "location", "imageUrl", "lat", "lng"],
-  Staff: ["id", "name", "jenis_staf", "branch_id", "kemahiran"],
+  Staff: ["id", "name", "jenis_staf", "status_pekerja", "branch_id", "kemahiran"],
   OnCall: ["id", "name", "price"],
   WalkInServices: ["id", "name", "price"],
   WalkInTreatments: ["id", "name", "price"],
@@ -44,6 +44,7 @@ async function loadAdminData() {
           shipping_fee: 0,
           service_fee: 0,
           peratus_komisen: 50,
+          komisen_part_time: 50,
           gaji_asas: 1800,
         };
       renderTable(currentTab);
@@ -173,6 +174,24 @@ function renderTable(tabName) {
             </div>
           </div>
 
+          <!-- Kad Komisen Part Time -->
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
+                <i class="fas fa-hand-holding-usd text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wider">Komisen Part Time</h4>
+                <p class="text-[11px] text-gray-400 font-medium">Berapa % jualan yang staf Part Time dapat (%)</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="number" value="${s.komisen_part_time !== undefined ? s.komisen_part_time : (s.peratus_komisen || 50)}" onchange="updateSetting('komisen_part_time', this.value)" class="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all text-lg font-bold text-gray-700 shadow-sm text-right" placeholder="50" min="0" max="100">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
+            </div>
+          </div>
+
+
           <!-- Kad Gaji Asas -->
           <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <div class="flex items-center gap-3 mb-4">
@@ -216,7 +235,7 @@ function renderTable(tabName) {
     if (c === "id") {
       html += `<th style="display:none;">${c}</th>`;
     } else {
-      html += `<th class="px-6 py-4">${c === 'imageUrl' ? 'GAMBAR' : c}</th>`;
+      html += `<th class="px-6 py-4">${c === 'imageUrl' ? 'GAMBAR' : (c === 'status_pekerja' ? 'STATUS (FT/PT)' : c)}</th>`;
     }
   });
   html += `<th class="px-6 py-4 text-center" style="width: 80px;">TINDAKAN</th></tr></thead><tbody class="divide-y divide-gray-100">`;
@@ -234,7 +253,11 @@ function renderTable(tabName) {
       } else if (c === "jenis_staf" && tabName === "Staff") {
         let opts = ["In-Branch", "On-Call", "General"].map(j => `<option value="${j}" ${row[c] === j ? "selected" : ""}>${j}</option>`).join("");
         html += `<td class="px-6 py-3"><select onchange="updateData('${tabName}', ${index}, '${c}', this.value); setTimeout(()=>renderTable('${tabName}'), 100);" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-semibold text-gray-700 shadow-sm">${opts}</select></td>`;
-      } else if (c === "branch_id" && tabName === "Staff") {
+      
+      } else if (c === "status_pekerja" && tabName === "Staff") {
+        let opts = ["full_time", "part_time"].map(j => `<option value="${j}" ${row[c] === j ? "selected" : ""}>${j === 'full_time' ? 'Full Time' : 'Part Time'}</option>`).join("");
+        html += `<td class="px-6 py-3"><select onchange="updateData('${tabName}', ${index}, '${c}', this.value)" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-semibold text-gray-700 shadow-sm">${opts}</select></td>`;
+} else if (c === "branch_id" && tabName === "Staff") {
         if (row.jenis_staf === "On-Call" || row.jenis_staf === "General") {
            html += `<td class="px-6 py-3"><span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">Tidak Berkenaan</span></td>`;
         } else {
@@ -431,6 +454,7 @@ function addRow(tabName) {
   
   if (tabName === "Staff") {
     newObj.jenis_staf = "In-Branch";
+    newObj.status_pekerja = "full_time";
     newObj.can_haircut = true;
     newObj.can_treatment = false;
   }

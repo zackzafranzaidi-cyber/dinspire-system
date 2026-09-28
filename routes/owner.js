@@ -66,12 +66,12 @@ router.get(
         { data: walkins },
         { data: oncalls },
         { data: treatments },
+        { data: staffData }
       ] = await Promise.all([
         supabase
           .from("settings")
-          .select("setting_value")
-          .eq("setting_key", "peratus_komisen")
-          .single(),
+          .select("setting_key, setting_value")
+          .in("setting_key", ["peratus_komisen", "komisen_part_time"]),
         supabase
           .from("booking_records")
           .select("*, staff(username), haircuts(nama_potongan)")
@@ -89,9 +89,15 @@ router.get(
           .select("*, staff(username), treatments(nama_rawatan)")
           .order("created_at", { ascending: false }),
       ]);
-      const commissionPercent = settingData
-        ? parseFloat(settingData.setting_value)
-        : 50;
+      
+      let commissionPercent = 50;
+      let partTimeCommissionPercent = 50;
+      (settingData || []).forEach(s => {
+         if (s.setting_key === 'peratus_komisen') commissionPercent = parseFloat(s.setting_value) || 50;
+         if (s.setting_key === 'komisen_part_time') partTimeCommissionPercent = parseFloat(s.setting_value) || 50;
+      });
+      const staffList = staffData || [];
+
 
       let allTransactions = [];
 
@@ -224,6 +230,8 @@ router.get(
           orders: productOrders || [],
           reviews: reviews || [],
           commissionPercent: commissionPercent,
+          partTimeCommissionPercent: partTimeCommissionPercent,
+          staffList: staffList,
           products: productsList || [],
         },
         mapBarberBranch: mapBarberBranch,

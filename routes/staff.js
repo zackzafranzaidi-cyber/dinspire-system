@@ -8,7 +8,8 @@ const { notifyOwner, addStaffSubscription, publicVapidKey, notifyCustomer } = re
 
 router.get("/push/vapid-key", authenticate, requireRole(["staff", "owner"]), (req, res) => {
   const cleanKey = publicVapidKey.replace(/[^A-Za-z0-9\-_]/g, '');
-  res.json({ status: "success", publicKey: cleanKey });
+  res.json({
+        status: "success", publicKey: cleanKey });
 });
 
 router.post("/push/subscribe", authenticate, requireRole(["staff", "owner"]), async (req, res) => {
@@ -49,12 +50,13 @@ router.get(
         { data: monthlyWalkinData },
         { data: monthlyOncallData },
         { data: monthlyTreatmentData },
-        { data: branchesData }
+        { data: branchesData },
+        { data: staffInfo }
       ] = await Promise.all([
         supabase
           .from("settings")
           .select("setting_key, setting_value")
-          .in("setting_key", ["peratus_komisen", "gaji_asas"]),
+          .in("setting_key", ["peratus_komisen", "gaji_asas", "komisen_part_time"]),
         supabase
           .from("booking_records")
           .select("*, haircuts(nama_potongan)")
@@ -115,16 +117,22 @@ router.get(
           .eq("staff_id", staff_id)
           .eq("status", "Selesai")
           .gte("tarikh", firstDayOfMonth),
-        supabase.from("branches").select("id, nama_cawangan")
+        supabase.from("branches").select("id, nama_cawangan"),
+        supabase.from("staff").select("status_pekerja").eq("id", staff_id).single()
       ]);
+      
       
       let commissionPercent = 50;
       let basicSalary = 1800;
       
+      const isPartTime = staffInfo && staffInfo.status_pekerja === 'part_time';
+
       (settingData || []).forEach(s => {
-        if (s.setting_key === 'peratus_komisen') commissionPercent = parseFloat(s.setting_value) || 50;
+        if (s.setting_key === 'peratus_komisen' && !isPartTime) commissionPercent = parseFloat(s.setting_value) || 50;
+        if (s.setting_key === 'komisen_part_time' && isPartTime) commissionPercent = parseFloat(s.setting_value) || 50;
         if (s.setting_key === 'gaji_asas') basicSalary = parseFloat(s.setting_value) || 1800;
       });
+
 
       let allBookings = [];
 
@@ -224,6 +232,7 @@ router.get(
       const isPunchedIn = (punchData && punchData.length > 0);
       
       res.json({
+        status_pekerja: isPartTime ? "part_time" : "full_time",
         status: "success",
         isPunchedIn: isPunchedIn,
         bookings: allBookings,

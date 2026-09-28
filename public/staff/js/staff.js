@@ -547,9 +547,16 @@ function calculateDashboardStats() {
   const basicSalary = staffData.basicSalary || 1800;
   let bones = commission > basicSalary ? commission - basicSalary : 0;
   const bonesElement = document.getElementById("dash-bones");
+
   if (bonesElement) {
-    bonesElement.innerText = `RM ${bones.toFixed(0)}`;
+    if (staffData.status_pekerja === 'part_time') {
+      bonesElement.closest('.dash-card').style.display = 'none';
+    } else {
+      bonesElement.innerText = `RM ${bones.toFixed(0)}`;
+      bonesElement.closest('.dash-card').style.display = 'flex'; // or whatever the default is
+    }
   }
+
   
   const bonesSubtitleElement = document.getElementById("dash-bones-subtitle");
   if (bonesSubtitleElement) {

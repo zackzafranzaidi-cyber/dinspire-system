@@ -399,6 +399,7 @@ router.post(
           id: i.id,
           username: i.name,
           jenis_staf: i.jenis_staf || "In-Branch",
+          status_pekerja: i.status_pekerja || "full_time",
           branch_id: i.branch_id || null,
           can_haircut: i.can_haircut !== false,
           can_treatment: i.can_treatment !== false,

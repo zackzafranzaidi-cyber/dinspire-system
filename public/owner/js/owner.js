@@ -13,6 +13,16 @@ let masterData = {
   orders: [],
   commissionPercent: 50,
 };
+
+function getStaffCommissionRate(staffName) {
+  if (!masterData.staffList) return masterData.commissionPercent;
+  const staff = masterData.staffList.find(s => s.username === staffName);
+  if (staff && staff.status_pekerja === 'part_time') {
+    return masterData.partTimeCommissionPercent !== undefined ? masterData.partTimeCommissionPercent : masterData.commissionPercent;
+  }
+  return masterData.commissionPercent;
+}
+
 let mapBarberBranch = {};
 let salesChartObj, demoChartObj, payChartObj, staffChartObj, branchLineChartObj;
 let hasAutoTriggeredAI = false;
@@ -978,7 +988,14 @@ function processData() {
     }
   });
 
-  const totalComm = serviceRev * (masterData.commissionPercent / 100);
+  
+    let totalComm = 0;
+    tableBookings.forEach(b => {
+      let price = parseFloat(b.Price) || 0;
+      let rate = getStaffCommissionRate(b.Barber) / 100;
+      totalComm += (price * rate);
+    });
+
   let productRev = 0;
   let productOrderCount = filteredOrders.length;
   let totalShippingFees = 0;
@@ -1043,7 +1060,14 @@ function processData() {
         p_pShip += parseFloat(o.shipping_fee) || 0;
       });
       
-      let p_totalComm = p_sRev * (masterData.commissionPercent / 100);
+      
+        let p_totalComm = 0;
+        prevBookings.forEach(b => {
+          let price = parseFloat(b.Price) || 0;
+          let rate = getStaffCommissionRate(b.Barber) / 100;
+          p_totalComm += (price * rate);
+        });
+
       prevRevenue = p_sRev + p_sFee + p_pRev + p_pShip;
       prevOrders = prevBookings.length;
       prevProfit = prevRevenue - p_totalComm;
@@ -1368,7 +1392,7 @@ function renderStaffTable(stats) {
   tbody.innerHTML = sortedStaff
     .map(
       (name) => {
-        const comm = stats[name].sales * (masterData.commissionPercent / 100);
+        const comm = stats[name].sales * (getStaffCommissionRate(name) / 100);
         return `<tr class="hover:bg-gray-50 border-b border-gray-100"><td class="py-3 px-2 font-bold text-gray-800 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">${escapeHTML(name).charAt(0)}</div>${escapeHTML(name)}</td><td class="py-3 px-2 text-center text-gray-600 font-semibold">${stats[name].count}</td><td class="py-3 px-2 text-right font-bold text-gray-900">RM ${stats[name].sales.toFixed(2)}</td><td class="py-3 px-2 text-right font-bold text-blue-600">RM ${comm.toFixed(2)}</td></tr>`;
       }
     )
@@ -2079,7 +2103,7 @@ function updateBarChart(bookings, orders, filterType) {
           let price = parseFloat(b.Price) || 0;
           let fee = parseFloat(b.Fee) || 0;
           let rev = price + fee;
-          let exp = price * (masterData.commissionPercent / 100);
+          let exp = price * (getStaffCommissionRate(b.Barber) / 100);
           let prof = rev - exp;
           
           dataPoints[idx] += rev;
