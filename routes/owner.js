@@ -88,6 +88,9 @@ router.get(
           .from("treatment_records")
           .select("*, staff(username), treatments(nama_rawatan)")
           .order("created_at", { ascending: false }),
+        supabase
+          .from("staff")
+          .select("username, status_pekerja"),
       ]);
       
       let commissionPercent = 50;
