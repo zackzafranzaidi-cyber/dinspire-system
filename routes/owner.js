@@ -65,8 +65,7 @@ router.get(
         { data: bookings },
         { data: walkins },
         { data: oncalls },
-        { data: treatments },
-        { data: staffData }
+        { data: treatments }
       ] = await Promise.all([
         supabase
           .from("settings")
@@ -88,9 +87,6 @@ router.get(
           .from("treatment_records")
           .select("*, staff(username), treatments(nama_rawatan)")
           .order("created_at", { ascending: false }),
-        supabase
-          .from("staff")
-          .select("username, status_pekerja"),
       ]);
       
       let commissionPercent = 50;
@@ -99,8 +95,7 @@ router.get(
          if (s.setting_key === 'peratus_komisen') commissionPercent = parseFloat(s.setting_value) || 50;
          if (s.setting_key === 'komisen_part_time') partTimeCommissionPercent = parseFloat(s.setting_value) || 50;
       });
-      const staffList = staffData || [];
-
+      
 
       let allTransactions = [];
 
@@ -203,7 +198,7 @@ router.get(
           .from("reviews")
           .select("*")
           .order("created_at", { ascending: false }),
-        supabase.from("staff").select("username, jenis_staf, branch_id"),
+        supabase.from("staff").select("username, jenis_staf, branch_id, status_pekerja"),
         supabase.from("branches").select("id, nama_cawangan"),
         supabase.from("staff_leaves").select("*, staff(username)").order("tarikh", { ascending: true }),
         supabase.from("products").select("nama, stok, harga"),
