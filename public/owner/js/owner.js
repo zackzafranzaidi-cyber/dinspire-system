@@ -990,7 +990,7 @@ function processData() {
 
   
     let totalComm = 0;
-    tableBookings.forEach(b => {
+    filteredBookings.forEach(b => {
       let price = parseFloat(b.Price) || 0;
       let rate = getStaffCommissionRate(b.Barber) / 100;
       totalComm += (price * rate);
