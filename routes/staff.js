@@ -140,8 +140,6 @@ router.get(
 
       (bookings || []).forEach((b) => {
         allBookings.push({
-          table_name: "booking_records",
-          id: b.id,
           order_no: b.no_booking,
           customer: { name: b.nama_pelanggan, phone: b.no_phone }, // [DIBAIKI] Ditambah phone untuk whatsapp link
           service: {
@@ -158,8 +156,6 @@ router.get(
 
       (treatments || []).forEach((t) => {
         allBookings.push({
-          table_name: "treatment_records",
-          id: t.id,
           order_no: t.no_booking,
           customer: { name: t.nama_pelanggan, phone: t.no_phone },
           service: {
@@ -176,8 +172,6 @@ router.get(
 
       (walkins || []).forEach((w) => {
         allBookings.push({
-          table_name: "walkin_records",
-          id: w.id,
           order_no:
             "#WLK-" + (w.id ? w.id.substring(0, 4).toUpperCase() : "000"),
           customer: { name: w.nama_pelanggan, phone: w.no_phone || "Tiada" },
@@ -192,8 +186,6 @@ router.get(
 
       (oncalls || []).forEach((o) => {
         allBookings.push({
-          table_name: "oncall_records",
-          id: o.id,
           order_no: o.no_booking,
           customer: { name: o.nama_pelanggan, phone: o.no_phone },
           service: { name: o.haircuts ? o.haircuts.nama_potongan : "On-Call" },
@@ -823,43 +815,6 @@ router.post("/update-seen-badge", authenticate, requireRole(["staff", "owner"]),
     } catch(err) {
         res.json({ status: "error" });
     }
-});
-
-
-// ==========================================
-// KEMUKAKAN PERMOHONAN EDIT TRANSAKSI (EDIT REQUEST)
-// ==========================================
-router.post("/request-edit", authenticate, requireRole(["staff", "owner"]), async (req, res) => {
-  try {
-    const { transaction_table, transaction_id, old_price, new_price, old_payment_method, new_payment_method, reason } = req.body;
-    
-    if (!transaction_table || !transaction_id || !new_price || !reason) {
-      return res.status(400).json({ status: "error", message: "Data tidak lengkap" });
-    }
-
-    const { error } = await supabase.from("edit_requests").insert({
-      transaction_table,
-      transaction_id,
-      staff_id: req.user.id,
-      old_price: parseFloat(old_price),
-      new_price: parseFloat(new_price),
-      old_payment_method,
-      new_payment_method,
-      reason
-    });
-
-    if (error) throw error;
-    
-    // Trigger Push Notification to Owner
-    try {
-        await notifyOwner('Permohonan Edit Transaksi 📝', `${req.user.username} memohon untuk edit harga ke RM${new_price}. Sila semak.`, '/owner/index.html');
-    } catch(e) { console.error(e); }
-
-    res.json({ status: "success", message: "Permohonan berjaya dihantar kepada Owner" });
-  } catch (error) {
-    console.error("Edit Request Error:", error);
-    res.status(500).json({ status: "error", message: "Gagal menghantar permohonan" });
-  }
 });
 
 module.exports = router;
