@@ -671,9 +671,12 @@ function renderHistoryList() {
       let method = b.payment_method;
       
       let editBtn = "";
-      if (b.status === "Rejected") {
-          editBtn = `<button class="btn btn-primary" style="margin-top:10px; width:100%; font-size:12px;" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-edit mr-2"></i> Undo Reject</button>`;
-      }
+        if (b.status === "Rejected") {
+            editBtn = `<button class="btn btn-primary" style="margin-top:10px; width:100%; font-size:12px;" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-edit mr-2"></i> Undo Reject</button>`;
+        } else if (b.status === "Selesai") {
+            let tableStr = b.table_name || "booking_records";
+            editBtn = `<button class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; background:white; color:#333; border:1px solid #ccc; display:block;" onclick="openRequestEditModal('${b.id || b.order_no}', '${tableStr}', ${b.final_price || b.price}, '${method}')"><i class="fas fa-pen mr-2"></i> Edit Rekod</button>`;
+        }
       
       let phone = b.customer && b.customer.phone ? String(b.customer.phone).trim() : (b.customers && b.customers.phone ? String(b.customers.phone).trim() : "");
       let callLink = "";
@@ -1414,3 +1417,55 @@ if ('serviceWorker' in navigator) {
   });
 }
 /* END OF FILE */
+
+// ==========================================
+// REQUEST EDIT FUNCTIONS
+// ==========================================
+function openRequestEditModal(id, table, oldPrice, oldPaymentMethod) {
+    document.getElementById('edit_transaction_id').value = id;
+    document.getElementById('edit_transaction_table').value = table;
+    document.getElementById('edit_new_price').value = oldPrice;
+    document.getElementById('edit_new_payment_method').value = oldPaymentMethod || "CASH";
+    document.getElementById('requestEditModal').style.display = "flex";
+}
+
+function closeRequestEditModal() {
+    document.getElementById('requestEditModal').style.display = "none";
+}
+
+async function submitEditRequest() {
+    const transaction_id = document.getElementById('edit_transaction_id').value;
+    const transaction_table = document.getElementById('edit_transaction_table').value;
+    const new_price = document.getElementById('edit_new_price').value;
+    const new_payment_method = document.getElementById('edit_new_payment_method').value;
+    const reason = document.getElementById('edit_reason').value;
+    
+    if (!new_price) return alert("Sila masukkan harga baru");
+    
+    try {
+        const res = await fetch('/api/staff/request-edit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem("din_token_sys")
+            },
+            body: JSON.stringify({
+                transaction_id,
+                transaction_table,
+                new_price,
+                new_payment_method,
+                reason
+            })
+        });
+        const data = await res.json();
+        
+        if (data.status === "success") {
+            alert("Permohonan Edit telah dihantar kepada Owner!");
+            closeRequestEditModal();
+        } else {
+            alert(data.message || "Gagal menghantar permohonan");
+        }
+    } catch(err) {
+        alert("Ralat sistem. Sila cuba sebentar lagi.");
+    }
+}
