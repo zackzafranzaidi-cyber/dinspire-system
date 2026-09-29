@@ -561,7 +561,7 @@ router.put(
     id = String(id || "");
     const { field, value } = req.body;
     
-    if (field !== "can_haircut" && field !== "can_treatment") {
+    if (field !== "can_haircut" && field !== "can_treatment" && field !== "is_active") {
        return res.status(400).json({ status: "error", message: "Field tidak sah." });
     }
 
