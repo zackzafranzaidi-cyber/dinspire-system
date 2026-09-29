@@ -35,7 +35,7 @@ router.get("/", async (req, res) => {
         supabase.from("haircuts").select("*").limit(200),
         supabase.from("treatments").select("*").limit(200),
         supabase.from("branches").select("*").limit(50),
-        supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment").limit(100),
+        supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment").neq("is_active", false).limit(100),
         supabase.from("products").select("*").limit(200),
         // [DIBAIKI] Ketirisan Rahsia Syarikat: Jangan fetch peratus_komisen
         supabase.from("settings").select("setting_key, setting_value").in("setting_key", ["posters", "shipping_fee", "service_fee"]).limit(50),
