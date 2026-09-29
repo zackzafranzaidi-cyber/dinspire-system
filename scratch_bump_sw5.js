@@ -1,0 +1,16 @@
+﻿const fs = require('fs');
+
+function bumpSw(file) {
+  if (fs.existsSync(file)) {
+    let content = fs.readFileSync(file, 'utf8');
+    content = content.replace(/CACHE_NAME\s*=\s*['"]dinspire-pwa-v(\d+)['"]/g, (match, p1) => {
+      const nextVersion = parseInt(p1, 10) + 1;
+      return `CACHE_NAME = 'dinspire-pwa-v${nextVersion}'`;
+    });
+    fs.writeFileSync(file, content);
+    console.log('Bumped', file);
+  }
+}
+
+bumpSw('public/staff/sw.js');
+bumpSw('public/owner/sw.js');
