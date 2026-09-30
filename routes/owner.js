@@ -882,10 +882,15 @@ router.post("/resolve-edit-request", authenticate, requireRole(["owner"]), async
           updatePayload.jenis_bayaran = request.new_payment_method;
         }
 
-      const { error: updateErr } = await supabase
+      let pkColumn = "id";
+        if (request.transaction_table === "booking_records" || request.transaction_table === "oncall_records") {
+            pkColumn = "no_booking";
+        }
+        
+        const { error: updateErr } = await supabase
           .from(request.transaction_table)
           .update(updatePayload)
-          .eq("id", request.transaction_id);
+          .eq(pkColumn, request.transaction_id);
         
       if (updateErr) throw updateErr;
       
