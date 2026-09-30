@@ -231,6 +231,7 @@ router.get(
           punchCard: punchCards || [],
           staffLeaves: staffLeaves || [],
           orders: productOrders || [],
+          editRequests: editRequests || [],
           reviews: reviews || [],
           commissionPercent: commissionPercent,
           partTimeCommissionPercent: partTimeCommissionPercent,

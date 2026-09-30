@@ -3612,7 +3612,7 @@ window.setBranchMetric = function(metric) {
 async function fetchEditRequests() {
     try {
         const res = await fetch(`${API_BASE_URL}/owner/edit-requests`, {
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem("din_token_sys") }
+            credentials: 'include'
         });
         const result = await res.json();
         const tbody = document.getElementById("editRequestsTableBody");
@@ -3646,16 +3646,14 @@ async function fetchEditRequests() {
     }
 }
 
-async function resolveEditRequest(request_id, action) {
+window.resolveEdit = async function(request_id, action) {
     if (!confirm(`Anda pasti mahu ${action === 'Approve' ? 'MELULUSKAN' : 'MENOLAK'} permohonan edit ini?`)) return;
     
     try {
         const res = await fetch(`${API_BASE_URL}/owner/resolve-edit-request`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem("din_token_sys") 
-            },
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ request_id, action })
         });
         const data = await res.json();
