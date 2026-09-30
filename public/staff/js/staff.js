@@ -431,8 +431,8 @@ async function loadBranchOptions() {
     
     // Reset service & price
     srvSel.innerHTML = '<option value="" disabled selected>Pilih Jenis Servis</option>';
-    priceInput.value = "";
-    priceInput.readOnly = false;
+      priceInput.value = "";
+      priceInput.readOnly = true;
     
     if (!catSel) {
       srvGroup.style.display = "none";
@@ -456,17 +456,16 @@ async function loadBranchOptions() {
   const sel = document.getElementById("wi-service");
   const opt = sel.options[sel.selectedIndex];
   const priceInput = document.getElementById("wi-price");
-  if (opt && opt.dataset.price) {
-    priceInput.value = opt.dataset.price;
-    priceInput.readOnly = true;
-    priceInput.style.backgroundColor = "#f3f4f6";
-    priceInput.style.color = "var(--text-muted)";
-  } else {
-    priceInput.value = "";
-    priceInput.readOnly = false;
-    priceInput.style.backgroundColor = "#ffffff";
-    priceInput.style.color = "#111827";
-  }
+  if (!opt || !opt.value) {
+      priceInput.value = "";
+      priceInput.readOnly = true;
+    } else if (opt.dataset.price) {
+      priceInput.value = opt.dataset.price;
+      priceInput.readOnly = true;
+    } else {
+      priceInput.value = "";
+      priceInput.readOnly = false;
+    }
 }
 function toggleReceiptUpload() {
   const method = document.getElementById("wi-payment").value;
