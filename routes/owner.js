@@ -879,8 +879,11 @@ router.post("/resolve-edit-request", authenticate, requireRole(["owner"]), async
       // 2. Update the original transaction table
       let updatePayload = { harga_rm: request.new_price };
       if (request.new_payment_method && request.transaction_table === 'walkin_records') {
-          updatePayload.jenis_bayaran = request.new_payment_method;
-        }
+            let pm = request.new_payment_method;
+            if (pm.toUpperCase() === 'CASH') pm = 'Cash';
+            if (pm.toUpperCase() === 'QR' || pm.includes('QR')) pm = 'QR';
+            updatePayload.jenis_bayaran = pm;
+          }
 
       let pkColumn = "id";
         if (request.transaction_table === "booking_records" || request.transaction_table === "oncall_records") {
@@ -904,7 +907,7 @@ router.post("/resolve-edit-request", authenticate, requireRole(["owner"]), async
     res.json({ status: "success", message: "Berjaya dikemaskini" });
   } catch (error) {
     console.error("Resolve Edit Request Error:", error);
-    res.status(500).json({ status: "error", message: "Gagal menyelesaikan permohonan" });
+    res.status(500).json({ status: "error", message: "Gagal menyelesaikan permohonan: " + (error.message || JSON.stringify(error)) });
   }
 });
 
