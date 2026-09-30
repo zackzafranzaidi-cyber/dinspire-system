@@ -1443,7 +1443,7 @@ async function submitEditRequest() {
     if (!new_price) return alert("Sila masukkan harga baru");
     
     try {
-        const res = await fetch('/api/staff/request-edit', {
+        const res = await fetch(`${API_BASE_URL}/staff/request-edit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
