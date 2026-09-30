@@ -3647,25 +3647,38 @@ async function fetchEditRequests() {
 }
 
 window.resolveEdit = async function(request_id, action) {
-    if (!confirm(`Anda pasti mahu ${action === 'Approve' ? 'MELULUSKAN' : 'MENOLAK'} permohonan edit ini?`)) return;
-    
-    try {
-        const res = await fetch(`${API_BASE_URL}/owner/resolve-edit-request`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ request_id, action })
-        });
-        const data = await res.json();
-        alert(data.message);
-        
-        // Refresh 
-        fetchEditRequests();
-        if(action === 'Approve') {
-            loadDashboardData();
-    fetchEditRequests();
-        }
-    } catch(err) {
-        alert("Ralat memproses permohonan.");
-    }
-}
+      if (!confirm(`Anda pasti mahu ${action === 'Approve' ? 'MELULUSKAN' : 'MENOLAK'} permohonan edit ini?`)) return;
+      
+      try {
+          const res = await fetch(`${API_BASE_URL}/owner/resolve-edit-request`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ request_id, action })
+          });
+          const data = await res.json();
+          
+          // [DIBAIKI] Buang dari UI terus supaya tak keliru / tak tertekan dua kali
+          if (data.status === 'success' || data.message === 'Permohonan telah diselesaikan.') {
+              let idx = masterData.editRequests.findIndex(r => r.id === request_id);
+              if (idx > -1) {
+                  masterData.editRequests.splice(idx, 1);
+                  processData(); // Render semula tab
+              }
+          }
+          
+          // Refresh background data secara senyap
+          fetchEditRequests();
+          if(action === 'Approve') {
+              fetchOwnerDashboardData(true);
+          }
+          
+          // Delay alert sedikit supaya UI sempat refresh di background
+          setTimeout(() => {
+              alert(data.message);
+          }, 100);
+          
+      } catch(err) {
+          alert("Ralat memproses permohonan.");
+      }
+  }
