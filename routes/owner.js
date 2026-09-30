@@ -878,7 +878,7 @@ router.post("/resolve-edit-request", authenticate, requireRole(["owner"]), async
     if (action === "Approve") {
       // 2. Update the original transaction table
       let updatePayload = { harga_rm: request.new_price };
-      if (request.new_payment_method) {
+      if (request.new_payment_method && request.transaction_table === 'walkin_records') {
           updatePayload.jenis_bayaran = request.new_payment_method;
         }
 
