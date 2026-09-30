@@ -150,7 +150,8 @@ async function loginStaffSystem() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ username, password, allowed_roles: ["staff"], remember }),
+      credentials: 'include',
+            body: JSON.stringify({ username, password, allowed_roles: ["staff"], remember }),
     });
     const data = await res.json();
 
@@ -1446,9 +1447,9 @@ async function submitEditRequest() {
         const res = await fetch(`${API_BASE_URL}/staff/request-edit`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem("din_token_sys")
+                'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({
                 transaction_id,
                 transaction_table,
