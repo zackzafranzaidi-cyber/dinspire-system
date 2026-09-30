@@ -89,9 +89,8 @@ function initStaffEventListeners() {
     .getElementById("login-btn")
     ?.addEventListener("click", loginStaffSystem);
   document.getElementById("btn-logout")?.addEventListener("click", logoutStaff);
-  document
-    .getElementById("wi-service")
-    ?.addEventListener("change", autoFillPrice);
+  document.getElementById("wi-category")?.addEventListener("change", handleCategoryChange);
+    document.getElementById("wi-service")?.addEventListener("change", autoFillPrice);
   document
     .getElementById("wi-payment")
     ?.addEventListener("change", toggleReceiptUpload);
