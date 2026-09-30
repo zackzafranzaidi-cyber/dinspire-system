@@ -398,19 +398,8 @@ async function fetchServicesForWalkin() {
     const res = await fetch(`${API_BASE_URL}/shop-data`);
     const data = await res.json();
     let allServices = [];
-    if (data.WalkInServices) allServices = allServices.concat(data.WalkInServices);
-    shopSettings.walkin = allServices;
-
-    const wiSel = document.getElementById("wi-service");
-    wiSel.innerHTML =
-      `<option value="" disabled selected>Pilih Jenis Potongan / Servis</option>` +
-      shopSettings.walkin
-        .map((s) => {
-          const p = (s.price == 0) ? "" : s.price;
-          return `<option value="${s.id}" data-price="${p}">${escapeHTML(s.name)}</option>`;
-        })
-        .join("");
-  } catch (err) {}
+    if (data.WalkInAll) shopSettings.walkin = data.WalkInAll;
+    } catch (err) {}
 }
 
 async function loadBranchOptions() {
@@ -433,7 +422,38 @@ async function loadBranchOptions() {
   }
 }
 
-function autoFillPrice() {
+
+  function handleCategoryChange() {
+    const catSel = document.getElementById("wi-category").value;
+    const srvGroup = document.getElementById("wi-service-group");
+    const srvLabel = document.getElementById("wi-service-label");
+    const srvSel = document.getElementById("wi-service");
+    const priceInput = document.getElementById("wi-price");
+    
+    // Reset service & price
+    srvSel.innerHTML = '<option value="" disabled selected>Pilih Jenis Servis</option>';
+    priceInput.value = "";
+    priceInput.readOnly = false;
+    
+    if (!catSel) {
+      srvGroup.style.display = "none";
+      return;
+    }
+    
+    srvGroup.style.display = "block";
+    if (catSel === "Walk-in") srvLabel.textContent = "Jenis Potongan (Haircut)";
+    else if (catSel === "Treatment Walk-in") srvLabel.textContent = "Jenis Rawatan (Treatment)";
+    else srvLabel.textContent = "Jenis Kombo";
+    
+    const filtered = (shopSettings.walkin || []).filter(s => s.kategori === catSel || (!s.kategori && catSel === "Walk-in"));
+    
+    srvSel.innerHTML += filtered.map(s => {
+      const p = (s.price == 0) ? "" : s.price;
+      return `<option value="${s.id}" data-price="${p}">${escapeHTML(s.name)}</option>`;
+    }).join("");
+  }
+
+  function autoFillPrice() {
   const sel = document.getElementById("wi-service");
   const opt = sel.options[sel.selectedIndex];
   const priceInput = document.getElementById("wi-price");
@@ -858,11 +878,12 @@ function cancelBooking(orderNo) {
 function submitWalkIn() {
   const form = document.getElementById("walkin-form");
   const phone = document.getElementById("wi-phone").value.trim();
-  const serviceId = document.getElementById("wi-service").value;
+  const category = document.getElementById("wi-category").value;
+    const serviceId = document.getElementById("wi-service").value;
   const paymentMethod = document.getElementById("wi-payment").value;
   const fileInput = document.getElementById("wi-receipt").files[0];
 
-  if (!phone || !serviceId || !paymentMethod) {
+  if (!phone || !category || !serviceId || !paymentMethod) {
     return alert("Sila lengkapkan semua maklumat Walk-In.");
   }
   if (!phone.startsWith("01") || phone.length < 10) {
@@ -896,7 +917,9 @@ function submitWalkIn() {
         showToast(msg);
         document.getElementById("wi-name").value = "";
         document.getElementById("wi-phone").value = "";
-        document.getElementById("wi-service").value = "";
+        document.getElementById("wi-category").value = "";
+          document.getElementById("wi-service").value = "";
+          document.getElementById("wi-service-group").style.display = "none";
         document.getElementById("wi-price").value = "";
         document.getElementById("wi-receipt").value = "";
         document.getElementById("wi-receipt-group").style.display = "none";

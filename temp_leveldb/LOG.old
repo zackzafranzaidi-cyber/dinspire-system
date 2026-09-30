@@ -1,0 +1,16 @@
+2026/09/28-22:24:26.750 22fc Reusing MANIFEST C:\Users\USER\AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb/MANIFEST-000001
+2026/09/28-22:24:26.755 22fc Recovering log #10759
+2026/09/28-22:24:26.760 22fc Level-0 table #10762: started
+2026/09/28-22:24:26.773 22fc Level-0 table #10762: 141760 bytes OK
+2026/09/28-22:24:26.782 22fc Delete type=0 #10759
+2026/09/28-22:24:26.783 4760 Compacting 4@0 + 2@1 files
+2026/09/28-22:24:26.828 4760 Generated table #10764@0: 4893 keys, 2224069 bytes
+2026/09/28-22:24:26.857 4760 Generated table #10765@0: 2132 keys, 1200413 bytes
+2026/09/28-22:24:26.857 4760 Compacted 4@0 + 2@1 files => 3424482 bytes
+2026/09/28-22:24:26.858 4760 compacted to: files[ 0 2 1 0 0 0 0 ]
+2026/09/28-22:24:26.859 4760 Delete type=2 #10753
+2026/09/28-22:24:26.859 4760 Delete type=2 #10754
+2026/09/28-22:24:26.860 4760 Delete type=2 #10756
+2026/09/28-22:24:26.860 4760 Delete type=2 #10758
+2026/09/28-22:24:26.860 4760 Delete type=2 #10760
+2026/09/28-22:24:26.860 4760 Delete type=2 #10762

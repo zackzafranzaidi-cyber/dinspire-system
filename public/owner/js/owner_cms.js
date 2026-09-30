@@ -10,8 +10,7 @@ const SCHEMAS = {
   Branches: ["id", "name", "location", "imageUrl", "lat", "lng"],
   Staff: ["id", "name", "jenis_staf", "status_pekerja", "branch_id", "kemahiran"],
   OnCall: ["id", "name", "price"],
-  WalkInServices: ["id", "name", "price"],
-  WalkInTreatments: ["id", "name", "price"],
+  WalkInAll: ["id", "name", "price", "kategori"],
   Products: ["id", "name", "price", "imageUrl", "stok"],
   Posters: ["id", "imageUrl"],
 };
@@ -86,8 +85,7 @@ function switchAdminTab(tabName, el) {
     Branches: "Branches",
     Staff: "Kesemua Staf & Pekerja",
     OnCall: "On-Call Services",
-    WalkInServices: "Walk-In Haircuts",
-    WalkInTreatments: "Walk-In Treatments",
+    WalkInAll: "Senarai Servis Walk-In",
     Products: "Products",
     Posters: "Promotions (Posters)",
     Settings: "System Settings & Fees",
@@ -298,7 +296,10 @@ function renderTable(tabName) {
         </td>`;
       } else if (c === "desc") {
         html += `<td class="px-6 py-3 w-1/3"><input type="text" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-semibold text-gray-700 shadow-sm placeholder-gray-400"></td>`;
-      } else {
+      } else if (c === "kategori" && tabName === "WalkInAll") {
+          let opts = ["Walk-in", "Treatment Walk-in", "Combo Walk-in"].map(j => `<option value="${j}" ${row[c] === j || (j === 'Walk-in' && !row[c]) ? "selected" : ""}>${j === 'Walk-in' ? 'Potongan (Haircut)' : (j === 'Treatment Walk-in' ? 'Rawatan (Treatment)' : 'Pakej Kombo')}</option>`).join("");
+          html += `<td class="px-6 py-3"><select onchange="updateData('${tabName}', ${index}, '${c}', this.value)" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-semibold text-gray-700 shadow-sm">${opts}</select></td>`;
+        } else {
         html += `<td class="px-6 py-3 min-w-[150px]"><input type="${c==='price'||c==='stok'?'number':'text'}" value="${escapeHTML(row[c] || "")}" onchange="updateData('${tabName}', ${index}, '${c}', this.value)" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-bold shadow-sm placeholder-gray-400 ${c==='price'?'text-indigo-600':'text-gray-700'}"></td>`;
       }
     });

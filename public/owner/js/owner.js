@@ -752,7 +752,7 @@ async function fetchOwnerDashboardData(silent = false) {
   if (!silent) showGlobalLoader();
 
   // [DIBAIKI] Caching Tempatan (Optimistic Load) untuk PWA
-  const cachedData = localStorage.getItem("din_owner_dashboard");
+  const cachedData = localStorage.getItem("din_owner_dashboard_v2");
   if (cachedData && !silent) {
       try {
           const data = JSON.parse(cachedData);
@@ -798,7 +798,7 @@ async function fetchOwnerDashboardData(silent = false) {
 
     if (data.status === "success") {
             // [DIBAIKI] Caching Tempatan (Optimistic Load) untuk PWA
-      localStorage.setItem("din_owner_dashboard", JSON.stringify(data)); // Simpan ke cache tempatan
+      localStorage.setItem("din_owner_dashboard_v2", JSON.stringify(data)); // Simpan ke cache tempatan
       masterData = data.masterData;
       mapBarberBranch = data.mapBarberBranch || {};
       if (!masterData.orders) masterData.orders = [];
