@@ -394,7 +394,7 @@ function switchView(id) {
 
 async function fetchServicesForWalkin() {
   try {
-    const res = await fetch(`${API_BASE_URL}/shop-data`);
+    const res = await fetch(`${API_BASE_URL}/shop-data?v=walkin_all_fix`);
     const data = await res.json();
     let allServices = [];
     if (data.WalkInAll) shopSettings.walkin = data.WalkInAll;
@@ -403,7 +403,7 @@ async function fetchServicesForWalkin() {
 
 async function loadBranchOptions() {
   try {
-    const res = await fetch(`${API_BASE_URL}/shop-data`);
+    const res = await fetch(`${API_BASE_URL}/shop-data?v=walkin_all_fix`);
     const data = await res.json();
     const select = document.getElementById("punch-branch");
     if (!select) return; // Fix for page without punch-branch dropdown
