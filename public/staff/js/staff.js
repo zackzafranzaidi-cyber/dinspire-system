@@ -675,7 +675,7 @@ function renderHistoryList() {
             editBtn = `<button class="btn btn-primary" style="margin-top:10px; width:100%; font-size:12px;" onclick="verifyPayment('${escapeHTML(b.order_no)}', 'approve')"><i class="fas fa-edit mr-2"></i> Undo Reject</button>`;
         } else if (b.status === "Selesai") {
             let tableStr = b.table_name || "booking_records";
-            editBtn = `<button class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; background:white; color:#333; border:1px solid #ccc; display:block;" onclick="openRequestEditModal('${b.id || b.order_no}', '${tableStr}', ${b.final_price || b.price}, '${method}')"><i class="fas fa-pen mr-2"></i> Edit Rekod</button>`;
+            editBtn = `<button class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; background:white; color:#333; border:1px solid #ccc; display:block;" onclick="openRequestEditModal('${b.id || b.order_no}', '${tableStr}', ${b.final_price || b.price || 0}, '${method}')"><i class="fas fa-pen mr-2"></i> Edit Rekod</button>`;
         }
       
       let phone = b.customer && b.customer.phone ? String(b.customer.phone).trim() : (b.customers && b.customers.phone ? String(b.customers.phone).trim() : "");
@@ -700,7 +700,7 @@ function renderHistoryList() {
       } else if (b.status === "Selesai") {
           statusBadge = `<span class="badge" style="background:var(--success); color:white; margin-left: 5px;">SELESAI</span>`;
       }
-      return `<div class="list-card" style="opacity: 0.85;"><div class="list-header"><span class="cust-name">${customerName}</span><div><span class="badge ${badgeClass}">${method}</span>${statusBadge}</div></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh Selesai:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <br><strong>Kutipan:</strong> RM ${b.final_price || b.price}${editBtn}</div>${contactBtns}</div>`;
+      return `<div class="list-card" style="opacity: 0.85;"><div class="list-header"><span class="cust-name">${customerName}</span><div><span class="badge ${badgeClass}">${method}</span>${statusBadge}</div></div><div class="list-detail"><strong>Servis:</strong> ${serviceName} <br><strong>Tarikh Selesai:</strong> ${new Date(b.booking_date).toLocaleDateString("ms-MY")} <br><strong>Kutipan:</strong> RM ${b.final_price || b.price || 0}${editBtn}</div>${contactBtns}</div>`;
     })
     .join("");
 }

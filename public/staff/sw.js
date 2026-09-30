@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dinspire-pwa-staff-v9';
+const CACHE_NAME = 'dinspire-pwa-staff-v10';
 const urlsToCache = [
   './',
   './index.html',
