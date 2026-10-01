@@ -121,20 +121,23 @@ router.get("/", async (req, res) => {
     let custData = [];
 
     if (bookingIds.length > 0) {
-      // 3. HANYA tarik rekod tempahan yang berkaitan dengan ulasan (Bukan tarik semua)
       const { data: bData } = await supabase
         .from("booking_records")
         .select("no_booking, nama_pelanggan, no_phone, haircuts(nama_potongan), staff(branches(nama_cawangan))")
         .in("no_booking", bookingIds);
-      bookData = bData || [];
+        
+      const { data: tData } = await supabase
+        .from("treatment_records")
+        .select("no_booking, nama_pelanggan, no_phone, treatments(nama_rawatan), staff(branches(nama_cawangan))")
+        .in("no_booking", bookingIds);
 
-      // 4. Ekstrak nombor telefon untuk cari avatar pelanggan
+      bookData = [...(bData || []), ...(tData || [])];
+
       const phoneNumbers = bookData
         .map((b) => b.no_phone)
         .filter((phone) => phone && phone !== "-");
 
       if (phoneNumbers.length > 0) {
-        // HANYA tarik data pelanggan yang berkaitan
         const { data: cData } = await supabase
           .from("customers")
           .select("name, phone, avatar_url")
@@ -143,7 +146,6 @@ router.get("/", async (req, res) => {
       }
     }
 
-    // Format ulasan untuk dipaparkan di frontend
     let formattedReviews = (revData || []).map((r) => {
       let b = bookData.find((x) => x.no_booking === r.no_booking);
       let cust = null;
@@ -160,7 +162,7 @@ router.get("/", async (req, res) => {
 
       return {
         name: b ? b.nama_pelanggan : "Pelanggan",
-        service: b && b.haircuts ? b.haircuts.nama_potongan : "Servis Dinspire",
+        service: b && b.haircuts ? b.haircuts.nama_potongan : (b && b.treatments ? b.treatments.nama_rawatan : "Servis Dinspire"),
         stars: r.bintang,
         text: r.review_text,
         avatar: cust && cust.avatar_url ? cust.avatar_url : "./Profile/1.png",
