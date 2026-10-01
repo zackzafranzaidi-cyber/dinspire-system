@@ -218,7 +218,7 @@ router.get(
             branch_id: s.branch_id,
             can_haircut: s.can_haircut !== false, // Fallback true if null/undefined
             can_treatment: s.can_treatment !== false,
-          , status_pekerja: (staffStatuses && staffStatuses[s.id]) || "full_time"})),
+              status_pekerja: (staffStatuses && staffStatuses[s.id]) || "full_time"})),
           Products: (prData || []).map((p) => ({
             id: p.id,
             name: p.nama,
