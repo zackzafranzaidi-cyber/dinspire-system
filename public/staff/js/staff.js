@@ -534,12 +534,14 @@ async function loadDashboardData() {
       try {
          const data = JSON.parse(cachedData);
          staffData.bookings = Array.isArray(data) ? data : data.bookings || [];
+        staffData.status_pekerja = data.status_pekerja;
          staffData.reviews = data.reviews || [];
          staffData.commissionPercent = data.commissionPercent || 50;
          staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
          staffData.monthlySales = data.monthlySales || 0;
          staffData.monthlyCustomers = data.monthlyCustomers || 0;
          staffData.isPunchedIn = data.isPunchedIn || false;
+           staffData.status_pekerja = data.status_pekerja;
          calculateDashboardStats();
          renderBookingList();
          renderHistoryList();
@@ -562,12 +564,14 @@ async function loadDashboardData() {
     if (res.ok) {
       localStorage.setItem("din_staff_dashboard", JSON.stringify(data)); // Simpan data terkini ke dalam cache
       staffData.bookings = Array.isArray(data) ? data : data.bookings || [];
+        staffData.status_pekerja = data.status_pekerja;
       staffData.reviews = data.reviews || [];
       staffData.commissionPercent = data.commissionPercent || 50;
       staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
       staffData.monthlySales = data.monthlySales || 0;
       staffData.monthlyCustomers = data.monthlyCustomers || 0;
       staffData.isPunchedIn = data.isPunchedIn || false;
+           staffData.status_pekerja = data.status_pekerja;
       
       if (loggedInStaff.is_general) {
          document.getElementById("general-staff-branch-container").style.display = "block";
