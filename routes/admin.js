@@ -161,25 +161,21 @@ router.get(
 
       let posters = [];
       let settings = { shipping_fee: 0, service_fee: 0, peratus_komisen: 50, gaji_asas: 1800 };
-      let staffStatuses = {};
-
       (setAll || []).forEach((s) => {
-        if (s.setting_key === "posters") {
-          try {
-            posters = JSON.parse(s.setting_value);
-          } catch (e) {}
-        } else if (s.setting_key === "shipping_fee") {
-          settings.shipping_fee = parseFloat(s.setting_value) || 0;
-        } else if (s.setting_key === "service_fee") {
-          settings.service_fee = parseFloat(s.setting_value) || 0;
-        } else if (s.setting_key === "peratus_komisen") {
-          settings.peratus_komisen = parseFloat(s.setting_value) || 50;
-        } else if (s.setting_key === "gaji_asas") {
-          settings.gaji_asas = parseFloat(s.setting_value) || 1800;
-        } else if (s.setting_key === "staff_status") {
-          try { staffStatuses = JSON.parse(s.setting_value); } catch(e) {}
-        }
-      });
+          if (s.setting_key === "posters") {
+            try {
+              posters = JSON.parse(s.setting_value);
+            } catch (e) {}
+          } else if (s.setting_key === "shipping_fee") {
+            settings.shipping_fee = parseFloat(s.setting_value) || 0;
+          } else if (s.setting_key === "service_fee") {
+            settings.service_fee = parseFloat(s.setting_value) || 0;
+          } else if (s.setting_key === "peratus_komisen") {
+            settings.peratus_komisen = parseFloat(s.setting_value) || 50;
+          } else if (s.setting_key === "gaji_asas") {
+            settings.gaji_asas = parseFloat(s.setting_value) || 1800;
+          }
+        });
 
       const result = {
         status: "success",
@@ -218,7 +214,8 @@ router.get(
             branch_id: s.branch_id,
             can_haircut: s.can_haircut !== false, // Fallback true if null/undefined
             can_treatment: s.can_treatment !== false,
-              status_pekerja: (staffStatuses && staffStatuses[s.id]) || "full_time"})),
+              status_pekerja: s.status_pekerja || "full_time"
+            })),
           Products: (prData || []).map((p) => ({
             id: p.id,
             name: p.nama,
@@ -396,23 +393,18 @@ router.post(
         }));
       }
       await syncData(
-        "staff",
-        data.Staff || [],
-        (i) => ({
-            id: i.id,
-            username: i.name,
-            jenis_staf: i.jenis_staf || "In-Branch",
-            branch_id: i.branch_id || null,
-            can_haircut: i.can_haircut !== false,
-            can_treatment: i.can_treatment !== false,
-          }),
-      );
-        const staffStatuses = {};
-        (data.Staff || []).forEach(s => {
-             if (s.id && s.id.length > 5) staffStatuses[s.id] = s.status_pekerja || "full_time";
-        });
-        
-        await supabase.from("settings").upsert([{ setting_key: "staff_status", setting_value: JSON.stringify(staffStatuses) }], { onConflict: "setting_key" });
+          "staff",
+          data.Staff || [],
+          (i) => ({
+              id: i.id,
+              username: i.name,
+              jenis_staf: i.jenis_staf || "In-Branch",
+              status_pekerja: i.status_pekerja || "full_time",
+              branch_id: i.branch_id || null,
+              can_haircut: i.can_haircut !== false,
+              can_treatment: i.can_treatment !== false,
+            }),
+        );
 
 
       // ==========================================

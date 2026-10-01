@@ -201,11 +201,9 @@ router.get("/", async (req, res) => {
         lat: b.lat,
         lng: b.lng
       })),
-      Barbers: (stData || [])
-        .filter((s) => s.jenis_staf === "In-Branch")
+      Barbers: (stData || []).filter((s) => s.jenis_staf === "In-Branch" && !String(s.username).toUpperCase().includes("(BERHENTI)"))
         .map((s) => ({ id: s.id, name: s.username, branch_id: s.branch_id, can_haircut: s.can_haircut !== false, can_treatment: s.can_treatment !== false })),
-      OnCallBarbers: (stData || [])
-        .filter((s) => s.jenis_staf === "On-Call")
+      OnCallBarbers: (stData || []).filter((s) => s.jenis_staf === "On-Call" && !String(s.username).toUpperCase().includes("(BERHENTI)"))
         .map((s) => ({ id: s.id, name: s.username })),
       Products: (prData || []).map((p) => ({
         id: p.id,
