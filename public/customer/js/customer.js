@@ -2232,6 +2232,15 @@ function hideGlobalLoader() {
       .querySelectorAll(".view-section")
       .forEach((s) => s.classList.remove("active"));
     document.getElementById("view-" + id)?.classList.add("active");
+      
+      const bottomNav = document.querySelector(".bottom-nav");
+      if (bottomNav) {
+          if (id === "edit-profile") {
+              bottomNav.style.display = "none";
+          } else {
+              bottomNav.style.display = "flex";
+          }
+      }
     if (id === "edit-profile") {
       if (!currentUser) {
         hideGlobalLoader();

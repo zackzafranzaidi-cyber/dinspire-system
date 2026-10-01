@@ -123,12 +123,12 @@ router.get("/", async (req, res) => {
     if (bookingIds.length > 0) {
       const { data: bData } = await supabase
         .from("booking_records")
-        .select("no_booking, nama_pelanggan, no_phone, haircuts(nama_potongan), staff(branches(nama_cawangan))")
+        .select("no_booking, nama_pelanggan, no_phone, haircuts(nama_potongan), staff(branch_id)")
         .in("no_booking", bookingIds);
         
       const { data: tData } = await supabase
         .from("treatment_records")
-        .select("no_booking, nama_pelanggan, no_phone, treatments(nama_rawatan), staff(branches(nama_cawangan))")
+        .select("no_booking, nama_pelanggan, no_phone, treatments(nama_rawatan), staff(branch_id)")
         .in("no_booking", bookingIds);
 
       bookData = [...(bData || []), ...(tData || [])];
@@ -156,8 +156,9 @@ router.get("/", async (req, res) => {
       }
       
       let branchName = "Cawangan Dinspire";
-      if (b && b.staff && b.staff.branches && b.staff.branches.nama_cawangan) {
-          branchName = b.staff.branches.nama_cawangan;
+      if (b && b.staff && b.staff.branch_id) {
+          let matchedBranch = (brData || []).find(br => br.id === b.staff.branch_id);
+          if (matchedBranch) branchName = matchedBranch.nama_cawangan;
       }
 
       return {
