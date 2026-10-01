@@ -91,6 +91,8 @@ function initStaffEventListeners() {
   document.getElementById("btn-logout")?.addEventListener("click", logoutStaff);
   document.getElementById("wi-category")?.addEventListener("change", handleCategoryChange);
     document.getElementById("wi-service")?.addEventListener("change", autoFillPrice);
+    document.getElementById("edit_category")?.addEventListener("change", handleEditCategoryChange);
+    document.getElementById("edit_service")?.addEventListener("change", autoFillEditPrice);
   document
     .getElementById("wi-payment")
     ?.addEventListener("change", toggleReceiptUpload);
@@ -450,6 +452,52 @@ async function loadBranchOptions() {
       const p = (s.price == 0) ? "" : s.price;
       return `<option value="${s.id}" data-price="${p}">${escapeHTML(s.name)}</option>`;
     }).join("");
+  }
+
+  
+  function handleEditCategoryChange() {
+    const catSel = document.getElementById("edit_category").value;
+    const srvGroup = document.getElementById("edit_service_group");
+    const srvLabel = document.getElementById("edit_service_label");
+    const srvSel = document.getElementById("edit_service");
+    const priceInput = document.getElementById("edit_new_price");
+    
+    srvSel.innerHTML = '<option value="" disabled selected>Pilih Jenis Servis</option>';
+    priceInput.value = "";
+    priceInput.readOnly = true;
+    
+    if (!catSel) {
+      srvGroup.style.display = "none";
+      return;
+    }
+    
+    srvGroup.style.display = "block";
+    if (catSel === "Walk-in") srvLabel.textContent = "Jenis Potongan (Haircut)";
+    else if (catSel === "Treatment Walk-in") srvLabel.textContent = "Jenis Rawatan (Treatment)";
+    else srvLabel.textContent = "Jenis Kombo";
+    
+    const filtered = (shopSettings.walkin || []).filter(s => s.kategori === catSel || (!s.kategori && catSel === "Walk-in"));
+    
+    srvSel.innerHTML += filtered.map(s => {
+      const p = (s.price == 0) ? "" : s.price;
+      return `<option value="${s.id}" data-name="${escapeHTML(s.name)}" data-price="${p}">${escapeHTML(s.name)}</option>`;
+    }).join("");
+  }
+
+  function autoFillEditPrice() {
+    const sel = document.getElementById("edit_service");
+    const opt = sel.options[sel.selectedIndex];
+    const priceInput = document.getElementById("edit_new_price");
+    if (!opt || !opt.value) {
+      priceInput.value = "";
+      priceInput.readOnly = true;
+    } else if (opt.dataset.price) {
+      priceInput.value = opt.dataset.price;
+      priceInput.readOnly = true;
+    } else {
+      priceInput.value = "";
+      priceInput.readOnly = false;
+    }
   }
 
   function autoFillPrice() {

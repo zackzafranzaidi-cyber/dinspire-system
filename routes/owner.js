@@ -884,6 +884,18 @@ router.post("/resolve-edit-request", authenticate, requireRole(["owner"]), async
             if (pm.toUpperCase() === 'QR' || pm.includes('QR')) pm = 'QR';
             updatePayload.jenis_bayaran = pm;
           }
+        
+        // Parse TUKAR_SERVIS | ID: xxx dari reason
+        if (request.reason && request.reason.includes("| TUKAR_SERVIS:")) {
+           const matchId = request.reason.match(/\| ID: ([a-zA-Z0-9_-]+)/);
+           if (matchId && matchId[1]) {
+               const newSrvId = matchId[1];
+               if (request.transaction_table === 'walkin_records') updatePayload.jenis_potongan = newSrvId;
+               else if (request.transaction_table === 'booking_records') updatePayload.jenis_haircut = newSrvId;
+               else if (request.transaction_table === 'oncall_records') updatePayload.jenis_haircut = newSrvId;
+               else if (request.transaction_table === 'treatment_records') updatePayload.jenis_rawatan = newSrvId;
+           }
+        }
 
       let pkColumn = "id";
         if (request.transaction_table === "booking_records" || request.transaction_table === "oncall_records") {
