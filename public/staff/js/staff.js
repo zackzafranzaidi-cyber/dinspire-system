@@ -1495,6 +1495,11 @@ function openRequestEditModal(id, table, oldPrice, oldPaymentMethod) {
     document.getElementById('edit_transaction_id').value = id;
     document.getElementById('edit_transaction_table').value = table;
     document.getElementById('edit_new_price').value = oldPrice;
+      document.getElementById('edit_new_price').readOnly = false; // default if not using dropdown yet
+      if (document.getElementById("edit_category")) document.getElementById("edit_category").value = "";
+      if (document.getElementById("edit_service")) document.getElementById("edit_service").value = "";
+      if (document.getElementById("edit_service_group")) document.getElementById("edit_service_group").style.display = "none";
+      if (oldPrice > 0) document.getElementById('edit_new_price').readOnly = true; // force them to select service if they want to edit
     document.getElementById('edit_new_payment_method').value = oldPaymentMethod || "CASH";
     document.getElementById('requestEditModal').style.display = "flex";
 }
