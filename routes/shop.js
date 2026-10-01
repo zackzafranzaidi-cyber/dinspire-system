@@ -35,9 +35,9 @@ router.get("/", async (req, res) => {
         supabase.from("haircuts").select("*").limit(200),
         supabase.from("treatments").select("*").limit(200),
         supabase.from("branches").select("*").limit(50),
-        supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment, is_active").limit(100).then(res => {
+        supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment, is_active, status_pekerja").limit(100).then(res => {
           if (res.error && res.error.code === "42703") {
-              return supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment").limit(100);
+              return supabase.from("staff").select("id, username, jenis_staf, branch_id, can_haircut, can_treatment, status_pekerja").limit(100);
           }
           if (res.data) res.data = res.data.filter(s => s.is_active !== false);
           return res;
