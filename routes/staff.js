@@ -490,6 +490,10 @@ router.post(
 router.get("/leaves", authenticate, requireRole(["staff"]), async (req, res) => {
   const staff_id = req.user.id;
   try {
+    const today = new Date();
+    const myTime = new Date(today.getTime() + 8 * 60 * 60 * 1000);
+    const firstDay = new Date(myTime.getFullYear(), myTime.getMonth(), 1).toISOString().split('T')[0];
+
     const { data: stData } = await supabase.from("staff").select("branch_id").eq("id", staff_id).single();
     const branch_id = stData ? stData.branch_id : null;
 
@@ -501,7 +505,8 @@ router.get("/leaves", authenticate, requireRole(["staff"]), async (req, res) => 
       .from("staff_leaves")
       .select("tarikh")
       .eq("branch_id", branch_id)
-      .neq("staff_id", staff_id);
+      .neq("staff_id", staff_id)
+      .gte("tarikh", firstDay);
 
     res.json({ status: "success", leaves: leaves || [] });
   } catch (err) {
@@ -512,10 +517,15 @@ router.get("/leaves", authenticate, requireRole(["staff"]), async (req, res) => 
 
 router.get("/my-leaves", authenticate, requireRole(["staff"]), async (req, res) => {
   try {
+    const today = new Date();
+    const myTime = new Date(today.getTime() + 8 * 60 * 60 * 1000);
+    const firstDay = new Date(myTime.getFullYear(), myTime.getMonth(), 1).toISOString().split('T')[0];
+
     const { data: leaves } = await supabase
       .from("staff_leaves")
       .select("*")
       .eq("staff_id", req.user.id)
+      .gte("tarikh", firstDay)
       .order("tarikh", { ascending: true });
     res.json({ status: "success", leaves: leaves || [] });
   } catch (err) {
