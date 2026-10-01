@@ -161,6 +161,7 @@ router.get(
 
       let posters = [];
       let settings = { shipping_fee: 0, service_fee: 0, peratus_komisen: 50, gaji_asas: 1800 };
+      let staffStatuses = {};
 
       (setAll || []).forEach((s) => {
         if (s.setting_key === "posters") {
@@ -175,6 +176,8 @@ router.get(
           settings.peratus_komisen = parseFloat(s.setting_value) || 50;
         } else if (s.setting_key === "gaji_asas") {
           settings.gaji_asas = parseFloat(s.setting_value) || 1800;
+        } else if (s.setting_key === "staff_status") {
+          try { staffStatuses = JSON.parse(s.setting_value); } catch(e) {}
         }
       });
 
@@ -215,7 +218,7 @@ router.get(
             branch_id: s.branch_id,
             can_haircut: s.can_haircut !== false, // Fallback true if null/undefined
             can_treatment: s.can_treatment !== false,
-          })),
+          , status_pekerja: (staffStatuses && staffStatuses[s.id]) || "full_time"})),
           Products: (prData || []).map((p) => ({
             id: p.id,
             name: p.nama,
@@ -404,6 +407,13 @@ router.post(
             can_treatment: i.can_treatment !== false,
           }),
       );
+        const staffStatuses = {};
+        (data.Staff || []).forEach(s => {
+             if (s.id && s.id.length > 5) staffStatuses[s.id] = s.status_pekerja || "full_time";
+        });
+        
+        await supabase.from("settings").upsert([{ setting_key: "staff_status", setting_value: JSON.stringify(staffStatuses) }], { onConflict: "setting_key" });
+
 
       // ==========================================
       // [DIBAIKI] Semakan Imej Produk

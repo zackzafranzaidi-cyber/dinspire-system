@@ -56,7 +56,7 @@ router.get(
         supabase
           .from("settings")
           .select("setting_key, setting_value")
-          .in("setting_key", ["peratus_komisen", "gaji_asas", "komisen_part_time"]),
+          .in("setting_key", ["peratus_komisen", "gaji_asas", "komisen_part_time", "staff_status"]),
         supabase
           .from("booking_records")
           .select("*, haircuts(nama_potongan)")
@@ -125,7 +125,15 @@ router.get(
       let commissionPercent = 50;
       let basicSalary = 1800;
       
-      const isPartTime = staffInfo && staffInfo.status_pekerja === 'part_time';
+      let isPartTime = false;
+        (settingData || []).forEach(s => {
+          if (s.setting_key === 'staff_status') {
+             try {
+                const statuses = JSON.parse(s.setting_value);
+                if (statuses[staff_id] === 'part_time') isPartTime = true;
+             } catch(e) {}
+          }
+        });
 
       (settingData || []).forEach(s => {
         if (s.setting_key === 'peratus_komisen' && !isPartTime) commissionPercent = parseFloat(s.setting_value) || 50;
