@@ -610,7 +610,14 @@ router.post(
         }
       }
       
-      const parsedPrice = hargaSebenar;
+      
+        let finalCustomerName = (customer_name || "").trim();
+        if (!finalCustomerName) finalCustomerName = "Pelanggan Walk-In";
+        
+        let finalNoPhone = (no_phone || "").trim();
+        if (!finalNoPhone) finalNoPhone = "TIADA-" + Date.now();
+        
+const parsedPrice = hargaSebenar;
 
       const receiptName = "WLK" + crypto.randomUUID().split("-")[0].toUpperCase();
     let finalReceiptUrl = await uploadReceiptToStorage(
@@ -624,8 +631,8 @@ router.post(
         const duaMinitLepas = new Date(Date.now() - 2 * 60 * 1000).toISOString();
         const { data: dupData } = await supabase.from("walkin_records")
            .select("id")
-           .eq("nama_pelanggan", customer_name)
-           .eq("no_phone", no_phone || "-")
+           .eq("nama_pelanggan", finalCustomerName)
+           .eq("no_phone", finalNoPhone)
            .eq("jenis_potongan", service_id)
            .eq("staff_id", staff_id)
            .gte("created_at", duaMinitLepas)
@@ -636,10 +643,29 @@ router.post(
            return res.json({ status: "success", message: "Rekod Walk-In berjaya disimpan." });
         }
 
+        
+        const formatPhone = (phone) => {
+          let p = String(phone).replace(/\D/g, "");
+          if (p.startsWith("0")) p = "6" + p;
+          else if (p.startsWith("+60")) p = p.substring(1);
+          else if (!p.startsWith("60")) p = "60" + p;
+          return p;
+        };
+
+        if (finalNoPhone && !finalNoPhone.startsWith("TIADA-") && finalNoPhone !== "-") {
+           const p = formatPhone(finalNoPhone);
+           if (p.length > 5) {
+              await supabase.from("customer_directory").upsert({
+                 phone_number: p,
+                 real_name: finalCustomerName
+              }, { onConflict: 'phone_number', ignoreDuplicates: true }).catch(console.error);
+           }
+        }
+        
         const { error } = await supabase.from("walkin_records").insert([
         {
-          nama_pelanggan: customer_name,
-          no_phone: no_phone || "-",
+          nama_pelanggan: finalCustomerName,
+          no_phone: finalNoPhone,
           tarikh: booking_date,
           masa: booking_time,
           jenis_potongan: service_id,

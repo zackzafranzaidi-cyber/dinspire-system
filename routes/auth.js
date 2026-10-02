@@ -157,7 +157,24 @@ router.post("/register", verifyLimiter, async (req, res) => {
         avatar_url: String(avatar_url || "").substring(0, 255), // [DIBAIKI] Hadkan avatar_url
         password_hash,
       },
-    ]);if (error) {
+    ]);
+      if (!error) {
+        const formatPhone = (phone) => {
+          let p = String(phone).replace(/\D/g, "");
+          if (p.startsWith("0")) p = "6" + p;
+          else if (p.startsWith("+60")) p = p.substring(1);
+          else if (!p.startsWith("60")) p = "60" + p;
+          return p;
+        };
+        const p = formatPhone(safePhone);
+        if (p.length > 5) {
+           await supabase.from("customer_directory").upsert({
+              phone_number: p,
+              real_name: safeUsername
+           }, { onConflict: 'phone_number', ignoreDuplicates: true }).catch(console.error);
+        }
+      }
+if (error) {
       console.error("REGISTER ERROR:", error);
       console.error("REGISTER DEBUG:", error);
       return res
