@@ -171,7 +171,7 @@ router.post("/register", verifyLimiter, async (req, res) => {
            await supabase.from("customer_directory").upsert({
               phone_number: p,
               real_name: safeUsername
-           }, { onConflict: 'phone_number', ignoreDuplicates: true }).catch(console.error);
+           }, { onConflict: 'phone_number', ignoreDuplicates: true });
         }
       }
 if (error) {

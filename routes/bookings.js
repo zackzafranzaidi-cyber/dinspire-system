@@ -658,7 +658,7 @@ const parsedPrice = hargaSebenar;
               await supabase.from("customer_directory").upsert({
                  phone_number: p,
                  real_name: finalCustomerName
-              }, { onConflict: 'phone_number', ignoreDuplicates: true }).catch(console.error);
+              }, { onConflict: 'phone_number', ignoreDuplicates: true });
            }
         }
         
