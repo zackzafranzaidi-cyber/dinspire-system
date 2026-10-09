@@ -1594,22 +1594,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-          const data = await res.json();
-          if (data.found && data.name) {
-              wiNameInput.value = data.name;
-              // Membenarkan staf untuk edit nama tersebut (Tidak dilock)
-              wiNameInput.style.color = "var(--success)";
-              if (typeof showToast === "function") showToast("Nama diisi automatik. Boleh diedit jika perlu.");
-              
-              // Reset warna apabila staf mula menaip (mengubah nama)
-              wiNameInput.addEventListener("input", function resetColor() {
-                 wiNameInput.style.color = "";
-                 wiNameInput.removeEventListener("input", resetColor);
-              });
-          }
-       } catch(err) {
-          console.error("Lookup error:", err);
-       }
-    });
-  }
-});
