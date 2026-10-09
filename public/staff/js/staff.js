@@ -1590,22 +1590,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-             const data = await res.json();
-             if (data.found && data.name) {
-                 wiNameInput.value = data.name;
-                 wiNameInput.readOnly = true;
-                 wiNameInput.style.backgroundColor = "var(--bg-card)";
-                 wiNameInput.style.color = "var(--success)";
-                 if (typeof showToast === "function") showToast("Rekod pelanggan dijumpai!");
-             } else {
-                 wiNameInput.readOnly = false;
-                 wiNameInput.style.backgroundColor = "";
-                 wiNameInput.style.color = "";
-             }
-          } catch(err) {
-             console.error("Lookup error:", err);
-          }
-       }, 500);
-    });
-  }
-});
