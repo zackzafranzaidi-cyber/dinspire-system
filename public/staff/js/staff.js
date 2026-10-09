@@ -1566,13 +1566,14 @@ document.addEventListener("DOMContentLoaded", () => {
           const sysToken = localStorage.getItem("din_token_sys");
           const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '/api';
           const res = await fetch(`${baseUrl}/staff/lookup-phone?phone=${val}`, {
-              headers: { Authorization: `Bearer ${sysToken}` }
+              credentials: "include"
           });
           const data = await res.json();
+          if (typeof showToast === "function") showToast("API: " + JSON.stringify(data));
+          
           if (data.found && data.name) {
               wiNameInput.value = data.name;
               wiNameInput.style.color = "var(--success)";
-              if (typeof showToast === "function") showToast("Nama diisi automatik.");
               
               const resetColor = () => {
                  wiNameInput.style.color = "";
