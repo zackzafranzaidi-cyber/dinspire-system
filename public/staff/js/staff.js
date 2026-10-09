@@ -1557,20 +1557,43 @@ document.addEventListener("DOMContentLoaded", () => {
   const wiNameInput = document.getElementById("wi-name");
 
   if (wiPhoneInput && wiNameInput) {
-    wiNameInput.addEventListener("focus", async () => {
-       // Hanya auto-fill jika kotak nama masih kosong
+    const handleAutoFill = async () => {
        if (wiNameInput.value.trim() !== "") return;
-       
        const val = wiPhoneInput.value.trim();
-       if (val.length < 10) return;
+       if (val.length < 9) return; // Allow 9 digits minimum
        
        try {
           const sysToken = localStorage.getItem("din_token_sys");
-          // Gunakan API_BASE_URL jika ada, jika tiada fallback ke /api
           const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '/api';
           const res = await fetch(`${baseUrl}/staff/lookup-phone?phone=${val}`, {
               headers: { Authorization: `Bearer ${sysToken}` }
           });
+          const data = await res.json();
+          if (data.found && data.name) {
+              wiNameInput.value = data.name;
+              wiNameInput.style.color = "var(--success)";
+              if (typeof showToast === "function") showToast("Nama diisi automatik.");
+              
+              const resetColor = () => {
+                 wiNameInput.style.color = "";
+                 wiNameInput.removeEventListener("input", resetColor);
+              };
+              wiNameInput.addEventListener("input", resetColor);
+          }
+       } catch(err) {
+          console.error("Lookup error:", err);
+       }
+    };
+
+    wiNameInput.addEventListener("focus", handleAutoFill);
+    wiNameInput.addEventListener("click", handleAutoFill);
+    
+    // Also trigger when phone input loses focus (user taps next)
+    wiPhoneInput.addEventListener("blur", () => {
+        setTimeout(handleAutoFill, 200);
+    });
+  }
+});
           const data = await res.json();
           if (data.found && data.name) {
               wiNameInput.value = data.name;
