@@ -1,4 +1,4 @@
-﻿const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 function authenticateDev(req, res, next) {
   const tokenDev = req.cookies.din_token_dev;
@@ -13,7 +13,8 @@ function authenticateDev(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(tokenDev, process.env.JWT_SECRET_DEV || "dev-secret-fallback-if-not-set-danger");
+    const devJwtSecret = process.env.JWT_SECRET_DEV || (process.env.JWT_SECRET_SYS ? process.env.JWT_SECRET_SYS + "_dev" : "dev-secret-fallback-if-not-set-danger");
+    const decoded = jwt.verify(tokenDev, devJwtSecret);
     if (decoded.role !== "developer") {
       throw new Error("Invalid role");
     }

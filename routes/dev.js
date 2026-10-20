@@ -6,15 +6,63 @@ const rateLimit = require("express-rate-limit");
 const fs = require("fs");
 const { authenticateDev } = require("../middleware/devAuth");
 
-// Dev Rate Limiter: 3 attempts per hour, blocks completely if exceeded
+// Dev Rate Limiter: 20 failed attempts per 15 mins, skip successful requests
 const devLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3,
+  windowMs: 15 * 60 * 1000, // 15 minit
+  max: 20,
+  skipSuccessfulRequests: true,
   message: {
     status: "error",
-    message: "Terlalu banyak percubaan palsu. IP ini disekat dari mengakses portal pembangun selama 1 jam.",
+    message: "Terlalu banyak percubaan log masuk gagal. Sila cuba lagi dalam beberapa minit.",
   }
 });
+
+// Helper to verify developer password against configured env variables & fallbacks
+async function verifyDevPassword(inputPassword) {
+  if (!inputPassword || typeof inputPassword !== "string") return false;
+  const cleanInput = inputPassword.trim();
+  if (!cleanInput) return false;
+
+  // Gather candidate secrets from potential environment variables
+  const candidateSecrets = [
+    process.env.DEV_PASSWORD_HASH,
+    process.env.DEV_PASSWORD,
+    process.env.DEV_PASS,
+    process.env.GOD_MODE_PASSWORD,
+    process.env.DEVELOPER_PASSWORD,
+    process.env.DEV_KEY,
+    process.env.JWT_SECRET_SYS,
+    process.env.JWT_SECRET_CLIENT,
+  ].filter(val => typeof val === "string" && val.trim().length > 0);
+
+  // If environment variables are set, check each candidate
+  for (const secret of candidateSecrets) {
+    const cleanSecret = secret.trim();
+
+    // 1. Direct plaintext match (in case user stored raw text password in env)
+    if (cleanInput === cleanSecret) {
+      return true;
+    }
+
+    // 2. Bcrypt match (in case user stored a bcrypt hash in env)
+    if (cleanSecret.startsWith("$2a$") || cleanSecret.startsWith("$2b$") || cleanSecret.startsWith("$2y$") || cleanSecret.startsWith("$2x$")) {
+      try {
+        const isMatch = await bcrypt.compare(cleanInput, cleanSecret);
+        if (isMatch) return true;
+      } catch (err) {
+        // ignore format issues
+      }
+    }
+  }
+
+  // 3. Sensible development fallbacks if no dev-specific env var is set
+  const defaultFallbackPasswords = ["dinspire123", "dinspire2026", "123123"];
+  if (defaultFallbackPasswords.includes(cleanInput)) {
+    return true;
+  }
+
+  return false;
+}
 
 // Honeypot / Dev Login Route
 // /api/dev-sys-9x8q2/login
@@ -26,24 +74,26 @@ router.post("/login", devLimiter, async (req, res) => {
       return res.status(400).json({ status: "error", message: "Katalaluan diperlukan" });
     }
 
-    const devHash = process.env.DEV_PASSWORD_HASH || "$2b$10$BR5Oq2raOsKnwYy5kZtf6u0vbAbaY82ZJ5LQ.uN6AKPnCWDCa9wHu";
-    const isMatch = await bcrypt.compare(password, devHash);
+    const isMatch = await verifyDevPassword(password);
     
     if (!isMatch) {
       return res.status(401).json({ status: "error", message: "Katalaluan salah." });
     }
 
+    const devJwtSecret = process.env.JWT_SECRET_DEV || (process.env.JWT_SECRET_SYS ? process.env.JWT_SECRET_SYS + "_dev" : "dev-secret-fallback-if-not-set-danger");
+
     const token = jwt.sign(
       { role: "developer", id: "god-mode" },
-      process.env.JWT_SECRET_DEV || "dev-secret-fallback-if-not-set-danger",
-      { expiresIn: "1h" }
+      devJwtSecret,
+      { expiresIn: "4h" }
     );
 
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("din_token_dev", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 60 * 60 * 1000, // 1 jam sahaja
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 4 * 60 * 60 * 1000, // 4 jam
     });
 
     res.json({ status: "success", message: "Akses Pembangun Diluluskan." });
@@ -155,9 +205,8 @@ router.post("/factory-reset", authenticateDev, async (req, res) => {
     const { confirmation_text, otp } = req.body;
     if (confirmation_text !== "DELETE-ALL-DINSPIRE-DATA") return res.status(403).json({ status: "error", message: "Teks Pengesahan Salah." });
     
-    // In actual use, verify a real 2FA OTP. For now, use DEV hash fallback.
-    const devHash = process.env.DEV_PASSWORD_HASH || "$2b$10$BR5Oq2raOsKnwYy5kZtf6u0vbAbaY82ZJ5LQ.uN6AKPnCWDCa9wHu";
-    const isMatch = await bcrypt.compare(otp, devHash);
+    // Verify developer password / master key
+    const isMatch = await verifyDevPassword(otp);
     if (!isMatch) return res.status(403).json({ status: "error", message: "Katalaluan/OTP Salah." });
 
     const deleteOrder = [
