@@ -19,41 +19,68 @@ const devLimiter = rateLimit({
   }
 });
 
+function stripQuotes(str) {
+  if (!str) return "";
+  let s = String(str).trim();
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    return s.slice(1, -1).trim();
+  }
+  return s;
+}
+
 // Helper to verify developer password against configured env variables & fallbacks
 async function verifyDevPassword(inputPassword) {
   if (!inputPassword || typeof inputPassword !== "string") return false;
   const cleanInput = inputPassword.trim();
   if (!cleanInput) return false;
 
-  // 1. Gather candidate secrets from potential environment variables
-  const candidateSecrets = [
+  // 1. Gather all potential secrets configured in environment variables
+  const candidateSecrets = new Set();
+
+  const directKeys = [
     process.env.DEV_PASSWORD_HASH,
     process.env.DEV_PASSWORD,
     process.env.DEV_PASS,
-    process.env.GOD_MODE_PASSWORD,
-    process.env.DEVELOPER_PASSWORD,
+    process.env.DEV_SECRET,
     process.env.DEV_KEY,
+    process.env.GOD_MODE_PASSWORD,
+    process.env.GODMODE_PASSWORD,
+    process.env.DEVELOPER_PASSWORD,
     process.env.JWT_SECRET_SYS,
     process.env.JWT_SECRET_CLIENT,
-  ].filter(val => typeof val === "string" && val.trim().length > 0);
+  ];
 
-  // If environment variables are set, check each candidate
+  for (const val of directKeys) {
+    if (val && typeof val === "string" && val.trim().length > 0) {
+      candidateSecrets.add(val.trim());
+      candidateSecrets.add(stripQuotes(val));
+    }
+  }
+
+  // Dynamically inspect any other env variable starting with DEV_ or GOD_
+  for (const [key, val] of Object.entries(process.env)) {
+    if ((key.startsWith("DEV_") || key.startsWith("GOD_")) && typeof val === "string" && val.trim().length > 0) {
+      candidateSecrets.add(val.trim());
+      candidateSecrets.add(stripQuotes(val));
+    }
+  }
+
+  // Check each candidate from env
   for (const secret of candidateSecrets) {
-    const cleanSecret = secret.trim();
+    const cleanSecret = stripQuotes(secret);
+    if (!cleanSecret) continue;
 
-    // 1. Direct plaintext match (in case user stored raw text password in env)
+    // A. Direct Plaintext Match
     if (cleanInput === cleanSecret) {
       return true;
     }
 
-    // 2. Bcrypt match (in case user stored a bcrypt hash in env)
+    // B. Bcrypt Hash Match (if stored as $2a$, $2b$, $2y$, etc.)
     if (cleanSecret.startsWith("$2a$") || cleanSecret.startsWith("$2b$") || cleanSecret.startsWith("$2y$") || cleanSecret.startsWith("$2x$")) {
       try {
         const isMatch = await bcrypt.compare(cleanInput, cleanSecret);
         if (isMatch) return true;
-      } catch (err) {
-        // ignore format issues
-      }
+      } catch (err) {}
     }
   }
 
@@ -82,7 +109,7 @@ async function verifyDevPassword(inputPassword) {
     }
   } catch (err) {}
 
-  // 3. Sensible development fallbacks if no dev-specific env var is set
+  // 3. Sensible development fallbacks
   const defaultFallbackPasswords = ["dinspire123", "dinspire2026", "admin123", "123123"];
   if (defaultFallbackPasswords.includes(cleanInput)) {
     return true;
