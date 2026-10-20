@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs");
 const rateLimit = require("express-rate-limit");
 const fs = require("fs");
 const { authenticateDev } = require("../middleware/devAuth");
+const supabase = require("../config/db");
+
 
 // Dev Rate Limiter: 20 failed attempts per 15 mins, skip successful requests
 const devLimiter = rateLimit({
@@ -23,7 +25,7 @@ async function verifyDevPassword(inputPassword) {
   const cleanInput = inputPassword.trim();
   if (!cleanInput) return false;
 
-  // Gather candidate secrets from potential environment variables
+  // 1. Gather candidate secrets from potential environment variables
   const candidateSecrets = [
     process.env.DEV_PASSWORD_HASH,
     process.env.DEV_PASSWORD,
@@ -55,8 +57,33 @@ async function verifyDevPassword(inputPassword) {
     }
   }
 
+  // 2. Check against Owner & Admin account passwords in Supabase database
+  try {
+    const { data: owners } = await supabase.from("owners").select("password_hash");
+    if (owners && Array.isArray(owners)) {
+      for (const o of owners) {
+        if (o.password_hash) {
+          const match = await bcrypt.compare(cleanInput, o.password_hash);
+          if (match) return true;
+        }
+      }
+    }
+  } catch (err) {}
+
+  try {
+    const { data: admins } = await supabase.from("admins").select("password_hash");
+    if (admins && Array.isArray(admins)) {
+      for (const a of admins) {
+        if (a.password_hash) {
+          const match = await bcrypt.compare(cleanInput, a.password_hash);
+          if (match) return true;
+        }
+      }
+    }
+  } catch (err) {}
+
   // 3. Sensible development fallbacks if no dev-specific env var is set
-  const defaultFallbackPasswords = ["dinspire123", "dinspire2026", "123123"];
+  const defaultFallbackPasswords = ["dinspire123", "dinspire2026", "admin123", "123123"];
   if (defaultFallbackPasswords.includes(cleanInput)) {
     return true;
   }
@@ -121,7 +148,7 @@ router.get("/status", authenticateDev, (req, res) => {
 });
 
 
-const supabase = require("../config/db");
+
 
 // Update Feature Flags
 router.post("/flags", authenticateDev, async (req, res) => {
