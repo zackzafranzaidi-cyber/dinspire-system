@@ -36,14 +36,14 @@ router.post("/login", devLimiter, async (req, res) => {
     const token = jwt.sign(
       { role: "developer", id: "god-mode" },
       process.env.JWT_SECRET_DEV || "dev-secret-fallback-if-not-set-danger",
-      { expiresIn: "4h" }
+      { expiresIn: "1h" }
     );
 
     res.cookie("din_token_dev", token, {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      maxAge: 4 * 60 * 60 * 1000,
+      maxAge: 60 * 60 * 1000, // 1 jam sahaja
     });
 
     res.json({ status: "success", message: "Akses Pembangun Diluluskan." });

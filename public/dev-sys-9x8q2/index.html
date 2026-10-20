@@ -97,8 +97,8 @@
     <!-- TOAST HUD NOTIFICATIONS (CENTERED) -->
     <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-[200] flex flex-col items-center gap-2.5 w-[92%] max-w-md pointer-events-none"></div>
 
-    <!-- 1. DEV AUTHENTICATION TERMINAL VIEW (Shown when unauthenticated) -->
-    <div id="loginView" class="fixed inset-0 z-[150] bg-slate-950/95 backdrop-blur-xl flex items-center justify-center p-4 bg-grid hidden">
+    <!-- 1. DEV AUTHENTICATION TERMINAL VIEW (Shown when unauthenticated - Default Visible) -->
+    <div id="loginView" class="fixed inset-0 z-[150] bg-slate-950 flex items-center justify-center p-4 bg-grid">
         <div class="glass-panel border border-slate-800 bg-slate-900/80 p-8 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden text-center">
             <div class="absolute -top-12 -right-12 w-36 h-36 bg-cyan-500/20 blur-3xl rounded-full"></div>
             <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-blue-600/10 blur-3xl rounded-full"></div>
@@ -135,8 +135,8 @@
         </div>
     </div>
 
-    <!-- 2. DASHBOARD VIEW (Shown when authenticated) -->
-    <div id="dashboardView" class="h-screen w-full flex overflow-hidden">
+    <!-- 2. DASHBOARD VIEW (Hidden by default, unlocked only with Master Code) -->
+    <div id="dashboardView" class="h-screen w-full flex overflow-hidden hidden">
 
         <!-- MOBILE SIDEBAR OVERLAY -->
         <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>

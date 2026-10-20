@@ -186,28 +186,40 @@ function switchDataTab(tabId, element) {
 }
 
 // ==========================================
-// 4. AUTHENTICATION (GOD MODE)
+// 4. AUTHENTICATION (GOD MODE - ZERO AUTO-BYPASS)
 // ==========================================
-async function checkAuth() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/status`, { credentials: "include" });
-    const data = await res.json();
-    if (data.status === "success") {
-      document.getElementById("loginView").classList.add("hidden");
-      document.getElementById("dashboardView").classList.remove("hidden");
-      loadFlags();
-      fetchHealth();
-      renderAuditLogs();
-      checkPushStatus();
-    } else {
-      document.getElementById("loginView").classList.remove("hidden");
-      document.getElementById("dashboardView").classList.add("hidden");
-    }
-  } catch (err) {
-    document.getElementById("loginView").classList.remove("hidden");
-    document.getElementById("dashboardView").classList.add("hidden");
+let inactivityTimer = null;
+
+function enforceLockScreen() {
+  const loginView = document.getElementById("loginView");
+  const dashboardView = document.getElementById("dashboardView");
+  const pwdInput = document.getElementById("devPassword");
+
+  if (loginView) loginView.classList.remove("hidden");
+  if (dashboardView) dashboardView.classList.add("hidden");
+  if (pwdInput) {
+    pwdInput.value = "";
+    setTimeout(() => pwdInput.focus(), 100);
   }
 }
+
+function resetInactivityTimer() {
+  if (inactivityTimer) clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    showToast("Sesi dikunci automatik demi keselamatan.", "warn");
+    enforceLockScreen();
+  }, 15 * 60 * 1000); // Kunci automatik selepas 15 minit tanpa aktiviti
+}
+
+// Pantau aktiviti untuk auto-lock
+["click", "keydown", "touchstart"].forEach((evt) => {
+  window.addEventListener(evt, () => {
+    const dashboardView = document.getElementById("dashboardView");
+    if (dashboardView && !dashboardView.classList.contains("hidden")) {
+      resetInactivityTimer();
+    }
+  }, { passive: true });
+});
 
 const loginForm = document.getElementById("loginForm");
 if (loginForm) {
@@ -238,6 +250,7 @@ if (loginForm) {
         fetchHealth();
         renderAuditLogs();
         checkPushStatus();
+        resetInactivityTimer();
       } else {
         errDiv.textContent = data.message || "Katalaluan tidak sah.";
         errDiv.classList.remove("hidden");
@@ -255,17 +268,15 @@ if (loginForm) {
 }
 
 async function logoutDev() {
-  if (!confirm("Pasti mahu log keluar dari God Mode?")) return;
+  if (!confirm("Pasti mahu log keluar dan kunci God Mode?")) return;
   try {
     await fetch(`${API_BASE_URL}/logout`, {
       method: "POST",
       credentials: "include",
     });
-    showToast("Sesi ditamatkan.", "info");
-    setTimeout(() => location.reload(), 500);
-  } catch (e) {
-    location.reload();
-  }
+  } catch (e) {}
+  showToast("Sesi ditamatkan. Sistem dikunci.", "info");
+  enforceLockScreen();
 }
 
 // ==========================================
@@ -1225,5 +1236,5 @@ window.addEventListener("resize", () => {
 // INITIALIZATION
 // ==========================================
 window.addEventListener("DOMContentLoaded", () => {
-  checkAuth();
+  enforceLockScreen();
 });
