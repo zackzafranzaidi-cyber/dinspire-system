@@ -389,8 +389,17 @@ router.post("/subscribe", authenticateDev, async (req, res) => {
 
 router.post("/test-push", authenticateDev, async (req, res) => {
   try {
-    await notifyDev("Test God Mode", "Pusat kawalan pelayan beroperasi dengan lancar.");
-    res.json({ status: "success", message: "Push notification dihantar." });
+    const count = await notifyDev("God Mode Alert", "Pusat kawalan pelayan beroperasi dengan lancar.");
+    if (count === 0) {
+      return res.json({
+        status: "warn",
+        message: "Tiada peranti dilanggan. Sila tekan butang 'Aktifkan Langganan' pada telefon ini terlebih dahulu!"
+      });
+    }
+    res.json({
+      status: "success",
+      message: `Notifikasi berjaya dihantar ke ${count} peranti pembangun.`
+    });
   } catch (error) {
     res.status(500).json({ status: "error", message: error.message });
   }

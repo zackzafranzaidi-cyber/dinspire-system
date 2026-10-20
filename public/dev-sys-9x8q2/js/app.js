@@ -6,34 +6,36 @@
 const API_BASE_URL = "/api/dev-sys-9x8q2";
 
 // ==========================================
-// 1. TOAST NOTIFICATION SYSTEM (HUD)
+// 1. TOAST NOTIFICATION SYSTEM (HUD - CENTERED)
 // ==========================================
 function showToast(message, type = "info") {
   const container = document.getElementById("toastContainer");
   if (!container) return;
 
   const toast = document.createElement("div");
-  toast.className = "toast-enter glass-panel p-4 rounded-xl shadow-2xl flex items-start gap-3 border pointer-events-auto transition-all";
+  toast.className = "toast-enter glass-panel px-4 py-3 rounded-2xl shadow-2xl flex items-center justify-between gap-3 border pointer-events-auto transition-all w-full backdrop-blur-xl";
 
-  let icon = '<i class="fa-solid fa-circle-info text-cyan-400"></i>';
-  let borderClass = "border-cyan-500/40 text-cyan-200 bg-slate-900/90";
+  let icon = '<i class="fa-solid fa-circle-info text-cyan-400 shrink-0 text-base"></i>';
+  let borderClass = "border-cyan-500/40 text-cyan-200 bg-slate-900/95";
 
   if (type === "success") {
-    icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
-    borderClass = "border-emerald-500/40 text-emerald-200 bg-slate-900/90";
+    icon = '<i class="fa-solid fa-circle-check text-emerald-400 shrink-0 text-base"></i>';
+    borderClass = "border-emerald-500/40 text-emerald-200 bg-slate-900/95";
   } else if (type === "error") {
-    icon = '<i class="fa-solid fa-triangle-exclamation text-rose-500"></i>';
-    borderClass = "border-rose-500/40 text-rose-200 bg-slate-900/90";
+    icon = '<i class="fa-solid fa-triangle-exclamation text-rose-500 shrink-0 text-base"></i>';
+    borderClass = "border-rose-500/40 text-rose-200 bg-slate-900/95";
   } else if (type === "warn") {
-    icon = '<i class="fa-solid fa-bell text-amber-400"></i>';
-    borderClass = "border-amber-500/40 text-amber-200 bg-slate-900/90";
+    icon = '<i class="fa-solid fa-bell text-amber-400 shrink-0 text-base"></i>';
+    borderClass = "border-amber-500/40 text-amber-200 bg-slate-900/95";
   }
 
   toast.className += ` ${borderClass}`;
   toast.innerHTML = `
-    <div class="text-base mt-0.5 shrink-0">${icon}</div>
-    <div class="flex-1 text-xs leading-relaxed font-sans">${message}</div>
-    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-xs ml-2">
+    <div class="flex items-center gap-3 flex-1 min-w-0">
+      ${icon}
+      <div class="text-xs leading-relaxed font-sans font-medium truncate sm:whitespace-normal">${message}</div>
+    </div>
+    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-xs shrink-0 p-1">
       <i class="fa-solid fa-xmark"></i>
     </button>
   `;
@@ -60,9 +62,16 @@ function toggleSidebar() {
 }
 
 let currentActiveTab = "data";
+let healthPollInterval = null;
 
 function switchTab(tabId, title, subtitle, element) {
   currentActiveTab = tabId;
+
+  // Clear live health poll when switching away
+  if (healthPollInterval) {
+    clearInterval(healthPollInterval);
+    healthPollInterval = null;
+  }
 
   // Update Sidebar Active state
   const navItems = document.querySelectorAll(".nav-item");
@@ -115,10 +124,18 @@ function switchTab(tabId, title, subtitle, element) {
   if (titleEl) titleEl.textContent = title;
   if (subtitleEl) subtitleEl.textContent = subtitle;
 
-  // Auto Refresh per tab
-  if (tabId === "health") fetchHealth();
-  if (tabId === "switchboard") loadFlags();
-  if (tabId === "data") renderAuditLogs();
+  // Auto Refresh & Setup per tab
+  if (tabId === "health") {
+    fetchHealth();
+    // Live Polling every 4.5 seconds for true dynamic graph
+    healthPollInterval = setInterval(fetchHealthMetricsOnly, 4500);
+  } else if (tabId === "switchboard") {
+    loadFlags();
+  } else if (tabId === "data") {
+    renderAuditLogs();
+  } else if (tabId === "tools") {
+    checkPushStatus();
+  }
 
   // Close mobile sidebar if open
   if (window.innerWidth < 1024 && sidebar && !sidebar.classList.contains("-translate-x-full")) {
@@ -128,13 +145,15 @@ function switchTab(tabId, title, subtitle, element) {
 
 function refreshCurrentTab() {
   showToast("Menyegarkan data terkini...", "info");
-  if (currentActiveTab === "health") fetchHealth();
-  else if (currentActiveTab === "switchboard") loadFlags();
-  else if (currentActiveTab === "data") {
+  if (currentActiveTab === "health") {
+    fetchHealth();
+  } else if (currentActiveTab === "switchboard") {
+    loadFlags();
+  } else if (currentActiveTab === "data") {
     renderAuditLogs();
     fetchHealthMetricsOnly();
-  } else {
-    loadFlags();
+  } else if (currentActiveTab === "tools") {
+    checkPushStatus();
   }
 }
 
@@ -179,6 +198,7 @@ async function checkAuth() {
       loadFlags();
       fetchHealth();
       renderAuditLogs();
+      checkPushStatus();
     } else {
       document.getElementById("loginView").classList.remove("hidden");
       document.getElementById("dashboardView").classList.add("hidden");
@@ -217,6 +237,7 @@ if (loginForm) {
         loadFlags();
         fetchHealth();
         renderAuditLogs();
+        checkPushStatus();
       } else {
         errDiv.textContent = data.message || "Katalaluan tidak sah.";
         errDiv.classList.remove("hidden");
@@ -566,8 +587,124 @@ async function executeFactoryReset() {
 }
 
 // ==========================================
-// 7. SERVER HEALTH & LOGS
+// 7. SERVER HEALTH & DYNAMIC LIVE GRAPH
 // ==========================================
+let latencyHistory = [115, 128, 95, 140, 165, 120, 110, 145, 259];
+
+function renderLatencyCanvas() {
+  const canvas = document.getElementById("latencyCanvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+
+  if (rect.width === 0 || rect.height === 0) return;
+
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width;
+  const h = rect.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (latencyHistory.length === 0) return;
+
+  const minVal = Math.max(0, Math.min(...latencyHistory) * 0.75);
+  const maxVal = Math.max(...latencyHistory) * 1.25 || 100;
+  const range = maxVal - minVal || 1;
+
+  // Compute smooth coordinates
+  const points = latencyHistory.map((val, idx) => {
+    const x = (idx / (latencyHistory.length - 1 || 1)) * (w - 18) + 9;
+    const y = h - ((val - minVal) / range) * (h - 18) - 9;
+    return { x, y, val };
+  });
+
+  // Background subtle guide line
+  ctx.strokeStyle = "rgba(51, 65, 85, 0.3)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(9, h / 2);
+  ctx.lineTo(w - 9, h / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw area gradient fill under the curve
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, "rgba(245, 158, 11, 0.35)");
+  grad.addColorStop(1, "rgba(245, 158, 11, 0.0)");
+
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, h);
+  ctx.lineTo(points[0].x, points[0].y);
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const xc = (points[i].x + points[i + 1].x) / 2;
+    const yc = (points[i].y + points[i + 1].y) / 2;
+    ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+  }
+  ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+  ctx.lineTo(points[points.length - 1].x, h);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Draw glowing stroke line
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (let i = 0; i < points.length - 1; i++) {
+    const xc = (points[i].x + points[i + 1].x) / 2;
+    const yc = (points[i].y + points[i + 1].y) / 2;
+    ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+  }
+  ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+
+  ctx.strokeStyle = "#f59e0b"; // Neon amber
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = "rgba(245, 158, 11, 0.8)";
+  ctx.shadowBlur = 8;
+  ctx.stroke();
+  ctx.shadowBlur = 0; // reset
+
+  // Draw circular nodes
+  points.forEach((pt, idx) => {
+    const isLast = idx === points.length - 1;
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, isLast ? 4 : 2, 0, Math.PI * 2);
+    ctx.fillStyle = isLast ? "#fbbf24" : "#f59e0b";
+    ctx.fill();
+
+    if (isLast) {
+      // Pulsing outer halo on latest data point
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 7, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.6)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  });
+
+  // Update statistics label
+  const min = Math.min(...latencyHistory);
+  const max = Math.max(...latencyHistory);
+  const avg = Math.round(latencyHistory.reduce((a, b) => a + b, 0) / latencyHistory.length);
+  const lbl = document.getElementById("latencyStatsLabel");
+  if (lbl) {
+    lbl.textContent = `Min: ${min}ms | Pur: ${avg}ms | Maks: ${max}ms`;
+  }
+}
+
+async function triggerPingDatabase() {
+  const dbEl = document.getElementById("metric-db");
+  if (dbEl) dbEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-amber-400 text-2xl"></i>`;
+  await fetchHealthMetricsOnly();
+  showToast("Ping pangkalan data dikemaskini.", "info");
+}
+
 async function fetchHealth() {
   await fetchHealthMetricsOnly();
 
@@ -605,26 +742,51 @@ async function fetchHealthMetricsOnly() {
     if (data.status === "success" && data.metrics) {
       const m = data.metrics;
 
-      // Database Latency
+      // 1. Database Latency
       const dbEl = document.getElementById("metric-db");
       if (dbEl) dbEl.innerHTML = `${m.database_latency_ms}<span class="text-sm text-slate-500 ml-1">ms</span>`;
 
-      // Sparkline dynamic jitter
-      updateSparkline(m.database_latency_ms);
+      // Record in sliding window & redraw Canvas!
+      latencyHistory.push(m.database_latency_ms);
+      if (latencyHistory.length > 15) latencyHistory.shift();
+      renderLatencyCanvas();
 
-      // RAM Usage & Circle
+      // 2. RAM Usage & Circular Gauge
       const ramEl = document.getElementById("metric-ram");
       if (ramEl) ramEl.innerHTML = `${m.memory_usage_mb}<span class="text-sm text-slate-500 ml-1">MB</span>`;
 
+      const maxRAM = 512;
+      const pct = Math.min(Math.round((m.memory_usage_mb / maxRAM) * 100), 100);
+
+      const ramPercentText = document.getElementById("ramPercentText");
+      if (ramPercentText) ramPercentText.textContent = `${pct}%`;
+
       const ramCircle = document.getElementById("ramCircle");
       if (ramCircle) {
-        // Circumference is ~113. 512MB max scale
-        const pct = Math.min(m.memory_usage_mb / 512, 1);
-        const offset = 113 - 113 * pct;
+        // Circumference for r=26 is 163.36
+        const offset = 163.36 - (163.36 * pct) / 100;
         ramCircle.style.strokeDashoffset = offset;
+        if (pct > 75) {
+          ramCircle.setAttribute("stroke", "#ef4444"); // Red
+        } else if (pct > 50) {
+          ramCircle.setAttribute("stroke", "#f59e0b"); // Amber
+        } else {
+          ramCircle.setAttribute("stroke", "#06b6d4"); // Cyan
+        }
       }
 
-      // Supabase Status
+      const ramBar = document.getElementById("ramProgressBar");
+      if (ramBar) {
+        ramBar.style.width = `${pct}%`;
+        if (pct > 75) ramBar.className = "bg-rose-500 h-1.5 rounded-full transition-all duration-500";
+        else if (pct > 50) ramBar.className = "bg-amber-500 h-1.5 rounded-full transition-all duration-500";
+        else ramBar.className = "bg-gradient-to-r from-cyan-500 to-blue-500 h-1.5 rounded-full transition-all duration-500";
+      }
+
+      const ramDetail = document.getElementById("ramDetailText");
+      if (ramDetail) ramDetail.textContent = `${m.memory_usage_mb} MB digunakan daripada 512 MB`;
+
+      // 3. Supabase Status
       const statusEl = document.getElementById("metric-status");
       if (statusEl) {
         statusEl.textContent = m.database_status;
@@ -635,24 +797,13 @@ async function fetchHealthMetricsOnly() {
         }
       }
 
-      // SMS Gateway
+      // 4. SMS Gateway
       const smsEl = document.getElementById("metric-sms");
       if (smsEl) smsEl.textContent = m.sms_gateway;
     }
   } catch (err) {
     console.warn("Gagal membaca metrik kesihatan pelayan:", err);
   }
-}
-
-function updateSparkline(latency) {
-  const path = document.getElementById("sparkline-path");
-  if (!path) return;
-  // Generate slightly dynamic points based on current latency
-  const base = Math.min(Math.max(latency / 20, 2), 16);
-  const p1 = Math.round(base + (Math.random() * 4 - 2));
-  const p2 = Math.round(base + (Math.random() * 6 - 3));
-  const p3 = Math.round(base + (Math.random() * 5 - 2));
-  path.setAttribute("d", `M0 15 L10 ${p1} L20 18 L30 5 L40 ${p2} L50 2 L60 8 L70 ${p3} L80 5 L90 ${p1} L100 2`);
 }
 
 function formatTerminalLogs(raw) {
@@ -751,7 +902,6 @@ async function triggerFpxSimulation() {
 
     if (data.status === "success") {
       showToast("Payload simulasi berjaya dijanakan. Menghantar ke webhook...", "success");
-      // Post to actual webhook route
       try {
         await fetch("/api/bookings/webhook/fpx", {
           method: "POST",
@@ -771,28 +921,92 @@ async function triggerFpxSimulation() {
   }
 }
 
-// Push Notifications
+// Push Notifications Engine (iOS / Android / Desktop)
+async function checkPushStatus() {
+  const badge = document.getElementById("pushStatusBadge");
+  const tip = document.getElementById("iosPushTip");
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
+
+  if (isIOS && !isStandalone && tip) {
+    tip.classList.remove("hidden");
+  }
+
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    if (badge) {
+      badge.textContent = "TIDAK DISOKONG";
+      badge.className = "text-[10px] font-mono px-2.5 py-0.5 rounded border border-rose-500/40 bg-rose-950/40 text-rose-400";
+    }
+    return;
+  }
+
+  const perm = Notification.permission;
+  if (perm === "granted") {
+    if (badge) {
+      badge.innerHTML = '<i class="fa-solid fa-check mr-1"></i>AKTIF';
+      badge.className = "text-[10px] font-mono px-2.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-950/40 text-emerald-400 font-bold";
+    }
+    const btnSub = document.getElementById("btnSubscribePush");
+    if (btnSub) {
+      btnSub.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i><span>Langganan Aktif</span>';
+    }
+  } else if (perm === "denied") {
+    if (badge) {
+      badge.innerHTML = '<i class="fa-solid fa-ban mr-1"></i>DISEKAT DI TETAPAN';
+      badge.className = "text-[10px] font-mono px-2.5 py-0.5 rounded border border-rose-500/40 bg-rose-950/40 text-rose-400";
+    }
+  } else {
+    if (badge) {
+      badge.innerHTML = '<i class="fa-solid fa-bell mr-1"></i>BELUM AKTIF';
+      badge.className = "text-[10px] font-mono px-2.5 py-0.5 rounded border border-amber-500/40 bg-amber-950/40 text-amber-400";
+    }
+  }
+}
+
 async function subscribeDevPush() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
+
+  if (isIOS && !isStandalone) {
+    showToast("Di iPhone (iOS), Web Push hanya berfungsi jika aplikasi dibuka melalui Home Screen (Tekan Share -> Add to Home Screen).", "warn");
+    const tip = document.getElementById("iosPushTip");
+    if (tip) tip.classList.remove("hidden");
+    return;
+  }
+
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
     showToast("Pelayar anda tidak menyokong Web Push Notifications.", "error");
     return;
   }
 
+  const btn = document.getElementById("btnSubscribePush");
+  if (btn) btn.disabled = true;
+
   try {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      showToast("Kebenaran notifikasi ditolak oleh pelayar.", "error");
+      showToast("Kebenaran notifikasi ditolak. Sila benarkan dalam Tetapan pelayar/telefon.", "error");
+      checkPushStatus();
+      if (btn) btn.disabled = false;
       return;
     }
 
-    const reg = await navigator.serviceWorker.register("/dev-sys-9x8q2/sw.js", { scope: "/dev-sys-9x8q2/" });
-    const res = await fetch(`${API_BASE_URL}/vapidPublicKey`);
-    const vapidKey = await res.text();
+    showToast("Mendaftarkan peranti ke pelayan Push...", "info");
 
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidKey),
-    });
+    const reg = await navigator.serviceWorker.register("/dev-sys-9x8q2/sw.js", { scope: "/dev-sys-9x8q2/" });
+    await navigator.serviceWorker.ready;
+
+    const res = await fetch(`${API_BASE_URL}/vapidPublicKey`);
+    const vapidKey = (await res.text()).trim();
+
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      });
+    }
 
     const saveRes = await fetch(`${API_BASE_URL}/subscribe`, {
       method: "POST",
@@ -801,27 +1015,70 @@ async function subscribeDevPush() {
       body: JSON.stringify(sub),
     });
     const saveData = await saveRes.json();
-    showToast(saveData.message || "Langganan Web-Push berjaya diaktifkan!", "success");
-    addAuditLog("God Mode Web-Push diaktifkan pada peranti ini.");
+
+    showToast("Langganan Web-Push berjaya diaktifkan pada telefon ini!", "success");
+    addAuditLog("God Mode Web-Push diaktifkan pada telefon ini.");
+    checkPushStatus();
+
+    // Trigger local notification test as immediate feedback
+    try {
+      reg.showNotification("God Mode Aktif", {
+        body: "Telefon anda kini berjaya disambung ke pusat amaran pelayan Dinspire.",
+        icon: "/owner/icon_owner.png",
+        badge: "/owner/icon_owner.png"
+      });
+    } catch(e) {}
+
   } catch (e) {
+    console.error("Gagal melanggan:", e);
     showToast("Gagal melanggan Push: " + e.message, "error");
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
 async function testDevPush() {
+  const btn = document.getElementById("btnTestPush");
+  if (btn) btn.disabled = true;
+
   try {
+    if (!("Notification" in window) || Notification.permission !== "granted") {
+      showToast("Sila benarkan notifikasi terlebih dahulu...", "warn");
+      await subscribeDevPush();
+      if (btn) btn.disabled = false;
+      return;
+    }
+
+    showToast("Menghantar ujian ke pelayan push...", "info");
+
     const res = await fetch(`${API_BASE_URL}/test-push`, {
       method: "POST",
       credentials: "include",
     });
     const data = await res.json();
+
     if (data.status === "success") {
-      showToast("Notifikasi ujian berjaya dihantar ke pelayan push!", "success");
+      showToast(data.message, "success");
+      addAuditLog("Ujian push notification dihantar.");
     } else {
-      showToast(data.message, "error");
+      showToast(data.message || "Ralat penghantaran ujian push.", "warn");
+    }
+
+    // Also trigger instant local notification so user gets instant phone feedback
+    if ("serviceWorker" in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg) {
+        reg.showNotification("God Mode Alert", {
+          body: "Pusat kawalan pelayan beroperasi dengan lancar.",
+          icon: "/owner/icon_owner.png",
+          badge: "/owner/icon_owner.png"
+        });
+      }
     }
   } catch (err) {
-    showToast("Ralat menghantar ujian push.", "error");
+    showToast("Ralat menghantar ujian push: " + err.message, "error");
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -845,7 +1102,6 @@ function getAuditLogs() {
     if (saved) return JSON.parse(saved);
   } catch (e) {}
 
-  // Defaults
   return [
     { text: "Backup automatik pangkalan data berjaya.", time: "Hari ini, 04:00 AM", type: "check" },
     { text: "Prune arkib jualan dijalankan (120 rekod).", time: "Semalam, 11:30 PM", type: "scissors" },
@@ -957,6 +1213,13 @@ if (cmdInput) {
     });
   });
 }
+
+// Window resize handler for Canvas Chart
+window.addEventListener("resize", () => {
+  if (currentActiveTab === "health") {
+    renderLatencyCanvas();
+  }
+});
 
 // ==========================================
 // INITIALIZATION
