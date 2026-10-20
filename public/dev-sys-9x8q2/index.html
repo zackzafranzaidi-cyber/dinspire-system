@@ -1,283 +1,725 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ms" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>God Mode | Dinspire</title>
-  <link rel="manifest" href="/dev-sys-9x8q2/manifest.json">
-  <meta name="theme-color" content="#09090b">
-  
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="/fontawesome/css/all.min.css">
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            background: '#09090b',
-            panel: '#18181b',
-            primary: '#3b82f6',
-            danger: '#ef4444'
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>God Mode - Command Center | Dinspire</title>
+    <link rel="manifest" href="/dev-sys-9x8q2/manifest.json">
+    <meta name="theme-color" content="#0b1120">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Icons: Font Awesome CDN + Local Fallback -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/fontawesome/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: { 850: '#151e2e', 950: '#0b1120' },
+                        neon: { cyan: '#06b6d4', red: '#ef4444', green: '#10b981' }
+                    }
+                }
+            }
         }
-      }
-    }
-  </script>
-  
-  <link rel="stylesheet" href="/dev-sys-9x8q2/css/style.css">
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b1120; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .glass-panel:hover {
+            border-color: rgba(6, 182, 212, 0.3);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.05);
+        }
+
+        /* Toggle Switch */
+        .toggle-checkbox:checked { right: 0; border-color: #06b6d4; }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #06b6d4;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+        }
+        .toggle-checkbox:checked + .toggle-label:after { transform: translateX(100%); }
+
+        /* Terminal Text Glow */
+        .text-glow-green { text-shadow: 0 0 6px rgba(16, 185, 129, 0.6); }
+        .text-glow-red { text-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
+        .text-glow-cyan { text-shadow: 0 0 6px rgba(6, 182, 212, 0.6); }
+
+        /* Page Transitions */
+        .page-section { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sidebar Transition */
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+
+        /* Danger Zone Input Styling */
+        #confirm-reset:focus { border-color: #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.35); }
+        #confirm-reset:not(:placeholder-shown) { border-color: #ef4444; }
+
+        /* Grid Background pattern */
+        .bg-grid {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* Toast HUD */
+        .toast-enter { animation: toastIn 0.3s ease-out forwards; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-16px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
 </head>
-<body class="bg-background text-gray-200 font-sans antialiased">
+<body class="bg-slate-950 text-slate-300 font-sans h-screen flex flex-col overflow-hidden selection:bg-cyan-500/30 relative">
 
-  <!-- 1. LOGIN VIEW -->
-  <div id="loginView" class="min-h-screen flex items-center justify-center p-4">
-    <div class="bg-panel border border-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
-      <i class="fa-solid fa-user-secret text-5xl text-primary mb-4"></i>
-      <h1 class="text-2xl font-bold text-white mb-2">Dinspire God Mode</h1>
-      <p class="text-gray-400 text-sm mb-6">Portal sulit Pembangun Sistem.</p>
-      
-      <form id="loginForm" class="space-y-4">
-        <div>
-          <input type="password" id="devPassword" required
-            class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary text-center tracking-widest"
-            placeholder="[KOD RAHSIA]">
+    <!-- TOAST HUD NOTIFICATIONS -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-[200] flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- 1. DEV AUTHENTICATION TERMINAL VIEW (Shown when unauthenticated) -->
+    <div id="loginView" class="fixed inset-0 z-[150] bg-slate-950/95 backdrop-blur-xl flex items-center justify-center p-4 bg-grid hidden">
+        <div class="glass-panel border border-slate-800 bg-slate-900/80 p-8 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden text-center">
+            <div class="absolute -top-12 -right-12 w-36 h-36 bg-cyan-500/20 blur-3xl rounded-full"></div>
+            <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-blue-600/10 blur-3xl rounded-full"></div>
+
+            <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(6,182,212,0.25)]">
+                <i class="fa-solid fa-terminal text-2xl text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"></i>
+            </div>
+
+            <h1 class="text-xl font-bold tracking-wider text-white">GOD MODE ACCESS</h1>
+            <p class="text-xs text-slate-400 font-mono mt-1">Portal Sulit Arkitek Perisian Dinspire</p>
+
+            <form id="loginForm" class="mt-6 space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1.5 uppercase tracking-wider">Kod Rahsia Sistem</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-key absolute left-3.5 top-3.5 text-slate-500 text-sm"></i>
+                        <input type="password" id="devPassword" required
+                            class="w-full bg-slate-950/90 border border-slate-700 focus:border-cyan-400 rounded-xl pl-10 pr-4 py-3 text-white font-mono text-sm tracking-widest outline-none transition-all focus:shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+                            placeholder="••••••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" id="btnLoginSubmit" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-unlock-keyhole"></i>
+                    <span>BERIKAN AKSES</span>
+                </button>
+            </form>
+
+            <div id="loginError" class="mt-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs hidden"></div>
+
+            <div class="mt-6 pt-5 border-t border-slate-800 text-[11px] text-slate-500 font-mono">
+                <i class="fa-solid fa-shield-halved mr-1"></i> Dilindungi oleh Dwi-JWT & Mutex Lock
+            </div>
         </div>
-        <button type="submit" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors">
-          BERIKAN AKSES
-        </button>
-      </form>
-      <div id="loginError" class="text-danger text-sm mt-4 hidden"></div>
     </div>
-  </div>
 
-  <!-- 2. DASHBOARD VIEW -->
-  <div id="dashboardView" class="hidden min-h-screen flex-col md:flex-row">
-    
-    <!-- Sidebar -->
-    <nav class="bg-panel border-b md:border-b-0 md:border-r border-gray-800 w-full md:w-64 flex-shrink-0">
-      <div class="p-6 flex items-center justify-between md:block">
-        <div>
-          <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-terminal text-primary"></i> God Mode
-          </h2>
-          <p class="text-xs text-gray-500 mt-1 hidden md:block">Arkitek Perisian Sahaja</p>
-        </div>
-        <button id="mobileMenuBtn" class="md:hidden text-gray-400 hover:text-white text-2xl">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-      </div>
+    <!-- 2. DASHBOARD VIEW (Shown when authenticated) -->
+    <div id="dashboardView" class="h-screen w-full flex overflow-hidden">
 
-      <div id="navLinks" class="hidden md:flex flex-col px-4 pb-6 space-y-1">
-        <button onclick="switchTab('tab-switchboard')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors bg-gray-800 text-white" data-target="tab-switchboard">
-          <i class="fa-solid fa-toggle-on w-6"></i> Switchboard
-        </button>
-        <button onclick="switchTab('tab-data')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-400 hover:bg-gray-800 hover:text-white" data-target="tab-data">
-          <i class="fa-solid fa-database w-6"></i> Data & Backup
-        </button>
-        <button onclick="switchTab('tab-health')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-400 hover:bg-gray-800 hover:text-white" data-target="tab-health">
-          <i class="fa-solid fa-heart-pulse w-6"></i> Kesihatan Pelayan
-        </button>
-        <button onclick="switchTab('tab-tools')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-400 hover:bg-gray-800 hover:text-white" data-target="tab-tools">
-          <i class="fa-solid fa-toolbox w-6"></i> Simulasi & Alat
-        </button>
-        
-        <div class="pt-8">
-          <button id="logoutBtn" class="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-danger hover:bg-red-900/20 transition-colors">
-            <i class="fa-solid fa-power-off w-6"></i> Log Keluar
-          </button>
-        </div>
-      </div>
-    </nav>
+        <!-- MOBILE SIDEBAR OVERLAY -->
+        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
 
-    <!-- Main Content -->
-    <main class="flex-1 p-4 md:p-8 h-screen overflow-y-auto">
-      
-      <!-- TAB: SWITCHBOARD -->
-      <div id="tab-switchboard" class="tab-content block space-y-6">
-        <div>
-          <h3 class="text-2xl font-bold text-white mb-2">Papan Suis Pembedahan</h3>
-          <p class="text-gray-400 text-sm">Matikan portal atau fungsi tertentu secara *Real-Time* (Serta-merta) tanpa downtime.</p>
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between col-span-1 lg:col-span-2">
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="sidebar-transition fixed lg:relative inset-y-0 left-0 w-64 bg-slate-950 border-r border-slate-800 flex flex-col justify-between z-50 transform -translate-x-full lg:translate-x-0">
             <div>
-              <h4 class="text-red-400 font-bold flex items-center gap-2">
-                <i class="fa-solid fa-triangle-exclamation"></i> KUNCI KESELURUHAN SISTEM
-              </h4>
-              <p class="text-xs text-gray-500 mt-1">Mengaktifkan Mod Penyelenggaraan (HTTP 503) untuk SEMUA. Hanya Webhook dikecualikan.</p>
+                <!-- Logo -->
+                <div class="h-20 flex items-center justify-between px-6 border-b border-slate-800">
+                    <div class="flex items-center">
+                        <i class="fa-solid fa-terminal text-cyan-400 text-xl mr-3 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"></i>
+                        <div>
+                            <h1 class="text-white font-bold tracking-wider text-lg leading-tight">GOD MODE</h1>
+                            <p class="text-[10px] text-slate-500 font-mono tracking-widest uppercase">Arkitek Perisian</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleSidebar()" class="lg:hidden text-slate-500 hover:text-white">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="p-4 space-y-2 mt-2">
+                    <a href="#" onclick="switchTab('switchboard', 'Papan Suis', 'Urus suis fungsi sistem secara real-time.', this)" class="nav-item flex items-center px-4 py-3 text-slate-400 hover:text-cyan-400 hover:bg-slate-900 rounded-xl transition-all group">
+                        <i class="fa-solid fa-toggle-on w-6 text-center text-lg group-hover:drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]"></i>
+                        <span class="font-medium text-sm">Papan Suis</span>
+                    </a>
+                    <!-- Default Active Tab -->
+                    <a href="#" onclick="switchTab('data', 'Pengurusan Data', 'Muat turun, pemulihan, dan pemotongan data.', this)" class="nav-item active flex items-center px-4 py-3 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-xl relative overflow-hidden transition-all shadow-[inset_0_0_20px_rgba(6,182,212,0.1)]">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,1)]"></div>
+                        <i class="fa-solid fa-database w-6 text-center text-lg drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]"></i>
+                        <span class="font-medium text-sm">Data & Backup</span>
+                    </a>
+                    <a href="#" onclick="switchTab('health', 'Kesihatan Sistem', 'Pantau prestasi masa nyata dan ralat terkini.', this)" class="nav-item flex items-center px-4 py-3 text-slate-400 hover:text-cyan-400 hover:bg-slate-900 rounded-xl transition-all group">
+                        <i class="fa-solid fa-heart-pulse w-6 text-center text-lg group-hover:drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]"></i>
+                        <span class="font-medium text-sm">Kesihatan Sistem</span>
+                    </a>
+                    <a href="#" onclick="switchTab('tools', 'Simulasi & Alat', 'Alat debugging dan simulasi pembayaran.', this)" class="nav-item flex items-center px-4 py-3 text-slate-400 hover:text-cyan-400 hover:bg-slate-900 rounded-xl transition-all group">
+                        <i class="fa-solid fa-flask w-6 text-center text-lg group-hover:drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]"></i>
+                        <span class="font-medium text-sm">Simulasi & Alat</span>
+                    </a>
+                </nav>
             </div>
-            <label class="toggle-switch relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="flag-maintenance" class="sr-only peer" onchange="updateFlag('maintenance_mode', this.checked)">
-              <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-danger"></div>
-            </label>
-          </div>
-          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between">
-            <div><h4 class="text-white font-medium">Portal Pelanggan</h4><p class="text-xs text-gray-500">Akses awam pelanggan.</p></div>
-            <label class="toggle-switch"><input type="checkbox" id="flag-customer" onchange="updateFlag('customer_portal', this.checked)"><div class="slider"></div></label>
-          </div>
-          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between">
-            <div><h4 class="text-white font-medium">Portal Staf</h4><p class="text-xs text-gray-500">Akses punch card pekerja.</p></div>
-            <label class="toggle-switch"><input type="checkbox" id="flag-staff" onchange="updateFlag('staff_portal', this.checked)"><div class="slider"></div></label>
-          </div>
-          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between">
-            <div><h4 class="text-white font-medium">Fungsi Tempahan</h4><p class="text-xs text-gray-500">Tutup butang Tempah Gunting/Rawatan.</p></div>
-            <label class="toggle-switch"><input type="checkbox" id="flag-booking" onchange="updateFlag('booking', this.checked)"><div class="slider"></div></label>
-          </div>
-          <div class="bg-panel border border-gray-800 rounded-xl p-5 flex items-center justify-between">
-            <div><h4 class="text-white font-medium">E-Commerce</h4><p class="text-xs text-gray-500">Tutup jualan produk.</p></div>
-            <label class="toggle-switch"><input type="checkbox" id="flag-ecommerce" onchange="updateFlag('ecommerce', this.checked)"><div class="slider"></div></label>
-          </div>
-        </div>
-      </div>
 
-      <!-- TAB: DATA -->
-      <div id="tab-data" class="tab-content hidden space-y-6">
-        <div>
-          <h3 class="text-2xl font-bold text-white mb-2">Pengurusan Data</h3>
-          <p class="text-gray-400 text-sm">Muat turun, pemulihan (restore) pangkalan data, dan pemotongan arkib.</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-panel border border-gray-800 rounded-xl p-6 text-center space-y-4">
-            <i class="fa-solid fa-cloud-arrow-down text-4xl text-primary"></i>
-            <h4 class="text-white font-bold">Strim Backup JSON</h4>
-            <p class="text-xs text-gray-400">Muat turun keseluruhan pangkalan data secara strim langsung (kalis Timeout 504).</p>
-            <button onclick="downloadBackup()" class="w-full bg-blue-600/20 text-primary border border-primary hover:bg-primary hover:text-white font-medium py-2 rounded-lg transition-colors">Muat Turun Backup</button>
-          </div>
-          <div class="bg-panel border border-gray-800 rounded-xl p-6 text-center space-y-4">
-            <i class="fa-solid fa-cloud-arrow-up text-4xl text-yellow-500"></i>
-            <h4 class="text-white font-bold">Pemulihan Data Pintar (Restore)</h4>
-            <p class="text-xs text-gray-400">Pilih fail JSON backup untuk dipulihkan ke dalam pelayan.</p>
-            <input type="file" id="restoreFile" class="hidden" accept=".json">
-            <button onclick="document.getElementById('restoreFile').click()" class="w-full bg-yellow-600/20 text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white font-medium py-2 rounded-lg transition-colors">Pilih Fail & Pulihkan</button>
-          </div>
-          <div class="bg-panel border border-gray-800 rounded-xl p-6 text-center space-y-4">
-            <i class="fa-solid fa-scissors text-4xl text-purple-500"></i>
-            <h4 class="text-white font-bold">Pemotongan Arkib (Prune)</h4>
-            <p class="text-xs text-gray-400">Gunting data jualan melebihi 2 tahun dan simpannya ke jadual sejarah.</p>
-            <button onclick="triggerPrune()" class="w-full bg-purple-600/20 text-purple-400 border border-purple-500 hover:bg-purple-600 hover:text-white font-medium py-2 rounded-lg transition-colors">Jalankan Pemotongan</button>
-          </div>
-          <div class="bg-panel border border-red-900 rounded-xl p-6 text-center space-y-4">
-            <i class="fa-solid fa-skull-crossbones text-4xl text-danger"></i>
-            <h4 class="text-danger font-bold">RESET KILANG 3-LAPIS</h4>
-            <p class="text-xs text-gray-400">AMARAN: Akan menghapuskan kesemua rekod syarikat di dalam Supabase.</p>
-            <button onclick="openResetModal()" class="w-full bg-danger text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors">KOSONGKAN DATA</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB: HEALTH -->
-      <div id="tab-health" class="tab-content hidden space-y-6">
-        <div class="flex justify-between items-center">
-          <div>
-            <h3 class="text-2xl font-bold text-white mb-2">Kesihatan Pelayan</h3>
-            <p class="text-gray-400 text-sm">Pantau kelajuan pelayan, memori cache, dan ralat terkini.</p>
-          </div>
-          <button onclick="fetchHealth()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-rotate-right"></i></button>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div class="bg-panel border border-gray-800 p-4 rounded-xl">
-            <p class="text-xs text-gray-500">Latensi Pangkalan Data</p>
-            <p class="text-xl font-bold text-white mt-1" id="metric-db">-- ms</p>
-          </div>
-          <div class="bg-panel border border-gray-800 p-4 rounded-xl">
-            <p class="text-xs text-gray-500">Status Memori RAM</p>
-            <p class="text-xl font-bold text-white mt-1" id="metric-ram">-- MB</p>
-          </div>
-          <div class="bg-panel border border-gray-800 p-4 rounded-xl">
-            <p class="text-xs text-gray-500">Status Supabase</p>
-            <p class="text-xl font-bold text-green-400 mt-1" id="metric-status">--</p>
-          </div>
-          <div class="bg-panel border border-gray-800 p-4 rounded-xl">
-            <p class="text-xs text-gray-500">eSMS Gateway</p>
-            <p class="text-xl font-bold text-white mt-1" id="metric-sms">--</p>
-          </div>
-        </div>
-        <div class="bg-panel border border-gray-800 rounded-xl p-4">
-          <div class="flex justify-between items-center mb-4">
-            <h4 class="text-white font-bold"><i class="fa-solid fa-terminal text-gray-500 mr-2"></i>Live Error Logs (Akhir 50 baris)</h4>
-            <span id="logFileName" class="text-xs text-gray-500">winston.log</span>
-          </div>
-          <div class="terminal-window" id="terminal-logs">Memuatkan log...</div>
-        </div>
-        <button onclick="flushCache()" class="w-full border border-gray-700 bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
-          <i class="fa-solid fa-broom"></i> Bersihkan Soft-Cache RAM
-        </button>
-      </div>
-
-      <!-- TAB: TOOLS -->
-      <div id="tab-tools" class="tab-content hidden space-y-6">
-        <div>
-          <h3 class="text-2xl font-bold text-white mb-2">Simulasi & Alat</h3>
-          <p class="text-gray-400 text-sm">Alat debugging untuk mempercepatkan penyelesaian pepijat pengguna.</p>
-        </div>
-        <div class="bg-panel border border-gray-800 rounded-xl p-6">
-          <h4 class="text-primary font-bold mb-4"><i class="fa-solid fa-masks-theater mr-2"></i>Mod Penyamaran (Login-As)</h4>
-          <p class="text-sm text-gray-400 mb-4">Log masuk ke sesi pelanggan atau staf tanpa mengetahui kata laluan mereka.</p>
-          <div class="flex flex-col md:flex-row gap-4">
-            <select id="impersonateRole" class="bg-black border border-gray-700 text-white rounded-lg px-4 py-2 focus:border-primary focus:outline-none">
-              <option value="customer">Pelanggan</option>
-              <option value="staff">Staf</option>
-              <option value="owner">Pemilik</option>
-            </select>
-            <input type="text" id="impersonateId" placeholder="ID Pengguna (UUID)" class="flex-1 bg-black border border-gray-700 text-white rounded-lg px-4 py-2 focus:border-primary focus:outline-none">
-            <button onclick="triggerImpersonation()" class="bg-primary hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">Jana Akses</button>
-          </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-panel border border-gray-800 rounded-xl p-6">
-            <h4 class="text-white font-bold mb-2">Mod Sandbox Pembayaran</h4>
-            <p class="text-xs text-gray-500 mb-4">Alihkan trafik pembayaran dari Live ke dev.toyyibpay.com. Tiada wang sebenar dipotong.</p>
-            <label class="toggle-switch">
-              <input type="checkbox" id="flag-sandbox" onchange="updateFlag('sandbox_payment', this.checked)">
-              <div class="slider"></div>
-            </label>
-          </div>
-          <div class="bg-panel border border-gray-800 rounded-xl p-6">
-            <h4 class="text-white font-bold mb-2">Pintasan Kecemasan OTP</h4>
-            <p class="text-xs text-gray-500 mb-4">Berhenti menghantar SMS. Pendaftaran menggunakan OTP statik: 123456.</p>
-            <label class="toggle-switch">
-              <input type="checkbox" id="flag-otp" onchange="updateFlag('otp_bypass', this.checked)">
-              <div class="slider"></div>
-            </label>
-          </div>
-          <div class="bg-panel border border-gray-800 rounded-xl p-6 col-span-1 md:col-span-2">
-            <h4 class="text-white font-bold mb-2">God Mode Push Notifications</h4>
-            <p class="text-xs text-gray-500 mb-4">Langgan pelayar peranti ini untuk menerima makluman kerosakan pelayan dan laporan ralat dari Node.js.</p>
-            <div class="flex gap-4">
-              <button onclick="subscribeDevPush()" class="flex-1 bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white py-2 rounded-lg text-sm">Aktifkan Langganan</button>
-              <button onclick="testDevPush()" class="flex-1 bg-green-900/40 border border-green-700 text-green-400 hover:bg-green-800 py-2 rounded-lg text-sm">Uji Notifikasi</button>
+            <!-- User / Logout -->
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-900 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-[0_0_10px_rgba(6,182,212,0.4)]">AR</div>
+                        <div>
+                            <p class="text-sm font-medium text-white">Arkitek Utama</p>
+                            <p class="text-[10px] text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Online</p>
+                        </div>
+                    </div>
+                    <button onclick="logoutDev()" title="Log Keluar" class="text-slate-500 hover:text-rose-500 transition-colors p-1.5 rounded-lg hover:bg-slate-800">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+        </aside>
 
-  <!-- Factory Reset Modal -->
-  <div id="resetModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-    <div class="bg-panel border border-red-900 rounded-2xl w-full max-w-md p-6">
-      <h3 class="text-xl font-bold text-danger mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>AMARAN PEMADAMAN DATA</h3>
-      <p class="text-gray-300 text-sm mb-4">Tindakan ini akan memadam SELURUH pangkalan data Dinspire. Tindakan ini tidak boleh diundur (Irreversible).</p>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs text-gray-500 mb-1">Sila taip: DELETE-ALL-DINSPIRE-DATA</label>
-          <input type="text" id="resetPhrase" class="w-full bg-black border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-danger outline-none" autocomplete="off">
-        </div>
-        <div>
-          <label class="block text-xs text-gray-500 mb-1">Kod Laluan / OTP Pembangun</label>
-          <input type="password" id="resetOTP" class="w-full bg-black border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-danger outline-none">
-        </div>
-        <div class="flex gap-4 mt-6">
-          <button onclick="closeResetModal()" class="flex-1 bg-gray-800 text-white py-2 rounded-lg">Batal</button>
-          <button onclick="executeFactoryReset()" class="flex-1 bg-danger hover:bg-red-700 text-white font-bold py-2 rounded-lg">KOSONGKAN SEKARANG</button>
-        </div>
-      </div>
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col relative overflow-hidden bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMGYxNzJhIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZTI5M2IiPjwvcmVjdD4KPC9zdmc+')] w-full">
+            
+            <!-- Top Bar -->
+            <header class="h-20 glass-panel border-b border-slate-800 flex items-center justify-between px-4 lg:px-8 z-10 sticky top-0 shrink-0">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-cyan-400 transition-colors">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                    <div>
+                        <h2 id="page-title" class="text-xl lg:text-2xl font-bold text-white tracking-tight">Pengurusan Data</h2>
+                        <p id="page-subtitle" class="text-xs text-slate-400 mt-1 hidden sm:block">Muat turun, pemulihan, dan pemotongan data.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 lg:gap-4">
+                    <button onclick="toggleCommandPalette()" class="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-900 border border-slate-700 hover:border-cyan-500/50 rounded-lg text-sm text-slate-400 transition-all w-48 lg:w-64 shadow-inner group">
+                        <i class="fa-solid fa-magnifying-glass group-hover:text-cyan-400 transition-colors"></i>
+                        <span class="flex-1 text-left hidden lg:block">Cari arahan...</span>
+                        <kbd class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 text-slate-500 hidden lg:block">Ctrl K</kbd>
+                    </button>
+                    <button onclick="refreshCurrentTab()" title="Muat Semula Tab" class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-cyan-400 transition-all">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto p-4 lg:p-8 relative">
+                
+                <!-- ========================================== -->
+                <!-- TAB 1: PENGURUSAN DATA (DATA)              -->
+                <!-- ========================================== -->
+                <div id="page-data" class="page-section block">
+                    
+                    <!-- Top Statistics -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-cyan-400">
+                                <i class="fa-solid fa-server"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Saiz Pangkalan Data</p>
+                                <p id="stat-dbsize" class="text-lg font-mono font-bold text-white">2.4 GB</p>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-emerald-400">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Backup Terakhir</p>
+                                <p id="stat-lastbackup" class="text-lg font-mono font-bold text-white">Hari ini</p>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-purple-400">
+                                <i class="fa-solid fa-scissors"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Data Boleh Dipotong</p>
+                                <p id="stat-prunable" class="text-lg font-mono font-bold text-white">450 MB</p>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-amber-400">
+                                <i class="fa-solid fa-code-branch"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Versi Skema</p>
+                                <p class="text-lg font-mono font-bold text-white">v2.4.1</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Data Grid -->
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        
+                        <!-- Left Column: Tools (Span 2) -->
+                        <div class="xl:col-span-2 space-y-6">
+                            
+                            <!-- Backup & Restore Card -->
+                            <div class="glass-panel rounded-2xl overflow-hidden border border-slate-700">
+                                <!-- Tabs Header -->
+                                <div class="flex border-b border-slate-700 bg-slate-900/50">
+                                    <button onclick="switchDataTab('backup-tab', this)" class="data-tab-btn flex-1 py-3 text-sm font-medium text-cyan-400 border-b-2 border-cyan-400 bg-cyan-500/5 transition-all">
+                                        <i class="fa-solid fa-cloud-arrow-down mr-2"></i> Backup
+                                    </button>
+                                    <button onclick="switchDataTab('restore-tab', this)" class="data-tab-btn flex-1 py-3 text-sm font-medium text-slate-400 hover:text-white border-b-2 border-transparent hover:border-slate-600 transition-all">
+                                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Pemulihan (Restore)
+                                    </button>
+                                </div>
+                                
+                                <!-- Tab Content: Backup -->
+                                <div id="backup-tab" class="p-6 data-tab-content block">
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                                        <div class="flex-1">
+                                            <h4 class="text-lg font-bold text-white mb-1">Strim Backup JSON</h4>
+                                            <p class="text-sm text-slate-400">Muat turun keseluruhan pangkalan data secara strim langsung (kalis Timeout 504).</p>
+                                            <div class="flex items-center gap-4 mt-4">
+                                                <label class="flex items-center gap-2 cursor-pointer">
+                                                    <input type="checkbox" id="backup-audit-toggle" class="sr-only toggle-checkbox peer" checked>
+                                                    <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]"></div>
+                                                    <span class="text-xs text-slate-300">Sertakan Log Audit</span>
+                                                </label>
+                                                <label class="flex items-center gap-2 cursor-pointer">
+                                                    <input type="checkbox" id="backup-gzip-toggle" class="sr-only toggle-checkbox peer">
+                                                    <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]"></div>
+                                                    <span class="text-xs text-slate-300">Mampatkan (JSON)</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <button onclick="downloadBackup()" id="btnDownloadBackup" class="w-full sm:w-auto px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-medium rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] flex items-center justify-center gap-3 shrink-0">
+                                            <i class="fa-solid fa-download"></i> Muat Turun Backup
+                                        </button>
+                                    </div>
+                                    <!-- Progress Bar (Shown when downloading) -->
+                                    <div class="mt-6 hidden" id="download-progress">
+                                        <div class="flex justify-between text-xs text-slate-400 mb-1">
+                                            <span id="progress-status-label">Menyediakan fail sandaran...</span>
+                                            <span id="progress-text">0%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                            <div class="bg-cyan-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%" id="progress-bar"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Content: Restore -->
+                                <div id="restore-tab" class="p-6 data-tab-content hidden">
+                                    <input type="file" id="restoreFileInput" class="hidden" accept=".json">
+                                    <div id="dropZone" onclick="document.getElementById('restoreFileInput').click()" class="border-2 border-dashed border-slate-700 rounded-xl p-8 text-center hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all cursor-pointer group">
+                                        <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4 group-hover:bg-cyan-500/20 transition-all">
+                                            <i class="fa-solid fa-file-import text-2xl text-slate-500 group-hover:text-cyan-400 transition-all"></i>
+                                        </div>
+                                        <h4 class="text-lg font-bold text-white mb-1">Lepaskan Fail JSON Di Sini</h4>
+                                        <p class="text-sm text-slate-400 mb-4">Atau klik untuk memilih fail sandaran dari komputer anda.</p>
+                                        <button type="button" class="px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white hover:bg-slate-700 transition-colors pointer-events-none">
+                                            Pilih Fail
+                                        </button>
+                                    </div>
+                                    <div class="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-3">
+                                        <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i>
+                                        <p class="text-xs text-amber-200/80">Amaran: Proses pemulihan akan menimpa (upsert) data sedia ada. Pastikan anda mempunyai fail sandaran terkini sebelum meneruskan.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Prune Card -->
+                            <div class="glass-panel rounded-2xl p-6 border border-slate-700 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-3xl rounded-full"></div>
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <i class="fa-solid fa-scissors text-purple-400"></i>
+                                            <h4 class="text-lg font-bold text-white">Pemotongan Arkib (Prune)</h4>
+                                        </div>
+                                        <p class="text-sm text-slate-400">Gunting data jualan melebihi 2 tahun dan simpan ke jadual sejarah (Arkib).</p>
+                                        <div class="flex items-center gap-4 mt-4 text-xs text-slate-500">
+                                            <span><i class="fa-solid fa-database mr-1"></i> Rekod lampau akan dipindahkan</span>
+                                            <span><i class="fa-solid fa-clock mr-1"></i> Anggaran masa: ~5-15 saat</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="triggerPrune()" class="w-full sm:w-auto px-6 py-3 bg-purple-600/20 border border-purple-500/50 hover:bg-purple-600 text-purple-300 hover:text-white font-medium rounded-xl transition-all shrink-0">
+                                        Jalankan Pemotongan
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Right Column: Danger Zone & Audit (Span 1) -->
+                        <div class="xl:col-span-1 space-y-6">
+                            
+                            <!-- Danger Zone -->
+                            <div class="border border-rose-500/30 bg-rose-500/5 rounded-2xl p-6 relative overflow-hidden">
+                                <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/20 blur-3xl rounded-full"></div>
+                                
+                                <div class="text-center mb-6 relative z-10">
+                                    <i class="fa-solid fa-skull-crossbones text-4xl text-rose-500 mb-3 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]"></i>
+                                    <h4 class="text-lg font-bold text-white tracking-wider">RESET KILANG 3-LAPIS</h4>
+                                    <p class="text-xs text-slate-400 mt-2">Tindakan ini tidak boleh diundur. Akan menghapuskan <strong class="text-rose-400">kesemua rekod</strong> syarikat di dalam Supabase.</p>
+                                </div>
+                                
+                                <div class="space-y-3 relative z-10">
+                                    <label class="block text-xs font-medium text-slate-400">Taip <strong class="text-rose-400">PADAM</strong> untuk mengesahkan:</label>
+                                    <input type="text" id="confirm-reset" placeholder="PADAM" class="w-full bg-slate-950 border border-slate-800 text-white rounded-lg px-4 py-2.5 outline-none focus:border-rose-500 transition-all font-mono text-sm uppercase" oninput="checkResetInput()">
+                                    
+                                    <button id="btn-reset" disabled onclick="openResetModal()" class="w-full py-3 bg-slate-800 text-slate-500 font-bold rounded-lg cursor-not-allowed transition-all flex items-center justify-center gap-2 border border-slate-700">
+                                        <i class="fa-solid fa-power-off"></i> KOSONGKAN DATA
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Audit Log -->
+                            <div class="glass-panel rounded-2xl p-5 border border-slate-700">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h4 class="text-sm font-bold text-white">Log Audit Data</h4>
+                                    <button onclick="renderAuditLogs()" class="text-slate-500 hover:text-cyan-400 text-xs"><i class="fa-solid fa-rotate"></i></button>
+                                </div>
+                                <div id="auditLogList" class="space-y-3">
+                                    <!-- Injected via JavaScript -->
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- TAB 2: KESIHATAN SISTEM (HEALTH)           -->
+                <!-- ========================================== -->
+                <div id="page-health" class="page-section hidden">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+                        <div class="glass-panel rounded-2xl p-5 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Latensi Pangkalan Data</p>
+                                <i class="fa-solid fa-bolt text-amber-400"></i>
+                            </div>
+                            <h3 id="metric-db" class="text-3xl font-mono font-bold text-white">--<span class="text-sm text-slate-500 ml-1">ms</span></h3>
+                            <svg class="w-full h-8 mt-4 stroke-amber-400/50" fill="none" viewBox="0 0 100 20" preserveAspectRatio="none">
+                                <path id="sparkline-path" d="M0 15 L10 12 L20 18 L30 5 L40 10 L50 2 L60 8 L70 15 L80 5 L90 10 L100 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="glass-panel rounded-2xl p-5 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Memori RAM</p>
+                                <i class="fa-solid fa-memory text-cyan-400"></i>
+                            </div>
+                            <div class="flex items-center gap-4 mt-2">
+                                <div class="relative w-12 h-12 rounded-full border-4 border-slate-800 flex items-center justify-center shrink-0">
+                                    <svg class="absolute top-0 left-0 w-full h-full -rotate-90">
+                                        <circle cx="20" cy="20" r="18" fill="none" stroke="#06b6d4" stroke-width="3" stroke-dasharray="113" stroke-dashoffset="60" id="ramCircle" class="drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]"></circle>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 id="metric-ram" class="text-2xl font-mono font-bold text-white">--<span class="text-sm text-slate-500 ml-1">MB</span></h3>
+                                    <p class="text-[10px] text-slate-500">Heap Used</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-panel rounded-2xl p-5">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Status Supabase</p>
+                                <i class="fa-solid fa-server text-emerald-400"></i>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                                <h3 id="metric-status" class="text-xl font-bold text-emerald-400 tracking-wide">MEMERIKSA...</h3>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-2 font-mono">Region: ap-southeast-1</p>
+                        </div>
+                        <div class="glass-panel rounded-2xl p-5">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">eSMS Gateway</p>
+                                <i class="fa-solid fa-message text-blue-400"></i>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <h3 id="metric-sms" class="text-3xl font-mono font-bold text-white">--</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Terminal Logs -->
+                    <div class="glass-panel rounded-2xl overflow-hidden mb-6 border-slate-700">
+                        <div class="bg-slate-900 px-4 lg:px-5 py-3 border-b border-slate-800 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-terminal text-slate-500 text-xs"></i>
+                                <span class="text-xs font-mono text-slate-300">Live Error Logs (Akhir 50 baris)</span>
+                                <span id="logFileName" class="text-[10px] font-mono text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40 ml-2">winston.log</span>
+                            </div>
+                            <div class="flex gap-1.5 lg:gap-2">
+                                <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-emerald-500/80"></span>
+                            </div>
+                        </div>
+                        <div id="terminal-logs" class="p-4 lg:p-5 bg-[#0a0f1a] font-mono text-xs lg:text-sm h-64 overflow-y-auto whitespace-pre-wrap leading-relaxed text-slate-400">
+                            Memuatkan log terkini dari pelayan...
+                        </div>
+                    </div>
+
+                    <!-- Quick Action -->
+                    <div class="flex justify-end">
+                        <button onclick="flushCache()" class="px-6 py-3 border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg">
+                            <i class="fa-solid fa-broom text-cyan-400"></i>
+                            <span>Bersihkan Soft-Cache RAM</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- TAB 3: PAPAN SUIS (SWITCHBOARD)            -->
+                <!-- ========================================== -->
+                <div id="page-switchboard" class="page-section hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                        <div class="lg:col-span-2 space-y-4">
+                            <div class="flex justify-between items-end mb-2">
+                                <h3 class="text-lg font-bold text-white">Papan Suis Pembedahan</h3>
+                                <p class="text-xs text-slate-500 hidden sm:block">Matikan portal/fungsi secara real-time.</p>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="glass-panel p-4 lg:p-5 rounded-xl flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-white font-medium text-sm">Portal Pelanggan</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Akses awam pelanggan.</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flag-customer" onchange="updateFlag('customer_portal', this.checked)" class="sr-only toggle-checkbox peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]"></div>
+                                    </label>
+                                </div>
+                                <div class="glass-panel p-4 lg:p-5 rounded-xl flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-white font-medium text-sm">Portal Staf</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Akses punch card pekerja.</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flag-staff" onchange="updateFlag('staff_portal', this.checked)" class="sr-only toggle-checkbox peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]"></div>
+                                    </label>
+                                </div>
+                                <div class="glass-panel p-4 lg:p-5 rounded-xl flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-white font-medium text-sm">Fungsi Tempahan</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Tutup butang Tempah Gunting/Rawatan.</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flag-booking" onchange="updateFlag('booking', this.checked)" class="sr-only toggle-checkbox peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]"></div>
+                                    </label>
+                                </div>
+                                <div class="glass-panel p-4 lg:p-5 rounded-xl flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-white font-medium text-sm">E-Commerce</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Tutup jualan produk.</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flag-ecommerce" onchange="updateFlag('ecommerce', this.checked)" class="sr-only toggle-checkbox peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1 mt-4 lg:mt-0">
+                            <div class="flex justify-between items-end mb-2">
+                                <h3 class="text-lg font-bold text-rose-500">Danger Zone</h3>
+                            </div>
+                            <div class="border border-rose-500/30 bg-rose-500/5 rounded-xl p-5 relative overflow-hidden h-full flex flex-col justify-center">
+                                <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/20 blur-3xl rounded-full"></div>
+                                <div class="text-center mb-4">
+                                    <i class="fa-solid fa-triangle-exclamation text-3xl text-rose-500 mb-2 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"></i>
+                                    <h4 class="text-white font-bold tracking-wider">KUNCI KESELURUHAN SISTEM</h4>
+                                    <p class="text-[10px] text-slate-400 mt-1">Mengaktifkan Mod Penyelenggaraan (HTTP 503). Hanya Webhook & Dev dikecualikan.</p>
+                                </div>
+                                <div class="flex items-center justify-center gap-3">
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flag-maintenance" onchange="updateFlag('maintenance_mode', this.checked)" class="sr-only toggle-checkbox peer">
+                                        <div class="w-14 h-7 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-rose-600 shadow-[0_0_15px_rgba(239,68,68,0.5)]"></div>
+                                    </label>
+                                    <span id="maintenanceStatusLabel" class="text-xs font-mono font-semibold text-slate-400">STATUS: TIDAK AKTIF</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- TAB 4: SIMULASI & ALAT (TOOLS)             -->
+                <!-- ========================================== -->
+                <div id="page-tools" class="page-section hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass-panel rounded-2xl p-6 lg:col-span-2 border border-slate-700">
+                            <div class="flex items-center gap-3 mb-4">
+                                <i class="fa-solid fa-user-secret text-cyan-400 text-xl"></i>
+                                <h3 class="text-lg font-bold text-white">Mod Penyamaran (Login-As)</h3>
+                            </div>
+                            <p class="text-sm text-slate-400 mb-6">Log masuk ke sesi pelanggan, staf, atau pemilik tanpa mengetahui kata laluan mereka.</p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <select id="impersonateRole" class="bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2.5 outline-none focus:border-cyan-500 w-full sm:w-48">
+                                    <option value="customer">Pelanggan</option>
+                                    <option value="staff">Staf</option>
+                                    <option value="owner">Pemilik</option>
+                                    <option value="admin">Pentadbir</option>
+                                </select>
+                                <input type="text" id="impersonateId" placeholder="ID Pengguna (UUID / No Tel / ID)" class="bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2.5 outline-none focus:border-cyan-500 flex-1 font-mono">
+                                <button onclick="triggerImpersonation()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-medium px-6 py-2.5 rounded-lg transition-colors whitespace-nowrap shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    <span>Jana Akses</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div>
+                                <h3 class="text-md font-bold text-white mb-1">Mod Sandbox Pembayaran</h3>
+                                <p class="text-xs text-slate-400">Alihkan trafik pembayaran dari Live ke dev.toyyibpay.com. Tiada wang sebenar dipotong.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="flag-sandbox" onchange="updateFlag('sandbox_payment', this.checked)" class="sr-only toggle-checkbox peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]"></div>
+                            </label>
+                        </div>
+
+                        <div class="glass-panel rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div>
+                                <h3 class="text-md font-bold text-white mb-1">Pintasan Kecemasan OTP</h3>
+                                <p class="text-xs text-slate-400">Berhenti menghantar SMS. Pendaftaran menggunakan OTP statik: 123456.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="flag-otp" onchange="updateFlag('otp_bypass', this.checked)" class="sr-only toggle-checkbox peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]"></div>
+                            </label>
+                        </div>
+
+                        <!-- Push Notification Tester -->
+                        <div class="glass-panel rounded-2xl p-6 lg:col-span-2 border border-slate-700">
+                            <h4 class="text-white font-bold mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-bell text-cyan-400"></i> God Mode Push Notifications
+                            </h4>
+                            <p class="text-xs text-slate-400 mb-4">Langgan pelayar peranti ini untuk menerima makluman kerosakan pelayan dan laporan ralat dari Node.js.</p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button onclick="subscribeDevPush()" class="flex-1 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white py-2.5 px-4 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-plug"></i> Aktifkan Langganan
+                                </button>
+                                <button onclick="testDevPush()" class="flex-1 bg-emerald-950/40 border border-emerald-700/60 text-emerald-400 hover:bg-emerald-900/50 py-2.5 px-4 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-paper-plane"></i> Uji Notifikasi
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- FPX Webhook Simulation -->
+                        <div class="glass-panel rounded-2xl p-6 lg:col-span-2 border border-slate-700">
+                            <h4 class="text-white font-bold mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-money-bill-transfer text-amber-400"></i> Simulasi Webhook FPX (ToyyibPay)
+                            </h4>
+                            <p class="text-xs text-slate-400 mb-4">Simulasikan respons status bayaran gateway tanpa memotong wang sebenar.</p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <input type="text" id="simFpxOrderNo" placeholder="No Order (cth: DIN-1729482)" class="bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2.5 outline-none focus:border-amber-500 flex-1 font-mono text-sm">
+                                <select id="simFpxStatus" class="bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2.5 outline-none focus:border-amber-500 w-full sm:w-48 text-sm">
+                                    <option value="1">Status 1 (Berjaya)</option>
+                                    <option value="3">Status 3 (Gagal)</option>
+                                </select>
+                                <button onclick="triggerFpxSimulation()" class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-6 py-2.5 rounded-lg transition-colors whitespace-nowrap shadow-[0_0_15px_rgba(245,158,11,0.4)] flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-play"></i>
+                                    <span>Simulasi FPX</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
     </div>
-  </div>
 
-  <script src="/dev-sys-9x8q2/js/app.js"></script>
+    <!-- COMMAND PALETTE MODAL (Ctrl + K) -->
+    <div id="commandPalette" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden flex items-start justify-center pt-20 lg:pt-32 px-4" onclick="handlePaletteBackdrop(event)">
+        <div class="w-full max-w-xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden glass-panel">
+            <div class="flex items-center px-4 py-3.5 border-b border-slate-800">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 mr-3"></i>
+                <input type="text" id="commandInput" placeholder="Taip arahan atau navigasi..." class="flex-1 bg-transparent border-none outline-none text-white placeholder-slate-500 font-sans text-sm lg:text-base">
+                <kbd class="font-mono text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700 text-slate-400">ESC</kbd>
+            </div>
+            <div id="commandResults" class="p-2 max-h-80 overflow-y-auto space-y-1">
+                <div class="px-3 py-2 text-[10px] font-semibold text-slate-500 uppercase tracking-wider font-mono">Tindakan Pantas</div>
+                <button onclick="execCmd(() => switchTab('switchboard', 'Papan Suis', 'Urus suis fungsi sistem secara real-time.', document.querySelectorAll('.nav-item')[0]))" class="w-full flex items-center px-3 py-2.5 text-sm text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-400 rounded-xl transition-colors text-left group">
+                    <i class="fa-solid fa-toggle-on w-7 text-center text-slate-500 group-hover:text-cyan-400"></i> Buka Papan Suis
+                </button>
+                <button onclick="execCmd(() => switchTab('data', 'Pengurusan Data', 'Muat turun, pemulihan, dan pemotongan data.', document.querySelectorAll('.nav-item')[1]))" class="w-full flex items-center px-3 py-2.5 text-sm text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-400 rounded-xl transition-colors text-left group">
+                    <i class="fa-solid fa-database w-7 text-center text-slate-500 group-hover:text-cyan-400"></i> Buka Pengurusan Data & Sandaran
+                </button>
+                <button onclick="execCmd(() => switchTab('health', 'Kesihatan Sistem', 'Pantau prestasi masa nyata dan ralat terkini.', document.querySelectorAll('.nav-item')[2]))" class="w-full flex items-center px-3 py-2.5 text-sm text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-400 rounded-xl transition-colors text-left group">
+                    <i class="fa-solid fa-heart-pulse w-7 text-center text-slate-500 group-hover:text-cyan-400"></i> Buka Kesihatan Sistem & Log
+                </button>
+                <button onclick="execCmd(() => switchTab('tools', 'Simulasi & Alat', 'Alat debugging dan simulasi pembayaran.', document.querySelectorAll('.nav-item')[3]))" class="w-full flex items-center px-3 py-2.5 text-sm text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-400 rounded-xl transition-colors text-left group">
+                    <i class="fa-solid fa-flask w-7 text-center text-slate-500 group-hover:text-cyan-400"></i> Buka Simulasi & Alat
+                </button>
+                <div class="px-3 py-2 text-[10px] font-semibold text-slate-500 uppercase tracking-wider font-mono pt-2">Operasi Pelayan</div>
+                <button onclick="execCmd(downloadBackup)" class="w-full flex items-center px-3 py-2.5 text-sm text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-400 rounded-xl transition-colors text-left group">
+                    <i class="fa-solid fa-cloud-arrow-down w-7 text-center text-slate-500 group-hover:text-cyan-400"></i> Strim Muat Turun Backup JSON
+                </button>
+                <button onclick="execCmd(flushCache)" class="w-full flex items-center px-3 py-2.5 text-sm text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-400 rounded-xl transition-colors text-left group">
+                    <i class="fa-solid fa-broom w-7 text-center text-slate-500 group-hover:text-cyan-400"></i> Bersihkan Soft-Cache RAM
+                </button>
+                <button onclick="execCmd(triggerPrune)" class="w-full flex items-center px-3 py-2.5 text-sm text-slate-300 hover:bg-purple-500/10 hover:text-purple-400 rounded-xl transition-colors text-left group">
+                    <i class="fa-solid fa-scissors w-7 text-center text-slate-500 group-hover:text-purple-400"></i> Jalankan Pemotongan Arkib Tahunan
+                </button>
+                <button onclick="execCmd(logoutDev)" class="w-full flex items-center px-3 py-2.5 text-sm text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors text-left group">
+                    <i class="fa-solid fa-power-off w-7 text-center text-rose-500"></i> Log Keluar dari God Mode
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FACTORY RESET 3-LAYER CONFIRMATION MODAL -->
+    <div id="resetModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+        <div class="glass-panel border border-rose-500/40 bg-slate-900/90 rounded-2xl w-full max-w-md p-6 relative overflow-hidden shadow-2xl">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/20 blur-3xl rounded-full"></div>
+            <h3 class="text-xl font-bold text-rose-400 mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation"></i> AMARAN PEMADAMAN KILANG
+            </h3>
+            <p class="text-slate-300 text-sm mb-4">Tindakan ini akan memadam <strong class="text-rose-400">SELURUH</strong> rekod di pangkalan data Supabase. Tindakan ini mutlak dan tidak boleh diundur.</p>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">Sila taip: <span class="text-rose-400 font-bold select-all">DELETE-ALL-DINSPIRE-DATA</span></label>
+                    <input type="text" id="resetPhrase" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white font-mono text-sm focus:border-rose-500 outline-none" autocomplete="off" placeholder="DELETE-ALL-DINSPIRE-DATA">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">Kod Laluan / OTP Pembangun</label>
+                    <input type="password" id="resetOTP" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white font-mono text-sm focus:border-rose-500 outline-none" placeholder="••••••••">
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeResetModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-lg text-sm transition-colors">Batal</button>
+                    <button onclick="executeFactoryReset()" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-lg text-sm transition-all shadow-[0_0_15px_rgba(239,68,68,0.5)]">KOSONGKAN SEKARANG</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="/dev-sys-9x8q2/js/app.js"></script>
 </body>
 </html>
