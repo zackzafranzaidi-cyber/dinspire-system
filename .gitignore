@@ -3,3 +3,5 @@ node_modules/
 .DS_Store
 crash.txt
 logs/
+supabase/*_dump.sql
+*.sql.dump

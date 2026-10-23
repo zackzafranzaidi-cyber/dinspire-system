@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "sync:db": "node supabase/sync_data_cloud_to_local.js"
   },
   "keywords": [],
   "author": "",
