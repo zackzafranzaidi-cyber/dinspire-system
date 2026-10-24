@@ -39,7 +39,8 @@ const tablesInOrder = [
   'reviews',
   'edit_requests',
   'historical_sales',
-  'push_subscriptions'
+  'push_subscriptions',
+  'seen_badges'
 ];
 
 async function fetchAllRowsFromCloud(table) {

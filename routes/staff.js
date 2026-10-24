@@ -815,8 +815,14 @@ router.delete("/leaves/:id", authenticate, requireRole(["staff"]), async (req, r
 
 router.get("/my-seen-badge", authenticate, requireRole(["staff", "owner"]), async (req, res) => {
     try {
-        const { data } = await supabase.from("settings").select("setting_value").eq("setting_key", `seen_leaves_${req.user.id}`).maybeSingle();
-        res.json({ status: "success", count: data ? parseInt(data.setting_value) : 0 });
+        const { data } = await supabase
+            .from("seen_badges")
+            .select("seen_count")
+            .eq("user_type", "staff")
+            .eq("user_id", req.user.id)
+            .eq("badge_type", "leaves")
+            .maybeSingle();
+        res.json({ status: "success", count: data ? (data.seen_count || 0) : 0 });
     } catch(err) {
         res.json({ status: "error", count: 0 });
     }
@@ -824,11 +830,13 @@ router.get("/my-seen-badge", authenticate, requireRole(["staff", "owner"]), asyn
 
 router.post("/update-seen-badge", authenticate, requireRole(["staff", "owner"]), async (req, res) => {
     try {
-        await supabase.from("settings").upsert({
-            setting_key: `seen_leaves_${req.user.id}`,
-            setting_value: String(req.body.count),
-            description: "Staff badge seen count"
-        });
+        await supabase.from("seen_badges").upsert({
+            user_type: "staff",
+            user_id: req.user.id,
+            badge_type: "leaves",
+            seen_count: parseInt(req.body.count) || 0,
+            updated_at: new Date().toISOString()
+        }, { onConflict: "user_type, user_id, badge_type" });
         res.json({ status: "success" });
     } catch(err) {
         res.json({ status: "error" });

@@ -325,6 +325,7 @@ Sistem menggunakan **20 jadual** dalam skema `public` Supabase PostgreSQL.
 | `reviews` | Ulasan pelanggan (1-5 bintang) | `no_booking` |
 | `historical_sales` | Arkib jualan tahunan | `tahun`, `bulan`, `top_staff (JSONB)` |
 | `push_subscriptions` | Langganan Web-Push mengikut peranan & pengguna | `user_type`, `user_id`, `subscription (JSONB)` |
+| `seen_badges` | Rekod bilangan badge yang telah dilihat (seen count) | `user_type`, `user_id`, `badge_type`, `seen_count` |
 
 ### 7.5 Kekangan Semakan (Check Constraints)
 
