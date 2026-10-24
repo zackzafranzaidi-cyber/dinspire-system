@@ -627,6 +627,16 @@ function calculateDashboardStats() {
   if (commEl) commEl.innerText = Math.round(commission).toLocaleString("en-US");
 
   // 4. Sasaran Bonus
+  const isPartTime = staffData.status_pekerja === 'part_time';
+  const heroMeter = document.getElementById("hero-meter") || document.querySelector(".hero .meter");
+  if (heroMeter) {
+    if (isPartTime) {
+      heroMeter.style.display = "none";
+    } else {
+      heroMeter.style.display = "block";
+    }
+  }
+
   const peratusBonusEl = document.getElementById("peratus-bonus");
   if (peratusBonusEl) peratusBonusEl.innerText = `${progressPct}%`;
 

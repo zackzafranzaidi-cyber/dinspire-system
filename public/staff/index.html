@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.64";
+      const CURRENT_APP_VERSION = "1.1.65";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -327,7 +327,7 @@
               </div>
               <p class="amount num"><small>RM</small><span id="dash-commission">0</span></p>
               <p class="sub">Sepanjang bulan ini</p>
-              <div class="meter">
+              <div class="meter" id="hero-meter">
                 <div class="meter-row num">
                   <span>Sasaran bonus</span>
                   <span id="peratus-bonus">0%</span>
@@ -873,7 +873,7 @@
       </nav>
     </div>
 
-    <script src="/staff/js/staff.js?v=42"></script>
+    <script src="/staff/js/staff.js?v=43"></script>
       <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
