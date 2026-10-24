@@ -540,6 +540,7 @@ async function loadDashboardData() {
          staffData.monthlyCashOnHand = data.monthlyCashOnHand || 0;
          staffData.monthlySales = data.monthlySales || 0;
          staffData.monthlyCustomers = data.monthlyCustomers || 0;
+         staffData.basicSalary = data.basicSalary || 1800;
          staffData.isPunchedIn = data.isPunchedIn || false;
            staffData.status_pekerja = data.status_pekerja;
          calculateDashboardStats();
@@ -594,8 +595,6 @@ async function loadDashboardData() {
 
 function calculateDashboardStats() {
   const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
   let monthlyCustomers = staffData.monthlyCustomers || 0;
   let monthlySales = staffData.monthlySales || 0;
   let cashOnHand = staffData.monthlyCashOnHand || 0;
@@ -610,32 +609,79 @@ function calculateDashboardStats() {
     ratingPct = Math.round((totalStars / staffData.reviews.length / 5) * 100);
   }
 
-  document.getElementById("dash-rating").innerText = `${ratingPct}%`;
-  document.getElementById("dash-customers").innerText = monthlyCustomers;
-  document.getElementById("dash-commission").innerText =
-    `RM ${commission.toFixed(0)}`;
-    
   const basicSalary = staffData.basicSalary || 1800;
   let bones = commission > basicSalary ? commission - basicSalary : 0;
-  const bonesElement = document.getElementById("dash-bones");
+  let bonusTarget = basicSalary;
+  let progressPct = Math.min(100, Math.round((commission / bonusTarget) * 100));
 
-  if (bonesElement) {
-    if (staffData.status_pekerja === 'part_time') {
-      bonesElement.closest('.dash-card').style.display = 'none';
+  // 1. Prestasi Staf
+  const ratingEl = document.getElementById("dash-rating");
+  if (ratingEl) ratingEl.innerText = `${ratingPct}%`;
+
+  // 2. Total Pelanggan
+  const custEl = document.getElementById("dash-customers");
+  if (custEl) custEl.innerText = monthlyCustomers.toLocaleString("en-US");
+
+  // 3. Komisen Terkumpul
+  const commEl = document.getElementById("dash-commission");
+  if (commEl) commEl.innerText = Math.round(commission).toLocaleString("en-US");
+
+  // 4. Sasaran Bonus
+  const peratusBonusEl = document.getElementById("peratus-bonus");
+  if (peratusBonusEl) peratusBonusEl.innerText = `${progressPct}%`;
+
+  const meterNoteEl = document.getElementById("meter-note-text");
+  if (meterNoteEl) {
+    if (commission >= bonusTarget) {
+      meterNoteEl.innerText = "Tahniah! Sasaran bonus telah dicapai!";
     } else {
-      bonesElement.innerText = `RM ${bones.toFixed(0)}`;
-      bonesElement.closest('.dash-card').style.display = 'flex'; // or whatever the default is
+      const remaining = Math.round(bonusTarget - commission);
+      meterNoteEl.innerText = `Lagi RM ${remaining.toLocaleString("en-US")} untuk layak menerima bonus`;
     }
   }
 
-  
-  const bonesSubtitleElement = document.getElementById("dash-bones-subtitle");
-  if (bonesSubtitleElement) {
-    bonesSubtitleElement.innerText = `Komisen melebihi RM ${basicSalary.toLocaleString()}`;
+  // 5. Bones (Bonus)
+  const cardBones = document.getElementById("card-bones") || (document.getElementById("dash-bones") ? document.getElementById("dash-bones").closest('.dash-card') : null);
+  const bonesElement = document.getElementById("dash-bones");
+  if (cardBones) {
+    if (staffData.status_pekerja === 'part_time') {
+      cardBones.style.display = 'none';
+    } else {
+      cardBones.style.display = 'block';
+      if (bonesElement) bonesElement.innerText = `RM ${Math.round(bones).toLocaleString("en-US")}`;
+    }
   }
 
-  document.getElementById("dash-cash").innerText =
-    `RM ${cashOnHand.toFixed(0)}`;
+  const bonusStartEl = document.getElementById("bonus-start");
+  if (bonusStartEl) bonusStartEl.innerText = "RM 0";
+
+  const bonusTargetEl = document.getElementById("bonus-target");
+  if (bonusTargetEl) bonusTargetEl.innerText = `RM ${basicSalary.toLocaleString("en-US")}`;
+
+  const bonesSubtitleElement = document.getElementById("dash-bones-subtitle");
+  if (bonesSubtitleElement) {
+    bonesSubtitleElement.innerText = `Komisen melebihi RM ${basicSalary.toLocaleString("en-US")}`;
+  }
+
+  // 6. Cash On Hand
+  const cashEl = document.getElementById("dash-cash");
+  if (cashEl) cashEl.innerText = `RM ${Math.round(cashOnHand).toLocaleString("en-US")}`;
+
+  // 7. Animasi Progress Fill & SVG Ring
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const fillHeroEl = document.getElementById("fill-hero");
+      if (fillHeroEl) fillHeroEl.style.width = `${progressPct}%`;
+
+      const fillBonusEl = document.getElementById("fill-bonus");
+      if (fillBonusEl) fillBonusEl.style.width = `${progressPct}%`;
+
+      const ringEl = document.getElementById("ring");
+      if (ringEl) {
+        ringEl.style.strokeDashoffset = String(169.6 * (1 - ratingPct / 100));
+      }
+    });
+  });
 }
 
 function renderBookingList() {

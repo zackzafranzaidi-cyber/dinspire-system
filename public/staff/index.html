@@ -5,7 +5,7 @@
       // ==========================================
       // KAWALAN CACHE AUTOMATIK (AUTO CACHE BUSTER)
       // ==========================================
-      const CURRENT_APP_VERSION = "1.1.62";
+      const CURRENT_APP_VERSION = "1.1.63";
       const storedVersion = localStorage.getItem("din_app_version");
       
       if (storedVersion !== CURRENT_APP_VERSION) {
@@ -47,7 +47,11 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/staff/css/staff.css?v=29" />
+        <!-- Google Fonts for Staff Dashboard UI/UX -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/staff/css/staff.css?v=30" />
     <link rel="stylesheet" href="/staff/css/loader.css?v=10" />
       <link rel="manifest" href="/staff/manifest_staff.json?v=14">
     <meta name="theme-color" content="#ffffff">
@@ -146,6 +150,22 @@
         <div class="loading-text">TRIMMING</div>
     </div>
     
+        <!-- SVG SPRITE DEFS FOR STAFF DASHBOARD -->
+    <svg width="0" height="0" style="position:absolute; display:none;" aria-hidden="true">
+      <defs>
+        <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.8l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5L2.6 9.6l6.5-.9z"/></symbol>
+        <symbol id="i-users" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="12" cy="8" r="3.3"/><circle cx="5.2" cy="9.6" r="2.4"/><circle cx="18.8" cy="9.6" r="2.4"/><path d="M12 13c-3.3 0-6 1.8-6 4v1.5h12V17c0-2.2-2.7-4-6-4z"/><path d="M5.2 13c-2.2 0-4.2 1.2-4.2 2.8V18h3.6v-1c0-1.5.7-2.9 1.9-3.8-.4-.1-.8-.2-1.3-.2z"/><path d="M18.8 13c-.5 0-.9.1-1.3.2 1.2.9 1.9 2.3 1.9 3.8v1H23v-2.2c0-1.6-2-2.8-4.2-2.8z"/></g></symbol>
+        <symbol id="i-wallet" viewBox="0 0 24 24"><path fill="currentColor" d="M4 5.5A2.5 2.5 0 016.5 3H19a1 1 0 011 1v2H6.5a.5.5 0 000 1H20a1 1 0 011 1v11a2 2 0 01-2 2H6a3 3 0 01-3-3V6.5c0-.4.1-.7.2-1zM16.5 13a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/></symbol>
+        <symbol id="i-gift" viewBox="0 0 24 24"><path fill="currentColor" d="M20 7h-2.2c.4-.5.7-1.200.7-2 0-1.700-1.300-3-3-3-1.400 0-2.500.8-3.500 2.300C11 2.800 9.900 2 8.500 2c-1.700 0-3 1.300-3 3 0 .8.300 1.500.7 2H4a1 1 0 00-1 1v3h8V7h2v4h8V8a1 1 0 00-1-1zM8.500 7a1 1 0 110-2c.800 0 1.700.9 2.200 2zm7 0h-2.200c.5-1.100 1.400-2 2.200-2a1 1 0 110 2zM4 13v7a1 1 0 001 1h6v-8zm9 0v8h6a1 1 0 001-1v-7z"/></symbol>
+        <symbol id="i-cash" viewBox="0 0 24 24"><g fill="currentColor"><path d="M2 6.500A1.500 1.500 0 013.500 5h17A1.500 1.500 0 0122 6.500v11a1.500 1.500 0 01-1.500 1.500h-17A1.500 1.500 0 012 17.500zM4 8v1.500A2 2 0 005.500 8zm0 8h1.500A2 2 0 004 14.500zm16-1.500V16h-1.500a2 2 0 011.500-1.500zM18.500 8H20v1.500A2 2 0 0118.500 8zM12 8.500a3.500 3.500 0 100 7 3.500 3.500 0 000-7z" fill-rule="evenodd"/></g></symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24"><path fill="currentColor" d="M11 2.100V13h10.900A10 10 0 0011 2.100zM9 4.300A10 10 0 1019.700 15H9z"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4z"/></symbol>
+        <symbol id="i-cal" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2V2h-2v2H9V2zM5 10h14v10H5zm2 2v2h3v-2zm5 0v2h3v-2zm-5 4v2h3v-2zm5 0v2h3v-2z" fill-rule="evenodd"/></symbol>
+        <symbol id="i-hist" viewBox="0 0 24 24"><path fill="currentColor" d="M13 3a9 9 0 00-9 9H1l4 4 4-4H6a7 7 0 117 7 7 7 0 01-4.900-2l-1.400 1.400A9 9 0 1013 3zm-1 5v5l4.300 2.500.8-1.300-3.600-2.100V8z"/></symbol>
+        <symbol id="i-user" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.400 0-8 2.200-8 5v2h16v-2c0-2.800-3.600-5-8-5z"/></symbol>
+        <symbol id="i-info" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2zm0-8h-2V7h2z"/></symbol>
+      </defs>
+    </svg>
     <div class="mobile-container">
       <div id="toast" class="toast"></div>
 
@@ -289,65 +309,105 @@
       </div>
 
       <div class="header" id="main-header" style="display: none">
-        <div class="header-text">
+        <div class="header-text who">
+          <p class="eyebrow num" id="head-date">Memuatkan data...</p>
           <h1 id="head-greeting">Selamat Pagi,</h1>
-          <p id="head-date">Memuatkan data...</p>
         </div>
-        <div class="header-avatar" id="head-avatar">S</div>
+        <div class="header-avatar avatar" id="head-avatar" aria-label="Profil Staf">S</div>
       </div>
 
       <div class="view-content" id="main-content" style="display: none">
         <div id="view-dashboard" class="view-section active">
-          <div class="dash-container">
-            <div class="dash-card">
-              <div class="dash-info">
-                <h3>Prestasi Staf (Bulan Ini)</h3>
-                <p id="dash-rating">0%</p>
-                <div class="sub-text">Berdasarkan ulasan pelanggan</div>
+          <div class="dash-new-container">
+            <!-- Hero Komisen Terkumpul -->
+            <section class="hero" aria-label="Komisen terkumpul">
+              <div class="label">
+                <svg aria-hidden="true" width="18" height="18"><use href="#i-wallet"/></svg>
+                Komisen terkumpul
               </div>
-              <div class="icon-box icon-orange">
-                <i class="fas fa-star"></i>
-              </div>
-            </div>
-
-            <div class="dash-card">
-              <div class="dash-info">
-                <h3>Total Pelanggan</h3>
-                <p id="dash-customers">0</p>
-                <div class="sub-text">Sepanjang bulan ini</div>
-              </div>
-              <div class="icon-box icon-blue"><i class="fas fa-users"></i></div>
-            </div>
-
-            <div class="dash-card">
-              <div class="dash-info">
-                <h3>Komisen Terkumpul</h3>
-                <p id="dash-commission">RM 0</p>
-                <div class="sub-text">Sepanjang bulan ini</div>
-              </div>
-              <div class="icon-box icon-red"><i class="fas fa-wallet"></i></div>
-            </div>
-
-            <div class="dash-card">
-              <div class="dash-info">
-                <h3>Bones (Bonus)</h3>
-                <p id="dash-bones">RM 0</p>
-                <div id="dash-bones-subtitle" class="sub-text">Komisen melebihi RM 1,800</div>
-              </div>
-              <div class="icon-box" style="background: rgba(156, 39, 176, 0.1); color: #9c27b0;"><i class="fas fa-gift"></i></div>
-            </div>
-
-            <div class="dash-card" style="border: 1.5px solid var(--success)">
-              <div class="dash-info">
-                <h3>Cash On Hand</h3>
-                <p id="dash-cash" style="color: var(--success)">RM 0</p>
-                <div class="sub-text" style="color: var(--text-muted)">
-                  Akan direset oleh Owner
+              <p class="amount num"><small>RM</small><span id="dash-commission">0</span></p>
+              <p class="sub">Sepanjang bulan ini</p>
+              <div class="meter">
+                <div class="meter-row num">
+                  <span>Sasaran bonus</span>
+                  <span id="peratus-bonus">0%</span>
                 </div>
+                <div class="track" role="progressbar" aria-label="Kemajuan ke bonus" aria-valuemin="0" aria-valuemax="1800" aria-valuenow="0">
+                  <div class="fill" id="fill-hero"></div>
+                </div>
+                <p class="meter-note num" id="meter-note-text">Lagi RM 1,800 untuk layak menerima bonus</p>
               </div>
-              <div class="icon-box icon-green">
-                <i class="fas fa-money-bill-wave"></i>
-              </div>
+            </section>
+
+            <!-- Tindakan Pantas -->
+            <div class="actions">
+              <button class="act" type="button" onclick="switchView('walkin')">
+                <span class="ico red"><svg aria-hidden="true"><use href="#i-plus"/></svg></span>
+                <span><strong>Walk-In</strong><span class="s">Catat pelanggan baru</span></span>
+              </button>
+              <button class="act" type="button" onclick="switchView('booking')">
+                <span class="ico blue"><svg aria-hidden="true"><use href="#i-cal"/></svg></span>
+                <span><strong>Booking</strong><span class="s">Lihat temu janji</span></span>
+              </button>
+            </div>
+
+            <!-- Kad Statistik Ringkasan Bulan Ini -->
+            <h2 class="section-title">Ringkasan bulan ini</h2>
+            <div class="grid">
+              <!-- Prestasi Staf -->
+              <article class="card">
+                <div class="k"><span>Prestasi staf</span></div>
+                <div class="ring-wrap">
+                  <div class="ring" aria-hidden="true">
+                    <svg viewBox="0 0 64 64">
+                      <circle class="bg" cx="32" cy="32" r="27"/>
+                      <circle class="fg" id="ring" cx="32" cy="32" r="27"/>
+                    </svg>
+                    <span class="star"><svg><use href="#i-star"/></svg></span>
+                  </div>
+                  <p class="v num" id="dash-rating">100%</p>
+                </div>
+                <p class="n" style="margin-top:10px">Berdasarkan ulasan pelanggan</p>
+              </article>
+
+              <!-- Total Pelanggan -->
+              <article class="card">
+                <div class="k">
+                  <span>Total pelanggan</span>
+                  <span class="ico blue"><svg aria-hidden="true"><use href="#i-users"/></svg></span>
+                </div>
+                <p class="v num" id="dash-customers">0</p>
+                <p class="n">Sepanjang bulan ini</p>
+              </article>
+
+              <!-- Bones (Bonus) -->
+              <article class="card wide" id="card-bones">
+                <div class="bonus">
+                  <div class="k" style="grid-column:1"><span>Bones (bonus)</span></div>
+                  <span class="ico violet" style="grid-column:2;grid-row:1 / 3;width:44px;height:44px;border-radius:14px;display:grid;place-items:center">
+                    <svg aria-hidden="true" width="22" height="22"><use href="#i-gift"/></svg>
+                  </span>
+                  <p class="v num" id="dash-bones" style="margin:6px 0 0;grid-column:1">RM 0</p>
+                  <div class="track" role="progressbar" aria-label="Kemajuan komisen" aria-valuemin="0" aria-valuemax="1800" aria-valuenow="0">
+                    <div class="fill" id="fill-bonus"></div>
+                  </div>
+                  <div class="ends num">
+                    <span id="bonus-start">RM 0</span>
+                    <span id="bonus-target">RM 1,800</span>
+                  </div>
+                  <p class="n" id="dash-bones-subtitle" style="grid-column:1 / -1;margin-top:6px">Komisen melebihi RM 1,800</p>
+                </div>
+              </article>
+
+              <!-- Cash On Hand -->
+              <article class="card wide cash">
+                <div class="k"><span>Cash on hand</span></div>
+                <p class="v num" id="dash-cash" style="margin:8px 0 0">RM 0</p>
+                <p class="n">
+                  <svg aria-hidden="true"><use href="#i-info"/></svg>Akan direset oleh Owner
+                </p>
+                <span class="ico"><svg aria-hidden="true"><use href="#i-cash"/></svg></span>
+              </article>
             </div>
           </div>
         </div>
@@ -813,7 +873,7 @@
       </nav>
     </div>
 
-    <script src="/staff/js/staff.js?v=41"></script>
+    <script src="/staff/js/staff.js?v=42"></script>
       <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
