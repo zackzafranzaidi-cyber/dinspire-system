@@ -44,6 +44,15 @@ function updateLanguage(lang) {
     let nameStr = currentUser ? escapeHTML(currentUser.name || currentUser.username) : (i18n_index[lang] ? i18n_index[lang]["home-guest"].replace(" :)", "") : "new friend");
     playGreetingAnimation(nameStr);
     updateCustomerBadges();
+    const deskAvatar = document.getElementById("desktop-nav-avatar");
+    if (deskAvatar) {
+      if (currentUser) {
+        const initial = (currentUser.name || currentUser.username || "U")[0].toUpperCase();
+        deskAvatar.innerText = initial;
+      } else {
+        deskAvatar.innerText = "A";
+      }
+    }
   }
 
   // Re-render dynamic sections if data exists
@@ -809,8 +818,9 @@ function selectAvatar(imgEl, path) {
     imgEl.classList.add("selected");
     
     // Check if Edit Profile modal is active
+    const editView = document.getElementById("view-edit-profile");
     const editModal = document.getElementById("edit-profile-modal");
-    if (editModal && editModal.classList.contains("active")) {
+    if ((editView && editView.classList.contains("active")) || (editModal && editModal.classList.contains("active"))) {
       document.getElementById("edit-profile-avatar-val").value = path;
       document.getElementById("edit-profile-avatar-preview").src = path;
       closeModal("avatar-modal-overlay");
@@ -1825,6 +1835,8 @@ function updateCartUI() {
   document.getElementById("cart-count").innerText = `${totalItems} items`;
   document.getElementById("checkout-total").innerText =
     `RM ${totalPrice.toFixed(2)}`;
+  const deskCartEl = document.getElementById("desktop-nav-cart-count");
+  if (deskCartEl) deskCartEl.innerText = totalItems;
   if (totalItems > 0) {
     document.getElementById("checkout-bar").classList.add("visible");
   } else {
@@ -1855,7 +1867,9 @@ function compressImage(file, callback) {
 
 function renderNotifications() {
   const badge = document.getElementById("badge-notifications");
+  const desktopBadge = document.getElementById("desktop-nav-badge");
   if (badge) badge.style.display = "none";
+  if (desktopBadge) desktopBadge.style.display = "none";
   localStorage.setItem("din_unread_badge", "0");
   if (window.latestOrderStates) {
       localStorage.setItem("din_order_states", JSON.stringify(window.latestOrderStates));
@@ -2072,7 +2086,7 @@ function submitCustomerReview(event) {
       }).join("");
       
       // Duplicate content 40 times to create a pseudo-endless manual swipe slider
-      container.innerHTML = branchesHtml.repeat(40);
+      container.innerHTML = (window.innerWidth >= 1024) ? branchesHtml : branchesHtml.repeat(40);
       
       // Letakkan skrol di tengah-tengah supaya "tiada permulaan" (boleh swipe ke kiri)
       setTimeout(() => {
@@ -2426,6 +2440,14 @@ function updateCustomerBadges(orders) {
         badge.style.display = 'none';
       }
     }
+    if (desktopBadge) {
+      if (pendingUnread > 0) {
+        desktopBadge.innerText = pendingUnread > 99 ? '99+' : pendingUnread;
+        desktopBadge.style.display = 'inline-block';
+      } else {
+        desktopBadge.style.display = 'none';
+      }
+    }
   };
 
   if (orders) {
@@ -2668,7 +2690,7 @@ async function deleteCustomerAccount() {
         hideGlobalLoader();
         if (data.status === "success") {
             alert("Akaun anda telah dipadamkan.");
-            logoutUser();
+            handleLogout(false);
         } else {
             alert(data.message || "Gagal memadam akaun.");
         }
@@ -2712,12 +2734,15 @@ async function handleEditProfile(e) {
             currentUser.avatar_url = avatar_url;
             
             // Refresh paparan akaun
-            document.getElementById("acc-name").innerText = name || currentUser.username;
-            document.getElementById("acc-phone").innerText = phone;
-            if(avatar_url) {
+            const pName = document.getElementById("profile-name") || document.getElementById("acc-name");
+            const pPhone = document.getElementById("profile-phone") || document.getElementById("acc-phone");
+            const pAvatar = document.getElementById("profile-avatar") || document.getElementById("acc-avatar");
+            if (pName) pName.innerText = name || currentUser.username;
+            if (pPhone) pPhone.innerText = phone;
+            if (avatar_url && pAvatar) {
                 let showUrl = avatar_url;
                 if(showUrl.startsWith("./Profile/")) showUrl = showUrl.substring(1);
-                document.getElementById("acc-avatar").src = showUrl;
+                pAvatar.src = showUrl;
             }
             
             switchView("account");
