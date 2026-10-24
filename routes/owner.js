@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const supabase = require("../config/db");
+const cache = require("../utils/cache");
 const { authenticate, requireRole } = require("../middleware/auth");
 const { generateBusinessInsights } = require("../utils/ai");
 const rateLimit = require("express-rate-limit");
@@ -60,6 +61,11 @@ router.get(
   requireRole(["owner"]),
   async (req, res) => {
     try {
+      const cachedDashboard = cache.get("owner_dashboard");
+      if (cachedDashboard) {
+        return res.json(cachedDashboard);
+      }
+
       const [
         { data: settingData },
         { data: bookings },
@@ -224,7 +230,7 @@ router.get(
         }
       });
 
-      res.json({
+      const responsePayload = {
         status: "success",
         masterData: {
           bookings: allTransactions,
@@ -239,7 +245,9 @@ router.get(
           products: productsList || [],
         },
         mapBarberBranch: mapBarberBranch,
-      });
+      };
+      cache.set("owner_dashboard", responsePayload, 60);
+      res.json(responsePayload);
     } catch (error) {
       console.error("Ralat Dashboard Owner:", error);
       res
@@ -253,6 +261,7 @@ router.get(
 // KELULUSAN CUTI KECEMASAN
 // ==========================================
 router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "admin"]), async (req, res) => {
+  cache.del("owner_dashboard");
   const { leave_id, action } = req.body; // action: 'Approve' or 'Reject'
   
   if (!leave_id || !action) return res.status(400).json({ status: "error", message: "Data tidak lengkap." });
@@ -371,6 +380,7 @@ router.post("/approve-emergency-leave", authenticate, requireRole(["owner", "adm
 // TUKAR STAF UNTUK BOOKING BERKOLIZI (REASSIGN)
 // ==========================================
 router.post("/reassign-booking", authenticate, requireRole(["owner", "admin"]), async (req, res) => {
+  cache.del("owner_dashboard");
   let { no_booking, new_staff_id, table_name } = req.body;
   no_booking = String(no_booking || "");
   if (!no_booking || !new_staff_id || !table_name) return res.status(400).json({ status: "error", message: "Data tidak lengkap." });
@@ -412,6 +422,7 @@ router.post("/reassign-booking", authenticate, requireRole(["owner", "admin"]), 
 // BATAL BOOKING (OLEH ADMIN) DENGAN WHATSAPP
 // ==========================================
 router.post("/cancel-booking-admin", authenticate, requireRole(["owner", "admin"]), async (req, res) => {
+  cache.del("owner_dashboard");
   let { no_booking, table_name } = req.body;
   no_booking = String(no_booking || "");
   if (!no_booking || !table_name) return res.status(400).json({ status: "error", message: "Data tidak lengkap." });
@@ -579,6 +590,7 @@ router.post(
   authenticate,
   requireRole(["owner"]),
   async (req, res) => {
+    cache.del("owner_dashboard");
     let { order_id, action } = req.body;
     order_id = String(order_id || "");
     try {
@@ -871,6 +883,7 @@ router.get("/edit-requests", authenticate, requireRole(["owner"]), async (req, r
 });
 
 router.post("/resolve-edit-request", authenticate, requireRole(["owner"]), async (req, res) => {
+  cache.del("owner_dashboard");
   try {
     const { request_id, action } = req.body; // action: 'Approve' or 'Reject'
     

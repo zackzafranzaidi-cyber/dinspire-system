@@ -18,20 +18,38 @@ const SCHEMAS = {
 let currentTab = "Haircuts";
 
 
-// Expose initAdminCMS globally
-window.initAdminCMS = function() {
-    if (Object.keys(appData).length === 0) {
-        loadAdminData();
+// Expose initAdminCMS globally dengan Caching Tempatan
+window.initAdminCMS = function(forceRefresh = false) {
+    if (Object.keys(appData).length === 0 || forceRefresh) {
+        loadAdminData(forceRefresh);
     }
 };
-async function loadAdminData() {
+
+async function loadAdminData(forceRefresh = false) {
+  // 1. Caching optimistik dari sessionStorage (Paparan serta-merta 0ms)
+  if (!forceRefresh) {
+    try {
+      const cached = sessionStorage.getItem("din_admin_data");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === "object" && Object.keys(parsed).length > 0) {
+          appData = parsed;
+          renderTable(currentTab);
+          // Muat turun data baharu di latar belakang secara senyap
+          fetchAdminDataSilently();
+          return;
+        }
+      }
+    } catch(e) {}
+  }
+
   showGlobalLoader();
   try {
     const res = await fetch(`${API_BASE_URL}/admin/data`, {
       credentials: "include",
     });
     if (res.status === 401 || res.status === 403) {
-      if(typeof logoutOwner === "function") logoutOwner();;
+      if(typeof logoutOwner === "function") logoutOwner();
       return;
     }
 
@@ -46,6 +64,9 @@ async function loadAdminData() {
           komisen_part_time: 50,
           gaji_asas: 1800,
         };
+      try {
+        sessionStorage.setItem("din_admin_data", JSON.stringify(appData));
+      } catch(e) {}
       renderTable(currentTab);
     }
   } catch (err) {
@@ -55,12 +76,28 @@ async function loadAdminData() {
   }
 }
 
+async function fetchAdminDataSilently() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/data`, { credentials: "include" });
+    if (res.ok) {
+      const result = await res.json();
+      if (result.status === "success" && result.data) {
+        appData = result.data;
+        try {
+          sessionStorage.setItem("din_admin_data", JSON.stringify(appData));
+        } catch(e) {}
+        renderTable(currentTab);
+      }
+    }
+  } catch(e) {
+    console.warn("Silent admin sync failed:", e.message);
+  }
+}
+
 
 
 
 function switchAdminTab(tabName, el) {
-  showGlobalLoader();
-
   currentTab = tabName;
   
   // Update sidebar active states manually
@@ -79,7 +116,6 @@ function switchAdminTab(tabName, el) {
   if(dropdown) dropdown.value = tabName;
 
   let titles = {
-
     Haircuts: "Haircuts (Booking)",
     Treatments: "Treatments (Booking)",
     Branches: "Branches",
@@ -94,9 +130,7 @@ function switchAdminTab(tabName, el) {
   document.getElementById("current-section-title").innerText =
     "Manage " + (titles[tabName] || tabName);
 
-  renderTable(tabName); if (tabName !== "ResetRequests") {
-    setTimeout(hideGlobalLoader, 300);
-  }
+  renderTable(tabName);
 }
 
 function updateSetting(key, val) {
@@ -550,8 +584,10 @@ async function saveAllData() {
         text: "Semua data telah dikemas kini di Cloud Supabase.",
         confirmButtonText: "Selesai",
       });
-      alert("Data telah disimpan dan diselaraskan ke semua cawangan!");
-      loadAdminData();
+      try {
+        sessionStorage.setItem("din_admin_data", JSON.stringify(appData));
+      } catch(e) {}
+      fetchAdminDataSilently();
     } else {
       Swal.fire({
         icon: "error",

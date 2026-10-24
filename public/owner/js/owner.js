@@ -566,15 +566,18 @@ function showGlobalLoader() {
       preloader.style.opacity = '1';
   }
 }
-function hideGlobalLoader() {
+function hideGlobalLoader(forceImmediate = false) {
   const preloader = document.getElementById('preloader');
   if (preloader) {
-      const elapsed = Date.now() - globalLoaderStartTime;
-      const remaining = Math.max(0, 1000 - elapsed);
+      if (forceImmediate) {
+          preloader.style.opacity = '0';
+          preloader.style.visibility = 'hidden';
+          return;
+      }
+      preloader.style.opacity = '0';
       setTimeout(() => {
-        preloader.style.opacity = '0';
-        setTimeout(() => { preloader.style.visibility = 'hidden'; }, 500);
-      }, remaining);
+        preloader.style.visibility = 'hidden';
+      }, 200);
   }
 }
 
@@ -607,9 +610,7 @@ function switchTab(tabName, element = null) {
       requestNotifPermission();
   }
 
-  showGlobalLoader();
-  setTimeout(hideGlobalLoader, 300); // Quick transition for normal tabs
-
+  // Tukar tab serta-merta tanpa lag preloader (0ms DOM swap)
   currentActiveTab = tabName;
   document
     .querySelectorAll(".tab-content")

@@ -457,7 +457,7 @@ router.put(
       }
 
       completionLocks.delete(orderNo);
-      global.dashboardCache = null; res.json({ status: "success", message: "Servis disahkan selesai" });
+      global.dashboardCache = null; cache.del("owner_dashboard"); res.json({ status: "success", message: "Servis disahkan selesai" });
     } catch (error) {
       if (typeof orderNo !== "undefined") completionLocks.delete(orderNo);
       res.status(500).json({ status: "error", message: "Ralat pelayan." });
@@ -722,6 +722,7 @@ const parsedPrice = hargaSebenar;
       }
 
       await notifyOwner(`Walk-In: ${staffInfo}`, `Pelanggan walk-in (${customer_name}) telah didaftarkan.`);
+      cache.del("owner_dashboard");
       res.json({ status: "success", message: "Rekod Walk-In disimpan" });
     } catch (error) {
       res.status(500).json({ status: "error", message: "Ralat pelayan." });

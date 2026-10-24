@@ -33,7 +33,7 @@ module.exports = {
 };
 
 // Active expiration to prevent memory leak
-setInterval(() => {
+const cleanupInterval = setInterval(() => {
     const now = Date.now();
     for (let key in cache) {
         if (cache[key].expiry > 0 && cache[key].expiry <= now) {
@@ -41,3 +41,4 @@ setInterval(() => {
         }
     }
 }, 10 * 60 * 1000);
+if (cleanupInterval.unref) cleanupInterval.unref();

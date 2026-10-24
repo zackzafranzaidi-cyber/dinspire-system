@@ -486,6 +486,7 @@ router.post(
       // Padam cache lama supaya pengguna/admin terus dapat data baru
       cache.del("shop_data");
       cache.del("admin_data");
+      cache.del("owner_dashboard");
 
       res.json({
         status: "success",
