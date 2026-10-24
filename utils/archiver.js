@@ -237,8 +237,16 @@ async function pruneYearlyData() {
     
     console.log(`[PRUNING] Selesai. Data mentah tahun ${lastYear} telah dipadamkan.`);
 
+    // 3. PEMADAMAN PINTAR: HAPUSKAN REKOD NYAHAKTIF YANG KINI BEBAS DARI IKATAN TRANSAKSI
+    console.log(`[PRUNING] Menjalankan pemadaman pintar rekod terbiar (orphaned inactive records)...`);
+    const { purgeOrphanedInactiveRecords } = require("./smartDelete");
+    await purgeOrphanedInactiveRecords();
+
   } catch (error) {
     console.error(`[PRUNING] Ralat ketika membersihkan data tahunan:`, error);
   }
 }
+
+const { purgeOrphanedInactiveRecords } = require("./smartDelete");
+module.exports = { generateMonthlyArchiveData, generateArchiveDataByDateRange, pruneYearlyData, purgeOrphanedInactiveRecords };
 

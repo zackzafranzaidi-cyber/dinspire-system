@@ -203,22 +203,22 @@ router.post("/", checkFlag("booking"), authenticate, requireRole(["customer"]), 
     if (booking_type === "treatment") {
       const { data: svc } = await supabase
         .from("treatments")
-        .select("harga")
+        .select("harga, is_active")
         .eq("id", service_id)
         .maybeSingle();
-      if (!svc) {
+      if (!svc || svc.is_active === false) {
         if (typeof lockKey !== 'undefined') oncallLocks.delete(lockKey);
-        return res.status(400).json({ status: "error", message: "Servis tidak dijumpai." });
+        return res.status(400).json({ status: "error", message: "Servis rawatan tidak dijumpai atau telah dinyahaktifkan." });
       }
       harga_rm = parseFloat(svc.harga);
       order_no = "TR" + crypto.randomUUID().split("-")[0].toUpperCase();
     } else {
       const { data: svc } = await supabase
         .from("haircuts")
-        .select("harga")
+        .select("harga, is_active")
         .eq("id", service_id)
         .maybeSingle();
-      if (!svc) return res.status(400).json({ status: "error", message: "Servis tidak dijumpai." });
+      if (!svc || svc.is_active === false) return res.status(400).json({ status: "error", message: "Servis gunting tidak dijumpai atau telah dinyahaktifkan." });
       harga_rm = parseFloat(svc.harga);
       order_no = "DB" + crypto.randomUUID().split("-")[0].toUpperCase();
     }
@@ -235,6 +235,17 @@ router.post("/", checkFlag("booking"), authenticate, requireRole(["customer"]), 
       return res.status(409).json({ status: "error", message: "Maaf, slot ini sedang diproses untuk pelanggan lain." });
     }
     bookingLocks.add(lockKey);
+
+    // Semak jika barber aktif
+    const { data: barberData } = await supabase
+      .from("staff")
+      .select("id, is_active")
+      .eq("id", staff_id)
+      .maybeSingle();
+    if (!barberData || barberData.is_active === false) {
+      if (bookingLocks.has(lockKey)) bookingLocks.delete(lockKey);
+      return res.status(400).json({ status: "error", message: "Barber yang dipilih telah dinyahaktifkan." });
+    }
 
     // [DIBAIKI] Semak jika staf sedang bercuti pada tarikh ini
     const { data: cutiStaf } = await supabase
@@ -602,8 +613,11 @@ router.post(
 
       // [DIBAIKI] Server-Side Price Trust (dengan pengecualian Harga 0)
       let hargaSebenar = Math.max(0, parseFloat(price) || 0.0); 
-      const { data: svcData } = await supabase.from("haircuts").select("harga").eq("id", service_id).maybeSingle();
+      const { data: svcData } = await supabase.from("haircuts").select("harga, is_active").eq("id", service_id).maybeSingle();
       if (svcData) {
+        if (svcData.is_active === false) {
+          return res.status(400).json({ status: "error", message: "Servis telah dinyahaktifkan." });
+        }
         let dbPrice = parseFloat(svcData.harga) || 0;
         if (dbPrice > 0) {
           hargaSebenar = dbPrice; // Paksa harga dari DB jika ia lebih dari 0
@@ -766,6 +780,17 @@ router.post(
       }
       oncallLocks.add(lockKey);
 
+      // Semak jika barber aktif
+      const { data: barberData } = await supabase
+        .from("staff")
+        .select("id, is_active")
+        .eq("id", barber)
+        .maybeSingle();
+      if (!barberData || barberData.is_active === false) {
+        if (oncallLocks.has(lockKey)) oncallLocks.delete(lockKey);
+        return res.status(400).json({ status: "error", message: "Barber On-Call telah dinyahaktifkan." });
+      }
+
       // [DIBAIKI] Semak jika staf sedang bercuti pada tarikh ini
       const { data: cutiStaf } = await supabase
         .from("staff_leaves")
@@ -789,10 +814,13 @@ router.post(
       let harga_rm = 0.0;
       const { data: svc } = await supabase
         .from("haircuts")
-        .select("harga")
+        .select("harga, is_active")
         .eq("id", service_id)
         .maybeSingle();
-      if (!svc) return res.status(400).json({ status: "error", message: "Servis tidak dijumpai." });
+      if (!svc || svc.is_active === false) {
+        if (oncallLocks.has(lockKey)) oncallLocks.delete(lockKey);
+        return res.status(400).json({ status: "error", message: "Servis On-Call tidak dijumpai atau telah dinyahaktifkan." });
+      }
       harga_rm = parseFloat(svc.harga);
 
       const order_no = "DBC" + crypto.randomUUID().split("-")[0].toUpperCase();
@@ -930,8 +958,14 @@ router.post(
 
       const { data: productsDB } = await supabase
         .from("products")
-        .select("id, nama, harga, stok")
+        .select("id, nama, harga, stok, is_active")
         .in("id", itemIds);
+      if (productsDB) {
+        const inactiveProd = productsDB.find((p) => p.is_active === false);
+        if (inactiveProd) {
+          return res.status(400).json({ status: "error", message: `Maaf, produk '${inactiveProd.nama}' telah dinyahaktifkan.` });
+        }
+      }
       if (!productsDB || productsDB.length === 0)
         return res
           .status(400)

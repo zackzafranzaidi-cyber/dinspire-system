@@ -358,7 +358,18 @@ function renderTable(tabName) {
     </button>
   `;
 
-  if (tabName === "Staff" && appData.InactiveStaff && appData.InactiveStaff.length > 0) {
+    // Paparan Arkib Pintar (Universal untuk semua jadual)
+  let inactiveList = appData["Inactive" + tabName] || [];
+  if (tabName === "Haircuts" && appData.InactiveHaircuts) {
+    inactiveList = appData.InactiveHaircuts.filter(h => h.kategori === 'Booking' || !h.kategori);
+  } else if (tabName === "WalkInAll" && appData.InactiveHaircuts) {
+    inactiveList = appData.InactiveHaircuts.filter(h => h.kategori === 'Walk-in' || h.kategori === 'Treatment Walk-in' || h.kategori === 'Combo Walk-in');
+  } else if (tabName === "OnCall" && appData.InactiveHaircuts) {
+    inactiveList = appData.InactiveHaircuts.filter(h => h.kategori === 'On-Call');
+  }
+
+  if (inactiveList && inactiveList.length > 0) {
+    const labelTitle = tabName === "Staff" ? "Arkib Bekas Staf" : `Arkib / Rekod Dinyahaktifkan (${tabName})`;
     html += `
       <div class="mt-8 bg-gray-50/90 border border-gray-200 rounded-3xl p-6 shadow-inner">
         <div class="flex items-center gap-3 mb-4">
@@ -366,22 +377,35 @@ function renderTable(tabName) {
             <i class="fas fa-archive text-lg"></i>
           </div>
           <div>
-            <h4 class="font-bold text-gray-800 text-base">Arkib Bekas Staf (${appData.InactiveStaff.length} orang)</h4>
-            <p class="text-xs text-gray-500 m-0">Staf ini telah dinyahaktifkan daripada sistem. Segala rekod jualan lampau kekal disimpan secara selamat.</p>
+            <h4 class="font-bold text-gray-800 text-base">${labelTitle} (${inactiveList.length})</h4>
+            <p class="text-xs text-gray-500 m-0">Rekod ini telah dinyahaktifkan secara pintar bagi memelihara rekod jualan atau transaksi lampau pelanggan. Anda boleh memulihkannya semula pada bila-bila masa.</p>
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          ${appData.InactiveStaff.map((st, i) => `
-            <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
-              <div>
-                <h5 class="font-bold text-gray-800 text-sm m-0">${escapeHTML(st.name || st.username || 'Staf')}</h5>
-                <span class="inline-block px-2 py-0.5 mt-1 bg-gray-100 text-gray-500 rounded text-[11px] font-semibold uppercase">${escapeHTML(st.status_pekerja === 'full_time' ? 'Full Time' : 'Part Time')}</span>
+          ${inactiveList.map((item, i) => {
+            const displayName = item.name || item.username || item.nama_potongan || item.nama_rawatan || item.nama || item.nama_cawangan || 'Rekod';
+            let subtitle = '';
+            if (tabName === 'Staff') {
+              subtitle = item.status_pekerja === 'full_time' ? 'Full Time' : 'Part Time';
+            } else if (item.price !== undefined) {
+              subtitle = 'RM ' + item.price;
+            } else if (item.location) {
+              subtitle = item.location;
+            } else {
+              subtitle = 'Dinyahaktif';
+            }
+            return `
+              <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
+                <div class="truncate mr-2">
+                  <h5 class="font-bold text-gray-800 text-sm m-0 truncate">${escapeHTML(displayName)}</h5>
+                  <span class="inline-block px-2 py-0.5 mt-1 bg-gray-100 text-gray-500 rounded text-[11px] font-semibold">${escapeHTML(subtitle)}</span>
+                </div>
+                <button onclick="restoreItem('${tabName}', ${i})" class="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5 border border-emerald-200 shadow-sm cursor-pointer whitespace-nowrap" title="Aktifkan Semula Rekod Ini">
+                  <i class="fas fa-undo-alt text-xs"></i> Pulihkan
+                </button>
               </div>
-              <button onclick="restoreStaff(${i})" class="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5 border border-emerald-200 shadow-sm cursor-pointer" title="Aktifkan Semula Staf Ini">
-                <i class="fas fa-undo-alt text-xs"></i> Pulihkan
-              </button>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -543,35 +567,64 @@ function addRow(tabName) {
 function deleteRow(tabName, index) {
   const isStaff = tabName === "Staff";
   Swal.fire({
-    title: isStaff ? "Nyahaktifkan Staf?" : "Adakah anda pasti?",
-    text: isStaff
-      ? "Staf ini akan dikeluarkan daripada senarai aktif sistem. Segala sejarah transaksi, rekod jualan, dan resit staf ini tetap dipelihara dengan selamat!"
-      : "Rekod ini akan dipadamkan dari jadual!",
+    title: isStaff ? "Nyahaktifkan Staf?" : "Padam / Nyahaktif Rekod?",
+    text: "Sistem menyokong Pemadaman Pintar: Sekiranya rekod ini terikat dengan mana-mana data transaksi atau resit, ia akan dinyahaktifkan dengan selamat. Jika tiada sebarang data terikat, ia akan dipadam secara kekal.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#FF3B30",
     cancelButtonColor: "#8E8E93",
-    confirmButtonText: isStaff ? "Ya, Nyahaktifkan!" : "Ya, Padam!",
+    confirmButtonText: "Ya, Padam!",
     cancelButtonText: "Batal",
   }).then((result) => {
     if (result.isConfirmed) {
       const removed = appData[tabName].splice(index, 1)[0];
-      if (isStaff && removed) {
-        if (!appData.InactiveStaff) appData.InactiveStaff = [];
-        appData.InactiveStaff.push(removed);
+      if (removed && tabName !== "Posters") {
+        const inactiveKey = "Inactive" + tabName;
+        if (!appData[inactiveKey]) appData[inactiveKey] = [];
+        appData[inactiveKey].push(removed);
       }
       renderTable(tabName);
     }
   });
 }
 
-function restoreStaff(index) {
-  if (appData.InactiveStaff && appData.InactiveStaff[index]) {
-    const restored = appData.InactiveStaff.splice(index, 1)[0];
-    if (!appData.Staff) appData.Staff = [];
-    appData.Staff.push(restored);
-    renderTable("Staff");
+function restoreItem(tabName, index) {
+  let listKey = "Inactive" + tabName;
+  if (tabName === "Haircuts" || tabName === "WalkInAll" || tabName === "OnCall") {
+    if (appData[listKey] && appData[listKey][index]) {
+      const restored = appData[listKey].splice(index, 1)[0];
+      if (!appData[tabName]) appData[tabName] = [];
+      appData[tabName].push(restored);
+      renderTable(tabName);
+      return;
+    } else if (appData.InactiveHaircuts) {
+      let subList = [];
+      if (tabName === "Haircuts") subList = appData.InactiveHaircuts.filter(h => h.kategori === 'Booking' || !h.kategori);
+      else if (tabName === "WalkInAll") subList = appData.InactiveHaircuts.filter(h => h.kategori === 'Walk-in' || h.kategori === 'Treatment Walk-in' || h.kategori === 'Combo Walk-in');
+      else if (tabName === "OnCall") subList = appData.InactiveHaircuts.filter(h => h.kategori === 'On-Call');
+      
+      const itemToRestore = subList[index];
+      if (itemToRestore) {
+        const globalIdx = appData.InactiveHaircuts.findIndex(h => h.id === itemToRestore.id);
+        if (globalIdx > -1) appData.InactiveHaircuts.splice(globalIdx, 1);
+        if (!appData[tabName]) appData[tabName] = [];
+        appData[tabName].push(itemToRestore);
+        renderTable(tabName);
+        return;
+      }
+    }
   }
+
+  if (appData[listKey] && appData[listKey][index]) {
+    const restored = appData[listKey].splice(index, 1)[0];
+    if (!appData[tabName]) appData[tabName] = [];
+    appData[tabName].push(restored);
+    renderTable(tabName);
+  }
+}
+
+function restoreStaff(index) {
+  restoreItem("Staff", index);
 }
 
 function updateData(tabName, index, col, value) {

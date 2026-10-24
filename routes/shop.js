@@ -173,7 +173,7 @@ router.get("/", async (req, res) => {
 
     const result = {
       Haircuts: (hcData || [])
-        .filter((h) => h.kategori === "Booking")
+        .filter((h) => h.kategori === "Booking" && h.is_active !== false)
         .map((h) => ({
           id: h.id,
           name: h.nama_potongan,
@@ -181,7 +181,7 @@ router.get("/", async (req, res) => {
           price: h.harga,
         })),
       Treatments: (trData || [])
-        .filter((t) => !t.nama_rawatan.toUpperCase().includes("(TUTUP)"))
+        .filter((t) => !t.nama_rawatan.toUpperCase().includes("(TUTUP)") && t.is_active !== false)
         .map((t) => ({
         id: t.id,
         name: t.nama_rawatan,
@@ -189,15 +189,15 @@ router.get("/", async (req, res) => {
         price: t.harga,
       })),
       OnCall: (hcData || [])
-        .filter((h) => h.kategori === "On-Call")
+        .filter((h) => h.kategori === "On-Call" && h.is_active !== false)
         .map((h) => ({
           id: h.id,
           name: h.nama_potongan,
           serviceName: h.nama_potongan,
           price: h.harga,
         })),
-      WalkInAll: (hcData || []).filter(h => (h.kategori === 'Walk-in' || h.kategori === 'Treatment Walk-in' || h.kategori === 'Combo Walk-in') && !h.nama_potongan.toUpperCase().includes("(TUTUP)")).map(h => ({ id: h.id, name: h.nama_potongan, price: h.harga, kategori: h.kategori })),
-      Branches: (brData || []).map((b) => ({
+      WalkInAll: (hcData || []).filter(h => (h.kategori === 'Walk-in' || h.kategori === 'Treatment Walk-in' || h.kategori === 'Combo Walk-in') && !h.nama_potongan.toUpperCase().includes("(TUTUP)") && h.is_active !== false).map(h => ({ id: h.id, name: h.nama_potongan, price: h.harga, kategori: h.kategori })),
+      Branches: (brData || []).filter((b) => b.is_active !== false).map((b) => ({
         id: b.id,
         name: b.nama_cawangan,
         location: b.lokasi,
@@ -208,7 +208,7 @@ router.get("/", async (req, res) => {
         .map((s) => ({ id: s.id, name: s.username, branch_id: s.branch_id, can_haircut: s.can_haircut !== false, can_treatment: s.can_treatment !== false })),
       OnCallBarbers: (stData || []).filter((s) => s.jenis_staf === "On-Call" && s.status_pekerja !== "part_time" && !String(s.username).toUpperCase().includes("(BERHENTI)"))
         .map((s) => ({ id: s.id, name: s.username })),
-      Products: (prData || []).map((p) => ({
+      Products: (prData || []).filter((p) => p.is_active !== false).map((p) => ({
         id: p.id,
         name: p.nama,
         price: p.harga,

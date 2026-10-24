@@ -29,6 +29,7 @@ async function logAudit(action_by, action_desc) {
 
 const cache = require("../utils/cache");
 const bcrypt = require("bcryptjs");
+const { isEntityReferenced } = require("../utils/smartDelete");
 
 function escapeHTML(str) {
   if (str === null || str === undefined) return "";
@@ -181,32 +182,38 @@ router.get(
         status: "success",
         data: {
           Haircuts: (hcData || [])
-            .filter((h) => h.kategori === "Booking")
+            .filter((h) => h.kategori === "Booking" && h.is_active !== false)
             .map((h) => ({
               id: h.id,
               name: h.nama_potongan,
               desc: escapeHTML(h.diskripsi),
               price: h.harga,
             })),
-          Treatments: (trData || []).map((t) => ({
-            id: t.id,
-            name: t.nama_rawatan,
-            desc: t.diskripsi,
-            price: t.harga,
-          })),
-          WalkInAll: (hcData || []).filter(h => h.kategori === 'Walk-in' || h.kategori === 'Treatment Walk-in' || h.kategori === 'Combo Walk-in').map(h => ({ id: h.id, name: h.nama_potongan, price: h.harga, kategori: h.kategori })),
+          Treatments: (trData || [])
+            .filter((t) => t.is_active !== false)
+            .map((t) => ({
+              id: t.id,
+              name: t.nama_rawatan,
+              desc: t.diskripsi,
+              price: t.harga,
+            })),
+          WalkInAll: (hcData || [])
+            .filter(h => (h.kategori === 'Walk-in' || h.kategori === 'Treatment Walk-in' || h.kategori === 'Combo Walk-in') && h.is_active !== false)
+            .map(h => ({ id: h.id, name: h.nama_potongan, price: h.harga, kategori: h.kategori })),
           
           OnCall: (hcData || [])
-            .filter((h) => h.kategori === "On-Call")
+            .filter((h) => h.kategori === "On-Call" && h.is_active !== false)
             .map((h) => ({ id: h.id, name: h.nama_potongan, price: h.harga })),
-          Branches: (brData || []).map((b) => ({
-            id: b.id,
-            name: b.nama_cawangan,
-            location: b.lokasi,
-            lat: b.lat,
-            lng: b.lng,
-            imageUrl: b.gambar,
-          })),
+          Branches: (brData || [])
+            .filter((b) => b.is_active !== false)
+            .map((b) => ({
+              id: b.id,
+              name: b.nama_cawangan,
+              location: b.lokasi,
+              lat: b.lat,
+              lng: b.lng,
+              imageUrl: b.gambar,
+            })),
           Staff: (stData || [])
             .filter((s) => s.is_active !== false)
             .map((s) => ({
@@ -231,13 +238,27 @@ router.get(
               status_pekerja: s.status_pekerja || "full_time",
               is_active: false
             })),
-          Products: (prData || []).map((p) => ({
-            id: p.id,
-            name: p.nama,
-            price: p.harga,
-            imageUrl: p.gambar,
-            stok: p.stok,
-          })),
+          Products: (prData || [])
+            .filter((p) => p.is_active !== false)
+            .map((p) => ({
+              id: p.id,
+              name: p.nama,
+              price: p.harga,
+              imageUrl: p.gambar,
+              stok: p.stok,
+            })),
+          InactiveHaircuts: (hcData || [])
+            .filter((h) => h.is_active === false)
+            .map((h) => ({ id: h.id, name: h.nama_potongan, price: h.harga, kategori: h.kategori, desc: h.diskripsi })),
+          InactiveTreatments: (trData || [])
+            .filter((t) => t.is_active === false)
+            .map((t) => ({ id: t.id, name: t.nama_rawatan, price: t.harga, desc: t.diskripsi })),
+          InactiveBranches: (brData || [])
+            .filter((b) => b.is_active === false)
+            .map((b) => ({ id: b.id, name: b.nama_cawangan, location: b.lokasi })),
+          InactiveProducts: (prData || [])
+            .filter((p) => p.is_active === false)
+            .map((p) => ({ id: p.id, name: p.nama, price: p.harga, stok: p.stok })),
           Posters: posters,
           Settings: settings,
         },
@@ -284,42 +305,37 @@ router.post(
           .filter((id) => id);
 
         try {
-          // 3. KENDALIKAN PEMADAMAN SECARA SELAMAT
-          if (table === "staff") {
-            // [SOFT DELETE UNTUK STAF]
-            // Staf TIDAK dipadam secara fizikal untuk memelihara Foreign Key & sejarah transaksi pelanggan/resit.
-            // Sebaliknya, staf yang tiada dalam senarai aktif ditandakan is_active = false.
-            if (currentIds.length > 0) {
+          // 3. KENDALIKAN PEMADAMAN SECARA PINTAR (Smart Delete)
+          // Dapatkan semua rekod sedia ada dalam pangkalan data
+          const { data: dbRecords } = await supabase.from(table).select("*");
+          const missingRecords = (dbRecords || []).filter(
+            (r) => !currentIds.includes(r.id)
+          );
+
+          for (const rec of missingRecords) {
+            const isRef = await isEntityReferenced(table, rec.id, rec);
+            if (isRef) {
+              // Jika terikat dengan mana-mana data transaksi -> SOFT DELETE (is_active = false)
+              console.log(
+                `[SMART DELETE] ${table} ID ${rec.id} terikat dengan transaksi. Melakukan SOFT DELETE (is_active = false).`
+              );
               const { error: softDelErr } = await supabase
-                .from("staff")
+                .from(table)
                 .update({ is_active: false })
-                .not("id", "in", "(" + currentIds.map(id => `"${id}"`).join(",") + ")");
+                .eq("id", rec.id);
 
-              if (softDelErr) throw softDelErr;
+              if (softDelErr && softDelErr.code !== "42703") throw softDelErr;
             } else {
-              const { error: softDelAllErr } = await supabase
-                .from("staff")
-                .update({ is_active: false })
-                .neq("id", "00000000-0000-0000-0000-000000000000");
-
-              if (softDelAllErr) throw softDelAllErr;
-            }
-          } else {
-            // Pemadaman fizikal biasa untuk jadual-jadual lain
-            if (currentIds.length > 0) {
-              const { error: delErr } = await supabase
+              // Jika tidak terikat dengan mana-mana transaksi -> HARD DELETE kekal
+              console.log(
+                `[SMART DELETE] ${table} ID ${rec.id} TIDAK terikat. Melakukan HARD DELETE kekal.`
+              );
+              const { error: hardDelErr } = await supabase
                 .from(table)
                 .delete()
-                .not("id", "in", "(" + currentIds.map(id => `"${id}"`).join(",") + ")");
+                .eq("id", rec.id);
 
-              if (delErr) throw delErr;
-            } else {
-              const { error: delAllErr } = await supabase
-                .from(table)
-                .delete()
-                .neq("id", "00000000-0000-0000-0000-000000000000");
-
-              if (delAllErr) throw delAllErr;
+              if (hardDelErr) throw hardDelErr;
             }
           }
 
@@ -339,22 +355,33 @@ router.post(
 
             // 4a. Tambah Rekod Baru
             if (itemsToInsert.length > 0) {
+              itemsToInsert.forEach((i) => {
+                i.is_active = true;
+              });
               if (table === "staff") {
                 const defaultHash = await bcrypt.hash("123123", 10);
                 itemsToInsert.forEach((i) => {
                   i.password_hash = defaultHash;
                   i.must_change_password = true;
                   i.reset_requested = false;
-                  i.is_active = true;
                 });
               }
               const { error: insErr } = await supabase.from(table).insert(itemsToInsert);
-              if (insErr) throw insErr;
+              if (insErr) {
+                if (insErr.code === "42703") {
+                  itemsToInsert.forEach((i) => delete i.is_active);
+                  const { error: insRetryErr } = await supabase.from(table).insert(itemsToInsert);
+                  if (insRetryErr) throw insRetryErr;
+                } else {
+                  throw insErr;
+                }
+              }
             }
 
             // 4b. Kemas Kini Rekod Sedia Ada
             if (itemsToUpdate.length > 0) {
               for (let item of itemsToUpdate) {
+                item.is_active = true;
                 // [DIBAIKI] Semakan Pertukaran Nama Cawangan
                 if (table === "branches" && item.nama_cawangan) {
                   const { data: oldData } = await supabase.from("branches").select("nama_cawangan").eq("id", item.id).single();
@@ -363,11 +390,16 @@ router.post(
                   }
                 }
                 
-                if (table === "staff") {
-                  item.is_active = true;
+                const { error: updErr } = await supabase.from(table).update(item).eq("id", item.id);
+                if (updErr) {
+                  if (updErr.code === "42703") {
+                    delete item.is_active;
+                    const { error: updRetryErr } = await supabase.from(table).update(item).eq("id", item.id);
+                    if (updRetryErr) throw updRetryErr;
+                  } else {
+                    throw updErr;
+                  }
                 }
-                const { error } = await supabase.from(table).update(item).eq("id", item.id);
-                if (error) throw error;
               }
             }
           }
