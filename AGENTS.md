@@ -67,6 +67,7 @@ Selain yuran, 5 kelemahan operasi utama telah ditutup untuk memisahkan peranan P
 2. **Pematuhan PDPA (Akaun Dipadam):** Tindakan buang akaun (`DELETE /api/auth/profile`) tidak akan membuang pesanan pelanggan (mengelakkan rasuah data jualan), sebaliknya sistem melakukan proses *Anonymization* (Menukar nama kepada "Akaun Dipadam" dan mengosongkan kata laluan).
 3. **Pelan B Pembayaran (FPX Fallback):** Jika `toyyibpay` mengalami *Gateway Timeout* (502/500), pelayan Node.js tidak akan *crash*, sebaliknya ia memulangkan status `fallback_to_qr: true` untuk pelayar pelanggan segera membuka paparan Imbasan QR / Tunai.
 4. **Sandaran Data Pembangun (Developer Backup):** Pemilik bisnes tidak nampak butang backup JSON mentah di UI (bagi mengelakkan kekeliruan). Pembangun boleh melayari laluan khas `/api/owner/manual-backup` secara terus pada pelayar sambil *Log Masuk* sebagai Owner untuk mengekstrak keseluruhan struktur *database* dalam format `.json`.
+5. **Pemadaman Staf Selamat (Staff Soft-Delete):** Tindakan memadam staf di CMS Master Data tidak memadam rekod staf secara fizikal (mengelakkan ralat Foreign Key 23503 pada rekod tempahan, walkin, punch card, dan resit). Sebaliknya, sistem menanda `is_active = false`. Staf yang dinyahaktifkan tidak boleh log masuk, tidak dipaparkan dalam senarai tempahan pelanggan, dan disimpan di bahagian Arkib Bekas Staf dengan pilihan untuk dipulihkan (*Restore*).
 
 ---
 

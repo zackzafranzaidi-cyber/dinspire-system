@@ -383,6 +383,12 @@ router.post("/system-login", verifyLimiter, async (req, res) => {
         .eq("username", safeUsername)
         .single();
       if (staff) {
+        if (staff.is_active === false) {
+          return res.status(403).json({
+            status: "error",
+            message: "Akaun staf ini telah dinyahaktifkan. Sila hubungi pemilik kedai jika ini satu kesilapan."
+          });
+        }
         user = staff;
         roleFound = "staff";
       }

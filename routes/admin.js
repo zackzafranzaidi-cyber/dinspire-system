@@ -207,14 +207,29 @@ router.get(
             lng: b.lng,
             imageUrl: b.gambar,
           })),
-          Staff: (stData || []).map((s) => ({
-            id: s.id,
-            name: s.username,
-            jenis_staf: s.jenis_staf,
-            branch_id: s.branch_id,
-            can_haircut: s.can_haircut !== false, // Fallback true if null/undefined
-            can_treatment: s.can_treatment !== false,
-              status_pekerja: s.status_pekerja || "full_time"
+          Staff: (stData || [])
+            .filter((s) => s.is_active !== false)
+            .map((s) => ({
+              id: s.id,
+              name: s.username,
+              jenis_staf: s.jenis_staf,
+              branch_id: s.branch_id,
+              can_haircut: s.can_haircut !== false,
+              can_treatment: s.can_treatment !== false,
+              status_pekerja: s.status_pekerja || "full_time",
+              is_active: true
+            })),
+          InactiveStaff: (stData || [])
+            .filter((s) => s.is_active === false)
+            .map((s) => ({
+              id: s.id,
+              name: s.username,
+              jenis_staf: s.jenis_staf,
+              branch_id: s.branch_id,
+              can_haircut: s.can_haircut !== false,
+              can_treatment: s.can_treatment !== false,
+              status_pekerja: s.status_pekerja || "full_time",
+              is_active: false
             })),
           Products: (prData || []).map((p) => ({
             id: p.id,
@@ -269,24 +284,43 @@ router.post(
           .filter((id) => id);
 
         try {
-          // 3. KENDALIKAN PEMADAMAN SECARA SELAMAT (Targeted Delete)
-          // Bukannya memadam semua rekod, kita HANYA padam rekod lama yang TIADA dalam senarai baru frontend
-          if (currentIds.length > 0) {
-            // Gunakan format string dengan kurungan untuk not.in bagi mematuhi sintaks PostgREST
-            const { error: delErr } = await supabase
-              .from(table)
-              .delete()
-              .not("id", "in", "(" + currentIds.map(id => `"${id}"`).join(",") + ")");
+          // 3. KENDALIKAN PEMADAMAN SECARA SELAMAT
+          if (table === "staff") {
+            // [SOFT DELETE UNTUK STAF]
+            // Staf TIDAK dipadam secara fizikal untuk memelihara Foreign Key & sejarah transaksi pelanggan/resit.
+            // Sebaliknya, staf yang tiada dalam senarai aktif ditandakan is_active = false.
+            if (currentIds.length > 0) {
+              const { error: softDelErr } = await supabase
+                .from("staff")
+                .update({ is_active: false })
+                .not("id", "in", "(" + currentIds.map(id => `"${id}"`).join(",") + ")");
 
-            if (delErr) throw delErr;
+              if (softDelErr) throw softDelErr;
+            } else {
+              const { error: softDelAllErr } = await supabase
+                .from("staff")
+                .update({ is_active: false })
+                .neq("id", "00000000-0000-0000-0000-000000000000");
+
+              if (softDelAllErr) throw softDelAllErr;
+            }
           } else {
-            // Jika admin memang sengaja memadam KESEMUA baris pada jadual tersebut di UI
-            const { error: delAllErr } = await supabase
-              .from(table)
-              .delete()
-              .neq("id", "00000000-0000-0000-0000-000000000000"); // ID dummy/all safe check
+            // Pemadaman fizikal biasa untuk jadual-jadual lain
+            if (currentIds.length > 0) {
+              const { error: delErr } = await supabase
+                .from(table)
+                .delete()
+                .not("id", "in", "(" + currentIds.map(id => `"${id}"`).join(",") + ")");
 
-            if (delAllErr) throw delAllErr;
+              if (delErr) throw delErr;
+            } else {
+              const { error: delAllErr } = await supabase
+                .from(table)
+                .delete()
+                .neq("id", "00000000-0000-0000-0000-000000000000");
+
+              if (delAllErr) throw delAllErr;
+            }
           }
 
           // 4. KENDALIKAN PENYIMPANAN PINTAR (Insert vs Update)
@@ -311,6 +345,7 @@ router.post(
                   i.password_hash = defaultHash;
                   i.must_change_password = true;
                   i.reset_requested = false;
+                  i.is_active = true;
                 });
               }
               const { error: insErr } = await supabase.from(table).insert(itemsToInsert);
@@ -328,6 +363,9 @@ router.post(
                   }
                 }
                 
+                if (table === "staff") {
+                  item.is_active = true;
+                }
                 const { error } = await supabase.from(table).update(item).eq("id", item.id);
                 if (error) throw error;
               }
