@@ -112,7 +112,7 @@ Sistem Dinspire telah dilengkapi dengan pelbagai lapisan sekuriti pelayan:
 13. **Pengawal Kegagalan Maut (Fail-Fast):** Pelayan menghentikan dirinya sendiri (`process.exit(1)`) serta-merta jika `SUPABASE_URL`, `SUPABASE_KEY`, `JWT_SECRET_CLIENT`, atau `JWT_SECRET_SYS` tidak dijumpai semasa permulaan.
 
 14. **Penghadang Beban Bcrypt (DoS Protection):** Input kata laluan dipotong keras (Truncated) kepada maksimum 72 aksara sebelum melalui fungsi hasingan `bcrypt` bagi mengelakkan Thread Pool pelayan dibekukan oleh rentetan panjang (Event Loop Block).
-15. **Perlindungan Memori Array (Push Notifications):** Langganan notifikasi berulang disekat (Capped) kepada maksimum 10 peranti terakhir bagi setiap pengguna bagi mengelakkan letupan data JSON di dalam jadual (Array Bloat).
+15. **Perlindungan Storan Notifikasi (Push Subscriptions Table):** Langganan Web-Push diasingkan sepenuhnya ke dalam jadual dedikasi `push_subscriptions` (bukan lagi di dalam `settings`). Langganan dihadkan maksimum 10 peranti aktif per pengguna, dan langganan luput (HTTP 404/410) dipadam serta-merta secara individu tanpa risiko rasuah data JSON.
 16. **Pembersihan Sesi Hantu (Ghost Session DB Validation):** Token JWT yang masih sah tetap akan diuji secara *Real-Time* menggunakan `userSessionCache` (5 minit TTL) terhadap kewujudan profil di pangkalan data. Jika profil dipadam oleh Admin, sesi log masuk (Ghost Session) akan ditamatkan dalam masa 5 minit.
 17. **Sanitasi XSS Pangkalan Data (Cross-Site Scripting):** Input nama dan profil pelanggan dilucutkan (*stripped*) daripada tag HTML/JS (`<script>`) sebelum disimpan ke pangkalan data menggunakan pembersihan `xssRegex`.
 
@@ -324,6 +324,7 @@ Sistem menggunakan **20 jadual** dalam skema `public` Supabase PostgreSQL.
 | `staff_performance` | Prestasi staf (komisen, kehadiran) | `staff_id → staff(id) ON DELETE CASCADE` |
 | `reviews` | Ulasan pelanggan (1-5 bintang) | `no_booking` |
 | `historical_sales` | Arkib jualan tahunan | `tahun`, `bulan`, `top_staff (JSONB)` |
+| `push_subscriptions` | Langganan Web-Push mengikut peranan & pengguna | `user_type`, `user_id`, `subscription (JSONB)` |
 
 ### 7.5 Kekangan Semakan (Check Constraints)
 
